@@ -7,400 +7,388 @@
 <title>J-Mart | Fresh Needs, Happy Homes</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+:root {
+  --green: #078b62;
+  --dark: #086548;
+  --border: #e7ece9;
+  --text: #263746;
 }
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: Arial, sans-serif;
-  color: #263746;
-  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: white;
 }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
 
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 18px;
-  border-bottom: 1px solid #eee;
   position: sticky;
   top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
   background: white;
-  z-index: 10;
+  border-bottom: 1px solid var(--border);
 }
-
-.logo {
+.brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  text-decoration: none;
+  color: inherit;
 }
-
-.logo-icon {
-  font-size: 35px;
-}
-
-.logo h2 {
-  color: #079568;
-  font-size: 25px;
-}
-
-.logo p {
-  font-size: 11px;
-  margin-top: 3px;
-}
-
-nav {
-  display: flex;
-  gap: 18px;
-}
-
-nav button {
+.brand-icon { font-size: 34px; }
+.brand h2 { color: var(--green); font-size: 25px; }
+.brand p { font-size: 11px; margin-top: 3px; }
+nav { display: flex; gap: 16px; }
+.nav-button {
   border: 0;
   background: white;
-  color: #087c58;
-  cursor: pointer;
+  color: var(--dark);
   font-weight: bold;
   font-size: 12px;
+  min-width: 38px;
 }
-
-nav button span {
+.nav-button span {
   display: block;
   font-size: 20px;
 }
-
-#cartCount {
+.cart-bubble {
+  display: inline-block;
+  background: #f22;
   color: white;
-  background: red;
-  padding: 3px 6px;
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 10px;
+  padding: 3px 5px;
+  vertical-align: top;
 }
-
-.search {
-  padding: 12px 16px;
+.search-wrap {
   display: flex;
   align-items: center;
+  padding: 12px 16px;
+  position: relative;
 }
-
-.search input {
+.search-wrap input {
   width: 100%;
-  padding: 13px 16px;
-  border: 1px solid #e1e7e4;
+  padding: 13px 42px 13px 16px;
+  border: 1px solid var(--border);
   background: #f5f7f6;
-  border-radius: 30px;
-  font-size: 15px;
-  outline-color: #079568;
+  border-radius: 28px;
+  outline-color: var(--green);
 }
+.search-icon { position: absolute; right: 30px; }
 
 .hero {
   background: linear-gradient(110deg, #e5f5d8, #d7edbd);
-  padding: 35px 20px;
+  padding: 34px 20px;
 }
-
-.hero small {
-  color: #079568;
+.eyebrow {
+  font-size: 11px;
   letter-spacing: 3px;
+  color: var(--green);
   font-weight: bold;
 }
-
 .hero h1 {
-  color: #086548;
+  color: var(--dark);
   font-size: 27px;
   margin: 12px 0;
 }
-
-.hero p {
-  margin-bottom: 16px;
-}
-
-.shop-btn {
-  background: #078b62;
+.hero p { margin-bottom: 16px; }
+.primary-button {
+  background: var(--green);
   color: white;
-  border: none;
+  border: 0;
   border-radius: 11px;
-  padding: 14px 22px;
+  padding: 13px 21px;
   font-weight: bold;
-  cursor: pointer;
 }
 
 .categories {
   margin: 15px;
-  border: 1px solid #e5eae8;
+  border: 1px solid var(--border);
   border-radius: 15px;
   overflow: hidden;
 }
-
 .categories h3 {
-  padding: 17px;
-  background: #078b62;
+  background: var(--green);
   color: white;
+  padding: 16px;
   font-size: 18px;
 }
-
 .category-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-
 .category-list button {
-  background: white;
   border: 0;
-  border-bottom: 1px solid #eee;
-  padding: 14px 8px;
+  border-bottom: 1px solid #edf0ee;
+  background: white;
   text-align: left;
-  cursor: pointer;
+  padding: 14px 10px;
   font-size: 13px;
   font-weight: bold;
   color: #344451;
 }
-
 .category-list button.active,
 .category-list button:hover {
   background: #e2f4ec;
-  color: #078b62;
+  color: var(--green);
 }
 
 .products-section {
   padding: 5px 15px 30px;
   scroll-margin-top: 100px;
 }
-
 .section-heading {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin: 15px 0;
 }
-
-.section-heading h2 {
-  font-size: 20px;
-}
-
-.section-heading span {
-  color: #888;
-  font-size: 13px;
-}
-
+.section-heading h2 { display: inline; font-size: 20px; }
+.section-heading span { font-size: 13px; color: #888; }
 #sortSelect {
   padding: 10px;
-  border: 1px solid #e5eae8;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
   background: white;
 }
-
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
-
 .product {
-  border: 1px solid #e8ecea;
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 9px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  transition: box-shadow .2s;
 }
-
-.product:hover {
-  box-shadow: 0 4px 15px #00000012;
-}
-
 .product img {
   width: 100%;
   height: 175px;
   object-fit: contain;
   margin-bottom: 10px;
 }
-
 .product h3 {
   font-size: 13px;
   line-height: 1.4;
   min-height: 37px;
 }
-
 .price {
-  color: #079568;
+  color: var(--green);
   font-weight: bold;
   margin: 8px 0;
 }
-
-.product button {
+.add-button {
   padding: 9px 4px;
-  border: 1px solid #079568;
-  color: #079568;
+  border: 1px solid var(--green);
+  color: var(--green);
   background: white;
   border-radius: 9px;
-  cursor: pointer;
   font-weight: bold;
   margin-top: auto;
 }
-
-.product button:hover {
+.add-button:hover {
+  background: var(--green);
   color: white;
-  background: #079568;
 }
-
 .empty {
   padding: 30px 0;
   text-align: center;
   grid-column: 1 / -1;
 }
-
 footer {
   text-align: center;
   background: #075d43;
   color: white;
-  padding: 25px;
+  padding: 24px;
   line-height: 1.8;
 }
 
-dialog {
-  border: 0;
-  border-radius: 15px;
-  padding: 22px;
-  width: min(450px, 92%);
-  margin: auto;
-  max-height: 80vh;
-  overflow: auto;
+/* Right-side shopping cart */
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: 98;
+  display: none;
 }
+.cart-overlay.show { display: block; }
 
-dialog::backdrop {
-  background: #0008;
-}
-
-.dialog-head {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.dialog-head button {
-  border: 0;
+.cart-panel {
+  position: fixed;
+  top: 0;
+  right: -460px;
+  width: 100%;
+  max-width: 420px;
+  height: 100vh;
+  height: 100dvh;
   background: white;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.cart-item {
+  z-index: 99;
   display: flex;
+  flex-direction: column;
+  transition: right .28s ease;
+  box-shadow: -5px 0 20px #0002;
+}
+.cart-panel.open { right: 0; }
+.cart-header {
+  background: #087c55;
+  color: white;
+  padding: 18px;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
+}
+.cart-header h2 { font-size: 22px; }
+.cart-close {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 29px;
+  line-height: 1;
+}
+.cart-list {
+  padding: 8px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+.cart-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 24px;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 0;
   border-bottom: 1px solid #eee;
 }
-
-.cart-item button {
-  border: 0;
-  color: #c22;
-  background: white;
-  cursor: pointer;
+.cart-row img {
+  width: 60px;
+  height: 65px;
+  object-fit: contain;
 }
-
-.cart-total {
+.cart-product-name {
+  font-size: 14px;
   font-weight: bold;
-  margin: 18px 0;
+  line-height: 1.35;
+}
+.cart-product-price {
+  font-size: 13px;
+  color: #666;
+  margin-top: 5px;
+}
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.quantity-controls button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d9e4df;
+  border-radius: 8px;
+  color: var(--dark);
+  background: white;
   font-size: 18px;
 }
-
-.checkout {
-  width: 100%;
-  padding: 13px;
+.quantity-controls span {
+  min-width: 12px;
+  text-align: center;
+}
+.remove-item {
   border: 0;
-  border-radius: 9px;
-  background: #078b62;
+  background: white;
+  color: #999;
+  font-size: 19px;
+  padding: 4px;
+}
+.cart-footer {
+  padding: 17px;
+  border-top: 1px solid #eee;
+  background: white;
+}
+.cart-summary {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+.place-order {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
   color: white;
   font-weight: bold;
-  cursor: pointer;
+  font-size: 16px;
+}
+.empty-cart {
+  text-align: center;
+  padding: 40px 10px;
+  color: #777;
+  line-height: 1.8;
 }
 
 @media (max-width: 700px) {
-  header {
-    padding: 10px;
-  }
-
-  .logo h2 {
-    font-size: 21px;
-  }
-
-  nav {
-    gap: 12px;
-  }
-
-  .hero {
-    padding: 28px 17px;
-  }
-
-  .hero h1 {
-    font-size: 23px;
-  }
-
-  .category-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  header { padding: 9px 11px; }
+  .brand h2 { font-size: 21px; }
+  nav { gap: 10px; }
+  .hero { padding: 28px 17px; }
+  .hero h1 { font-size: 23px; }
+  .category-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
-
-  .product img {
-    height: 155px;
-  }
-
-  .section-heading h2 {
-    font-size: 17px;
-  }
+  .product img { height: 155px; }
+  .section-heading h2 { font-size: 17px; }
+  .cart-panel { max-width: 100%; }
 }
-
 @media (min-width: 1000px) {
-  .product-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
+  .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 </style>
 </head>
 
 <body>
-
 <header>
-  <a href="#" class="logo" style="text-decoration:none;color:inherit">
-    <span class="logo-icon">🛒</span>
-    <div>
+  <a class="brand" href="#" aria-label="J-Mart home">
+    <span class="brand-icon">🛒</span>
+    <span>
       <h2>J-Mart</h2>
       <p>Fresh Needs, Happy Homes</p>
-    </div>
+    </span>
   </a>
-
-  <nav>
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <nav aria-label="Main navigation">
+    <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
       <span>🏠</span>Home
     </button>
-    <button onclick="openCart()">
-      <span>🛍️ <b id="cartCount">0</b></span>Cart
+    <button class="nav-button" onclick="openCart()">
+      <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
-    <button onclick="login()">
+    <button class="nav-button" onclick="login()">
       <span>👤</span>Login
     </button>
   </nav>
 </header>
 
-<div class="search">
+<div class="search-wrap">
   <input id="searchInput" type="search"
-    placeholder="Search for products..."
-    oninput="renderProducts()">
+    placeholder="Search for products..." aria-label="Search products">
+  <span class="search-icon">🔎</span>
 </div>
 
 <section class="hero">
-  <small>WELCOME TO J-MART</small>
+  <p class="eyebrow">WELCOME TO J-MART</p>
   <h1>Your Daily Essentials Delivered Fresh</h1>
   <p>Groceries · Household · Better Living</p>
-  <button class="shop-btn"
+  <button class="primary-button"
     onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
     Shop Now →
   </button>
@@ -411,23 +399,21 @@ dialog::backdrop {
   <div class="category-list" id="categoryList"></div>
 </section>
 
-<section class="products-section" id="productsSection">
+<main class="products-section" id="productsSection">
   <div class="section-heading">
     <div>
       <h2 id="sectionTitle">All Products</h2>
-      <span id="itemCount">Loading products...</span>
+      <span id="itemCount"></span>
     </div>
-
-    <select id="sortSelect" onchange="renderProducts()">
-      <option value="popular">Popularity</option>
+    <select id="sortSelect" aria-label="Sort products">
+      <option value="popular">Sort by: Popularity</option>
       <option value="low">Price: Low to High</option>
       <option value="high">Price: High to Low</option>
       <option value="az">Name: A to Z</option>
     </select>
   </div>
-
   <div class="product-grid" id="productGrid"></div>
-</section>
+</main>
 
 <footer>
   <h2>🛒 J-Mart</h2>
@@ -436,25 +422,24 @@ dialog::backdrop {
   <p>© <span id="year"></span> J-Mart. All rights reserved.</p>
 </footer>
 
-<dialog id="cartDialog">
-  <div class="dialog-head">
-    <h2>Your Shopping Cart</h2>
-    <button onclick="closeCart()" aria-label="Close cart">✕</button>
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<aside class="cart-panel" id="cartPanel"
+  role="dialog" aria-label="Shopping cart" aria-modal="true">
+  <div class="cart-header">
+    <h2>▤ Your Cart</h2>
+    <button class="cart-close" onclick="closeCart()" aria-label="Close cart">×</button>
   </div>
-  <div id="cartItems"></div>
-  <div class="cart-total" id="cartTotal">Total: ₹0</div>
-  <button class="checkout" onclick="checkout()">Place Order on WhatsApp</button>
-</dialog>
+  <div class="cart-list" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
+    <button class="place-order" onclick="checkout()">Place Order</button>
+  </div>
+</aside>
 
 <script>
-// Product images are loaded from your GitHub repository.
-// If your default branch is not "main", change it in imageURL().
-
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
-
-function imageURL(filename) {
-  return REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
-}
+const imageURL = filename =>
+  REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
 
 const products = [
   {name:"Aashirvaad Iodized Salt",file:"aashirvaad_iodized_salt.png",price:28,category:"Sugar & Salt"},
@@ -465,7 +450,7 @@ const products = [
   {name:"Bingo Mad Angles",file:"bingo_mad_angles.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bingo Original Style Chilli",file:"bingo_original_style_chilli.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bingo Tedhe Medhe Masala Tadka",file:"bingo_tedhe_medhe_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
-  {name:"Bingo Tedhe Medhe Mast Masala",file:"bingo_tedhe_medhe_mast_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
+  {name:"Bingo Tedhe Medhe Mast Masala Tadka",file:"bingo_tedhe_medhe_mast_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bounty",file:"bounty.png",price:20,category:"Biscuits & Snacks"},
   {name:"Britannia Good Day Butter Cookies",file:"britannia_good_day_butter_cookies.png",price:35,category:"Biscuits & Snacks"},
   {name:"Brooke Bond 3 Roses Natural Care",file:"brooke_bond_3_roses_natural_care.png",price:120,category:"Tea & Coffee"},
@@ -492,7 +477,6 @@ const products = [
   {name:"Fogg Paradise Body Spray",file:"fogg_paradise_body_spray.png",price:220,category:"Personal Care"},
   {name:"Garlic",file:"garlic.png",price:10,category:"Fresh Produce"},
   {name:"Groundnuts",file:"groundnuts.png",price:30,category:"Fresh Produce"},
-  {name:"Hauser XO Pens",file:"hauser_xo_pens.png",price:20,category:"Household Care"},
   {name:"Head & Shoulders Classic Clean",file:"head_and_shoulders_classic_clean.png",price:120,category:"Personal Care"},
   {name:"Head & Shoulders Cool Menthol",file:"head_and_shoulders_cool_menthol.png",price:120,category:"Personal Care"},
   {name:"KitKat 2 Finger",file:"kitkat_2_finger.png",price:20,category:"Biscuits & Snacks"},
@@ -551,42 +535,44 @@ const products = [
 ];
 
 const categories = [
-  ["All Products", "🗃️"],
-  ["Biscuits & Snacks", "🍟"],
-  ["Rice & Grains", "🌾"],
-  ["Sugar & Salt", "🧂"],
-  ["Beverages", "🥤"],
-  ["Tea & Coffee", "☕"],
-  ["Household Care", "🧽"],
-  ["Personal Care", "🧼"],
-  ["Fresh Produce", "🥬"]
+  ["All Products","☷"],
+  ["Biscuits & Snacks","🍟"],
+  ["Rice & Grains","🌾"],
+  ["Sugar & Salt","🧂"],
+  ["Beverages","🥤"],
+  ["Tea & Coffee","☕"],
+  ["Household Care","🧽"],
+  ["Personal Care","🧼"],
+  ["Fresh Produce","🥬"]
 ];
 
 let selectedCategory = "All Products";
 let cart = [];
-
-const categoryList = document.getElementById("categoryList");
-const productGrid = document.getElementById("productGrid");
+const $ = id => document.getElementById(id);
 
 function renderCategories() {
-  categoryList.innerHTML = categories.map(([name, icon]) => `
-    <button class="${selectedCategory === name ? "active" : ""}"
-      onclick="selectCategory('${name}')">
-      ${icon} ${name}
-    </button>
-  `).join("");
+  $("categoryList").innerHTML = categories.map(([name,icon]) =>
+    `<button class="${selectedCategory===name ? "active" : ""}"
+      data-category="${name}">${icon} ${name}</button>`
+  ).join("");
+
+  $("categoryList").querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", () =>
+      selectCategory(button.dataset.category)
+    );
+  });
 }
 
 function selectCategory(name) {
   selectedCategory = name;
   renderCategories();
   renderProducts();
-  document.getElementById("productsSection").scrollIntoView({behavior:"smooth"});
+  $("productsSection").scrollIntoView({behavior:"smooth"});
 }
 
 function renderProducts() {
-  const query = document.getElementById("searchInput").value.toLowerCase();
-  const sort = document.getElementById("sortSelect").value;
+  const query = $("searchInput").value.trim().toLowerCase();
+  const sort = $("sortSelect").value;
 
   let list = products.filter(p =>
     (selectedCategory === "All Products" || p.category === selectedCategory) &&
@@ -597,27 +583,27 @@ function renderProducts() {
   if (sort === "high") list.sort((a,b) => b.price-a.price);
   if (sort === "az") list.sort((a,b) => a.name.localeCompare(b.name));
 
-  document.getElementById("sectionTitle").textContent = selectedCategory;
-  document.getElementById("itemCount").textContent = `(${list.length} items)`;
+  $("sectionTitle").textContent = selectedCategory;
+  $("itemCount").textContent = `(${list.length} items)`;
 
   if (!list.length) {
-    productGrid.innerHTML = '<p class="empty">No products found. Try another search.</p>';
+    $("productGrid").innerHTML =
+      '<p class="empty">No products found. Try another search.</p>';
     return;
   }
 
-  productGrid.innerHTML = list.map(p => {
-    const index = products.indexOf(p);
-    return `
-      <article class="product">
-        <img src="${imageURL(p.file)}"
-          alt="${p.name}"
-          loading="lazy"
-          onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
-        <h3>${p.name}</h3>
-        <p class="price">₹${p.price}</p>
-        <button onclick="addToCart(${index})">Add to Cart</button>
-      </article>
-    `;
+  $("productGrid").innerHTML = list.map(p => {
+    const i = products.indexOf(p);
+
+    return `<article class="product">
+      <img src="${imageURL(p.file)}" alt="${p.name}" loading="lazy"
+        onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
+      <h3>${p.name}</h3>
+      <p class="price">₹${p.price}</p>
+      <button class="add-button" onclick="addToCart(${i})">
+        Add to Cart
+      </button>
+    </article>`;
   }).join("");
 }
 
@@ -632,45 +618,71 @@ function addToCart(index) {
   }
 
   updateCart();
+  openCart();
 }
 
 function updateCart() {
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  document.getElementById("cartCount").textContent = count;
+  const count = cart.reduce((sum,item) => sum+item.quantity, 0);
+  $("cartCount").textContent = count;
 
-  document.getElementById("cartItems").innerHTML = cart.length
-    ? cart.map((item, index) => `
-      <div class="cart-item">
+  $("cartItems").innerHTML = cart.length
+    ? cart.map((item,index) => `
+      <div class="cart-row">
+        <img src="${imageURL(item.file)}" alt="${item.name}"
+          onerror="this.style.visibility='hidden'">
         <div>
-          <strong>${item.name}</strong><br>
-          ₹${item.price} × ${item.quantity}
+          <div class="cart-product-name">${item.name}</div>
+          <div class="cart-product-price">
+            ₹${item.price} × ${item.quantity} = ₹${item.price*item.quantity}
+          </div>
+          <div class="quantity-controls">
+            <button onclick="changeQuantity(${index},-1)"
+              aria-label="Decrease quantity">−</button>
+            <span>${item.quantity}</span>
+            <button onclick="changeQuantity(${index},1)"
+              aria-label="Increase quantity">+</button>
+          </div>
         </div>
-        <div>
-          <strong>₹${item.price * item.quantity}</strong><br>
-          <button onclick="removeItem(${index})">Remove</button>
-        </div>
+        <button class="remove-item" onclick="removeItem(${index})"
+          aria-label="Remove ${item.name}">🗑</button>
       </div>
     `).join("")
-    : "<p>Your cart is empty.</p>";
+    : `<div class="empty-cart">
+        <div style="font-size:36px">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Add products to get started.</p>
+      </div>`;
 
-  const total = cart.reduce((sum, item) =>
-    sum + item.price * item.quantity, 0);
+  const total = cart.reduce(
+    (sum,item) => sum + item.price*item.quantity, 0
+  );
 
-  document.getElementById("cartTotal").textContent = `Total: ₹${total}`;
+  $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
+}
+
+function changeQuantity(index, change) {
+  cart[index].quantity += change;
+
+  if (cart[index].quantity <= 0) {
+    cart.splice(index,1);
+  }
+
+  updateCart();
 }
 
 function removeItem(index) {
-  cart.splice(index, 1);
+  cart.splice(index,1);
   updateCart();
 }
 
 function openCart() {
-  updateCart();
-  document.getElementById("cartDialog").showModal();
+  $("cartPanel").classList.add("open");
+  $("cartOverlay").classList.add("show");
 }
 
 function closeCart() {
-  document.getElementById("cartDialog").close();
+  $("cartPanel").classList.remove("open");
+  $("cartOverlay").classList.remove("show");
 }
 
 function login() {
@@ -683,35 +695,43 @@ function checkout() {
     return;
   }
 
+  const total = cart.reduce(
+    (sum,item) => sum + item.price*item.quantity, 0
+  );
+
   const message = [
-    "Hello J-Mart! I want to order:",
+    "Hello J-Mart! My order:",
     ...cart.map(item =>
-      `${item.name} x ${item.quantity} = ₹${item.price * item.quantity}`
+      `${item.name} x ${item.quantity} = ₹${item.price*item.quantity}`
     ),
-    "Total: ₹" + cart.reduce((sum, item) =>
-      sum + item.price * item.quantity, 0)
+    `Total: ₹${total}`
   ].join("\n");
 
-  // Replace 91XXXXXXXXXX with your actual WhatsApp number.
+  // Replace this with your WhatsApp number and country code.
   const phone = "91XXXXXXXXXX";
 
   if (phone.includes("X")) {
-    alert("Set your WhatsApp number in the checkout() function first.");
+    alert("Replace 91XXXXXXXXXX in checkout() with your WhatsApp number.");
     return;
   }
 
   window.open(
-    "https://wa.me/" + phone + "?text=" + encodeURIComponent(message),
+    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
     "_blank"
   );
 }
 
-document.getElementById("year").textContent = new Date().getFullYear();
+$("searchInput").addEventListener("input", renderProducts);
+$("sortSelect").addEventListener("change", renderProducts);
+$("year").textContent = new Date().getFullYear();
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeCart();
+});
 
 renderCategories();
 renderProducts();
 updateCart();
 </script>
-
 </body>
 </html>
