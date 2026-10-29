@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J-Mart | Fresh Needs, Happy Homes</title>
+    <!-- Firebase SDK imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyDDFJ3APdJ_YGnP80t1DCF6OVdWtNeJFRA",
+          authDomain: "j-mart-2c07c.firebaseapp.com",
+          projectId: "j-mart-2c07c",
+          storageBucket: "j-mart-2c07c.firebasestorage.app",
+          messagingSenderId: "79059267390",
+          appId: "1:79059267390:web:ac15038899d85a0f53466f",
+          measurementId: "G-YRNYMF2QWX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        // Global functions for signup and login
+        window.handleSignUp = function(email, password) {
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Account created successfully!");
+                    console.log("User signed up:", userCredential.user);
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
+        };
+
+        window.handleLogin = function(email, password) {
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Logged in successfully!");
+                    console.log("User logged in:", userCredential.user);
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
+        };
+    </script>
+</head>
+<body>
+    <h1>Welcome to J-Mart</h1>
+    <p>Your Daily Essentials Delivered Fresh</p>
+    
+    <!-- Simple Form for Authentication Testing -->
+    <div style="margin-top: 20px;">
+        <h3>Login / Sign Up</h3>
+        <input type="email" id="email" placeholder="Enter Email" style="padding: 5px; margin: 5px;"><br>
+        <input type="password" id="password" placeholder="Enter Password" style="padding: 5px; margin: 5px;"><br>
+        <button onclick="handleLogin(document.getElementById('email').value, document.getElementById('password').value)" style="padding: 5px 10px; margin-top: 5px;">Login</button>
+        <button onclick="handleSignUp(document.getElementById('email').value, document.getElementById('password').value)" style="padding: 5px 10px; margin-top: 5px;">Sign Up</button>
+    </div>
+</body>
+</html>
