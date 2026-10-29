@@ -7,567 +7,456 @@
 
 <style>
 :root {
-  --green: #078b60;
-  --dark-green: #086747;
-  --light-green: #e4f4dc;
-  --border: #e5eae7;
-  --text: #263642;
-  --muted: #77817e;
+  --green: #078b62;
+  --dark: #086548;
+  --border: #e7ece9;
+  --text: #263746;
+  --light-bg: #f5f7f6;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--text);
-  background: #fff;
+  background: white;
 }
 
-button, input, select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
 
 header {
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: white;
-  border-bottom: 1px solid var(--border);
-  padding: 12px 18px;
-}
-
-.topbar {
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
+  gap: 12px;
+  padding: 10px 18px;
+  background: white;
+  border-bottom: 1px solid var(--border);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.logo {
-  font-size: 36px;
-}
+.brand-icon { font-size: 34px; }
+.brand h2 { color: var(--green); font-size: 25px; line-height: 1; }
+.brand p { font-size: 11px; margin-top: 3px; color: #666; }
 
-.brand h1 {
-  color: var(--green);
-  font-size: 25px;
-}
+nav { display: flex; gap: 12px; align-items: center; }
 
-.brand p {
-  font-size: 11px;
-  margin-top: 4px;
-  color: #58646c;
-}
-
-.nav {
-  display: flex;
-  gap: 18px;
-}
-
-.nav button {
-  border: none;
+.nav-button {
+  border: 0;
   background: white;
-  color: var(--dark-green);
+  color: var(--dark);
   font-weight: bold;
+  font-size: 12px;
+  min-width: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.nav-button:hover {
+  background: #f0f7f4;
+}
+
+.nav-button span {
+  display: block;
+  font-size: 20px;
   position: relative;
 }
 
-.nav .nav-icon {
-  display: block;
-  font-size: 23px;
-}
-
-.cart-badge {
+.cart-bubble {
   position: absolute;
-  top: -5px;
-  right: -10px;
-  background: #ef2222;
+  top: -4px;
+  right: -8px;
+  background: #e53e3e;
   color: white;
-  border-radius: 50%;
-  min-width: 19px;
-  padding: 3px;
-  font-size: 11px;
+  border-radius: 10px;
+  font-size: 10px;
+  padding: 1px 5px;
+  font-weight: bold;
 }
 
-.searchbar {
-  margin-top: 12px;
+.user-profile {
   display: flex;
-  border: 1px solid var(--border);
-  background: #f5f7f6;
-  border-radius: 30px;
-  padding: 0 15px;
   align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--dark);
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: #f0f7f4;
 }
 
-.searchbar input {
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  position: relative;
+}
+
+.search-wrap input {
   width: 100%;
-  padding: 12px 0;
-  border: none;
-  outline: none;
-  background: transparent;
+  padding: 13px 42px 13px 16px;
+  border: 1px solid var(--border);
+  background: var(--light-bg);
+  border-radius: 28px;
+  outline-color: var(--green);
 }
 
-.searchbar button {
-  border: none;
-  background: transparent;
-  font-size: 20px;
-}
+.search-icon { position: absolute; right: 30px; }
 
 .hero {
-  padding: 35px 20px;
-  background: linear-gradient(110deg, #e7f5d8, #d8efc5);
+  background: linear-gradient(110deg, #e5f5d8, #d7edbd);
+  padding: 34px 20px;
 }
 
-.hero .eyebrow {
-  color: var(--green);
-  letter-spacing: 3px;
+.eyebrow {
   font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--green);
   font-weight: bold;
-  margin-bottom: 10px;
 }
 
-.hero h2 {
-  font-size: clamp(23px, 3vw, 30px);
-  color: var(--dark-green);
-  margin-bottom: 10px;
+.hero h1 {
+  color: var(--dark);
+  font-size: 27px;
+  margin: 12px 0;
 }
 
-.hero p {
-  margin-bottom: 17px;
-}
+.hero p { margin-bottom: 16px; color: #444; }
 
-.primary-btn {
-  border: none;
-  color: white;
+.primary-button {
   background: var(--green);
+  color: white;
+  border: 0;
   border-radius: 11px;
-  padding: 13px 20px;
+  padding: 13px 21px;
   font-weight: bold;
+  transition: background 0.2s;
 }
 
-.primary-btn:hover {
-  background: var(--dark-green);
-}
-
-main {
-  padding: 15px;
-}
-
-.category-box {
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.category-title {
-  background: var(--green);
-  color: white;
-  padding: 17px;
-  font-size: 18px;
+.primary-button:hover {
+  background: var(--dark);
 }
 
 .categories {
+  margin: 15px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.categories h3 {
+  background: var(--green);
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+}
+
+.category-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.category-btn {
-  text-align: left;
-  padding: 14px 12px;
-  border: none;
+.category-list button {
+  border: 0;
   border-bottom: 1px solid #edf0ee;
+  border-right: 1px solid #edf0ee;
   background: white;
-  color: #364650;
-  font-weight: bold;
+  text-align: left;
+  padding: 14px 10px;
   font-size: 13px;
+  font-weight: bold;
+  color: #344451;
 }
 
-.category-btn:hover,
-.category-btn.active {
-  background: #e2f3eb;
-  color: var(--dark-green);
+.category-list button.active,
+.category-list button:hover {
+  background: #e2f4ec;
+  color: var(--green);
+}
+
+.products-section {
+  padding: 5px 15px 30px;
+  scroll-margin-top: 100px;
 }
 
 .section-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin: 20px 0 14px;
+  gap: 10px;
+  margin: 15px 0;
 }
 
-.section-heading h2 {
-  font-size: 20px;
-}
+.section-heading h2 { display: inline; font-size: 20px; }
+.section-heading span { font-size: 13px; color: #888; }
 
-.count-label {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: normal;
-}
-
-#sort-select {
-  border: 1px solid var(--border);
-  border-radius: 12px;
+#sortSelect {
   padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
   background: white;
-  max-width: 175px;
 }
 
-.products {
+.product-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-.product-card {
-  min-width: 0;
+.product {
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 9px;
+  padding: 12px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  background: white;
-  transition: box-shadow .2s, transform .2s;
-  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.product-card:hover {
-  box-shadow: 0 5px 18px #00000010;
+.product:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.product-image-wrap {
-  height: 190px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.product-image {
+.product img {
   width: 100%;
-  height: 100%;
+  height: 175px;
   object-fit: contain;
+  margin-bottom: 10px;
 }
 
-.badge {
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  color: white;
-  background: #26a541;
-  padding: 3px 6px;
-  font-size: 11px;
-  border-radius: 3px;
-  font-weight: bold;
-}
-
-.product-name {
+.product h3 {
   font-size: 13px;
-  line-height: 1.35;
-  margin: 8px 0;
-  min-height: 34px;
+  line-height: 1.4;
+  min-height: 37px;
 }
 
 .price {
   color: var(--green);
   font-weight: bold;
-  font-size: 15px;
-  margin-bottom: 9px;
+  margin: 8px 0;
 }
 
-.add-btn {
-  border: 1px solid var(--green);
-  border-radius: 10px;
+.add-button {
   padding: 9px 4px;
+  border: 1px solid var(--green);
   color: var(--green);
   background: white;
-  font-size: 12px;
+  border-radius: 9px;
   font-weight: bold;
   margin-top: auto;
+  transition: all 0.2s;
 }
 
-.add-btn:hover {
-  color: white;
-  background: var(--green);
-}
-
-.add-btn.in {
+.add-button:hover {
   background: var(--green);
   color: white;
 }
 
-.empty-message {
+.empty {
+  padding: 30px 0;
+  text-align: center;
   grid-column: 1 / -1;
-  text-align: center;
-  padding: 45px 10px;
-  color: var(--muted);
-}
-
-/* Page overlay and cart drawer */
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: #0007;
-  z-index: 19;
-  display: none;
-}
-
-.overlay.show {
-  display: block;
-}
-
-.drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: min(430px, 100%);
-  height: 100dvh;
-  z-index: 20;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(105%);
-  transition: transform .25s ease;
-  box-shadow: -5px 0 25px #00000018;
-}
-
-.drawer.open {
-  transform: translateX(0);
-}
-
-.drawer-header {
-  padding: 20px;
-  background: var(--dark-green);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.drawer-header h2 {
-  font-size: 21px;
-}
-
-.close-btn {
-  border: none;
-  background: transparent;
-  font-size: 25px;
-  color: inherit;
-  cursor: pointer;
-}
-
-.cart-items {
-  overflow-y: auto;
-  padding: 10px 16px;
-  flex: 1;
-}
-
-.cart-item {
-  display: grid;
-  grid-template-columns: 65px minmax(0, 1fr) auto;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-}
-
-.cart-item img {
-  width: 65px;
-  height: 75px;
-  object-fit: contain;
-}
-
-.cart-item h3 {
-  font-size: 13px;
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-
-.cart-item p {
-  font-size: 12px;
-  color: #626e69;
-}
-
-.quantity {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 9px;
-}
-
-.quantity button {
-  width: 29px;
-  height: 29px;
-  background: white;
-  border: 1px solid #d7e2dc;
-  border-radius: 8px;
-}
-
-.remove-btn {
-  border: none;
-  background: white;
-  color: #d33;
-  margin-top: 7px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.cart-footer {
-  border-top: 1px solid var(--border);
-  padding: 18px;
-}
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-.cart-footer .primary-btn {
-  width: 100%;
-}
-
-.empty-cart {
-  text-align: center;
-  padding: 55px 10px;
-  color: var(--muted);
-}
-
-/* Login modal */
-
-.modal {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: #0008;
-  padding: 15px;
-}
-
-.modal.show {
-  display: flex;
-}
-
-.modal-content {
-  background: white;
-  width: min(400px, 100%);
-  padding: 25px;
-  border-radius: 17px;
-  position: relative;
-}
-
-.modal-content .close-btn {
-  position: absolute;
-  top: 12px;
-  right: 15px;
-  color: #333;
-}
-
-.modal-content h3 {
-  color: var(--dark-green);
-  margin-bottom: 16px;
-  padding-right: 25px;
-}
-
-.modal-content p {
-  margin-bottom: 14px;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.modal-content label {
-  display: block;
-  font-size: 13px;
-  margin: 12px 0 7px;
-}
-
-.modal-content input {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #dce4df;
-  border-radius: 9px;
-  outline-color: var(--green);
-  margin-bottom: 12px;
-}
-
-.modal-content .primary-btn {
-  width: 100%;
-  margin-top: 5px;
-}
-
-.language-buttons {
-  display: grid;
-  gap: 10px;
-}
-
-.language-buttons button {
-  padding: 12px;
-  background: white;
-  color: var(--dark-green);
-  border: 1px solid var(--green);
-  border-radius: 9px;
-}
-
-.language-buttons button:hover {
-  background: var(--light-green);
-}
-
-.btn-link {
-  border: none;
-  background: none;
-  color: var(--green);
-  margin-top: 13px;
-  display: block;
-  width: 100%;
-  cursor: pointer;
-}
-
-#status-msg {
-  margin-top: 13px;
-  font-size: 13px;
-  color: var(--dark-green);
-  overflow-wrap: anywhere;
+  color: #777;
 }
 
 footer {
   text-align: center;
-  padding: 25px 12px;
-  margin-top: 30px;
-  background: #f5f8f6;
-  color: #65726c;
-  font-size: 12px;
+  background: #075d43;
+  color: white;
+  padding: 24px;
+  line-height: 1.8;
+}
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: 98;
+  display: none;
+}
+.cart-overlay.show { display: block; }
+
+.cart-panel {
+  position: fixed;
+  top: 0;
+  right: -460px;
+  width: 100%;
+  max-width: 420px;
+  height: 100vh;
+  height: 100dvh;
+  background: white;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  transition: right .28s ease;
+  box-shadow: -5px 0 20px rgba(0,0,0,0.15);
+}
+
+.cart-panel.open { right: 0; }
+
+.cart-header {
+  background: #087c55;
+  color: white;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cart-header h2 { font-size: 22px; }
+
+.cart-close {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 29px;
+  line-height: 1;
+}
+
+.cart-list {
+  padding: 8px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cart-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 24px;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-row img {
+  width: 60px;
+  height: 65px;
+  object-fit: contain;
+}
+
+.cart-product-name {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.35;
+}
+
+.cart-product-price {
+  font-size: 13px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.quantity-controls button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d9e4df;
+  border-radius: 8px;
+  color: var(--dark);
+  background: white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-controls span {
+  min-width: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.remove-item {
+  border: 0;
+  background: white;
+  color: #999;
+  font-size: 19px;
+  padding: 4px;
+}
+
+.cart-footer {
+  padding: 17px;
+  border-top: 1px solid #eee;
+  background: white;
+}
+
+.cart-summary {
+  font-weight: bold;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.place-order {
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.place-order:hover {
+  background: var(--dark);
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 40px 10px;
+  color: #777;
+  line-height: 1.8;
 }
 
 @media (max-width: 700px) {
-  .categories {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .products {
+  header { padding: 9px 11px; }
+  .brand h2 { font-size: 21px; }
+  nav { gap: 8px; }
+  .hero { padding: 28px 17px; }
+  .hero h1 { font-size: 23px; }
+  .category-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+  .product img { height: 145px; }
+  .section-heading h2 { font-size: 17px; }
+  .cart-panel { max-width: 100%; }
+}
+
+@media (min-width: 1000px) {
+  .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 </style>
 </head>
@@ -575,493 +464,368 @@ footer {
 <body>
 
 <header>
-  <div class="topbar">
-    <div class="brand">
-      <span class="logo">🛒</span>
-      <div>
-        <h1>J-Mart</h1>
-        <p>Fresh Needs, Happy Homes</p>
-      </div>
+  <a class="brand" href="#" aria-label="J-Mart home">
+    <span class="brand-icon">🛒</span>
+    <span>
+      <h2>J-Mart</h2>
+      <p>Fresh Needs, Happy Homes</p>
+    </span>
+  </a>
+  <nav aria-label="Main navigation">
+    <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <span>🏠</span>Home
+    </button>
+    <button class="nav-button" onclick="openCart()">
+      <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
+    </button>
+    <div id="authNav">
+      <button class="nav-button" id="loginBtn">
+        <span>👤</span>Login
+      </button>
     </div>
-
-    <nav class="nav">
-      <button onclick="goHome()">
-        <span class="nav-icon">🏠</span>Home
-      </button>
-
-      <button onclick="openCart()">
-        <span class="nav-icon">🛍️</span>Cart
-        <span class="cart-badge" id="cart-count">0</span>
-      </button>
-
-      <button onclick="openLogin()">
-        <span class="nav-icon">👤</span>
-        <span id="login-label">Login</span>
-      </button>
-    </nav>
-  </div>
-
-  <div class="searchbar">
-    <input
-      type="search"
-      id="search-input"
-      placeholder="Search for products..."
-      oninput="renderProducts()"
-      aria-label="Search products"
-    >
-    <button onclick="document.getElementById('search-input').focus()" aria-label="Focus search">🔎</button>
-  </div>
+  </nav>
 </header>
+
+<div class="search-wrap">
+  <input id="searchInput" type="search" placeholder="Search for products..." aria-label="Search products">
+  <span class="search-icon">🔎</span>
+</div>
 
 <section class="hero">
   <p class="eyebrow">WELCOME TO J-MART</p>
-  <h2>Your Daily Essentials Delivered Fresh</h2>
+  <h1>Your Daily Essentials Delivered Fresh</h1>
   <p>Groceries · Household · Better Living</p>
-  <button class="primary-btn" onclick="shopNow()">Shop Now →</button>
+  <button class="primary-button" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+    Shop Now →
+  </button>
 </section>
 
-<main id="shop">
-  <section class="category-box">
-    <h2 class="category-title">☷ Categories</h2>
+<section class="categories">
+  <h3>☷ Categories</h3>
+  <div class="category-list" id="categoryList"></div>
+</section>
 
-    <div class="categories" id="category-buttons">
-      <button class="category-btn active" data-category="All Products" onclick="selectCategory('All Products', this)">▦ All Products</button>
-      <button class="category-btn" data-category="Biscuits & Snacks" onclick="selectCategory('Biscuits & Snacks', this)">🍟 Biscuits & Snacks</button>
-      <button class="category-btn" data-category="Rice & Grains" onclick="selectCategory('Rice & Grains', this)">🌾 Rice & Grains</button>
-      <button class="category-btn" data-category="Sugar & Salt" onclick="selectCategory('Sugar & Salt', this)">🧂 Sugar & Salt</button>
-      <button class="category-btn" data-category="Beverages" onclick="selectCategory('Beverages', this)">🥤 Beverages</button>
-      <button class="category-btn" data-category="Tea & Coffee" onclick="selectCategory('Tea & Coffee', this)">☕ Tea & Coffee</button>
-      <button class="category-btn" data-category="Household Care" onclick="selectCategory('Household Care', this)">🧽 Household Care</button>
-      <button class="category-btn" data-category="Personal Care" onclick="selectCategory('Personal Care', this)">🧼 Personal Care</button>
-      <button class="category-btn" data-category="Fresh Produce" onclick="selectCategory('Fresh Produce', this)">🥬 Fresh Produce</button>
+<main class="products-section" id="productsSection">
+  <div class="section-heading">
+    <div>
+      <h2 id="sectionTitle">All Products</h2>
+      <span id="itemCount"></span>
     </div>
-  </section>
-
-  <section>
-    <div class="section-heading">
-      <h2>
-        <span id="section-title">All Products</span>
-        <span class="count-label" id="product-count"></span>
-      </h2>
-
-      <select id="sort-select" onchange="renderProducts()" aria-label="Sort products">
-        <option value="popular">Sort by: Popularity</option>
-        <option value="low">Price: Low to High</option>
-        <option value="high">Price: High to Low</option>
-        <option value="name">Name: A to Z</option>
-      </select>
-    </div>
-
-    <div class="products" id="products-grid"></div>
-  </section>
+    <select id="sortSelect" aria-label="Sort products">
+      <option value="popular">Sort by: Popularity</option>
+      <option value="low">Price: Low to High</option>
+      <option value="high">Price: High to Low</option>
+      <option value="az">Name: A to Z</option>
+    </select>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
 </main>
 
 <footer>
-  <p>© <span id="year"></span> J-Mart Supermarket</p>
-  <p style="margin-top:6px">Fresh Needs, Happy Homes 🛒</p>
+  <h2>🛒 J-Mart</h2>
+  <p>Fresh Needs, Happy Homes</p>
+  <p>Quality products for your everyday needs.</p>
+  <p>© <span id="year"></span> J-Mart. All rights reserved.</p>
 </footer>
 
-<!-- Cart overlay and side panel -->
-<div class="overlay" id="cart-overlay" onclick="closeCart()"></div>
-
-<aside class="drawer" id="cart-drawer" aria-label="Shopping cart">
-  <div class="drawer-header">
-    <h2>☷ Your Cart</h2>
-    <button class="close-btn" onclick="closeCart()" aria-label="Close cart">✕</button>
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<aside class="cart-panel" id="cartPanel" role="dialog" aria-label="Shopping cart" aria-modal="true">
+  <div class="cart-header">
+    <h2>▤ Your Cart</h2>
+    <button class="cart-close" onclick="closeCart()" aria-label="Close cart">×</button>
   </div>
-
-  <div class="cart-items" id="cart-items"></div>
-
+  <div class="cart-list" id="cartItems"></div>
   <div class="cart-footer">
-    <div class="total-row">
-      <span id="cart-summary">Items: 0</span>
-      <span id="cart-total">Total: ₹0</span>
-    </div>
-    <button class="primary-btn" onclick="checkout()">Place Order</button>
+    <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
+    <button class="place-order" id="checkoutBtn">Place Order via WhatsApp</button>
   </div>
 </aside>
 
-<!-- Login / signup modal -->
-<div class="modal" id="login-flow">
-  <div class="modal-content">
-    <button class="close-btn" onclick="closeAll()" aria-label="Close login">✕</button>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    <div id="step-language">
-      <h3>Select Language</h3>
-      <div class="language-buttons">
-        <button onclick="setLanguage('English')">🇬🇧 English</button>
-        <button onclick="setLanguage('Telugu')">తెలుగు</button>
-        <button onclick="setLanguage('Hindi')">हिन्दी</button>
-      </div>
-    </div>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDDFJ3APdJ_YGnP80t1DCF6OVdWtNeJFRA",
+    authDomain: "j-mart-2c07c.firebaseapp.com",
+    projectId: "j-mart-2c07c",
+    storageBucket: "j-mart-2c07c.firebasestorage.app",
+    messagingSenderId: "79059267390",
+    appId: "1:79059267390:web:ac15038899d85a0f53466f",
+    measurementId: "G-YRNYMF2QWX"
+  };
 
-    <div id="step-mobile" style="display:none">
-      <h3 id="lang-heading">Login / Sign Up</h3>
-      <p id="lang-sub">Enter your mobile number to continue.</p>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-      <label for="mobile-input" id="mobile-label">Enter Mobile Number:</label>
-      <input type="tel" id="mobile-input" placeholder="9876543210" maxlength="10" inputmode="numeric">
+  let currentUser = null;
 
-      <button class="primary-btn" onclick="sendOTP()" id="send-otp-btn">Send OTP</button>
-      <button class="btn-link" onclick="resetLoginFlow()">Change Language</button>
-    </div>
+  const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
+  const imageURL = filename => REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
 
-    <div id="step-verify" style="display:none">
-      <h3>Verify OTP</h3>
-      <p id="otp-sent-msg"></p>
+  const products = [
+    {name:"Aashirvaad Iodized Salt",file:"aashirvaad_iodized_salt.png",price:28,category:"Sugar & Salt"},
+    {name:"Ariel Complete Plus",file:"ariel_complete_plus.png",price:130,category:"Household Care"},
+    {name:"Bingo Cheese Nachos",file:"bingo_cheese_nachos.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Hashtags Spicy Masala",file:"bingo_hashtags_spicy_masala.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Korean Style Hot Spicy",file:"bingo_korean_style_hot_spicy.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Mad Angles",file:"bingo_mad_angles.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Original Style Chilli",file:"bingo_original_style_chilli.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Tedhe Medhe Masala Tadka",file:"bingo_tedhe_medhe_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bingo Tedhe Medhe Mast Masala Tadka",file:"bingo_tedhe_medhe_mast_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Bounty",file:"bounty.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Britannia Good Day Butter Cookies",file:"britannia_good_day_butter_cookies.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Brooke Bond 3 Roses Natural Care",file:"brooke_bond_3_roses_natural_care.png",price:120,category:"Tea & Coffee"},
+    {name:"Brooke Bond Red Label",file:"brooke_bond_red_label.png",price:120,category:"Tea & Coffee"},
+    {name:"Brooke Bond Taj Mahal",file:"brooke_bond_taj_mahal.png",price:150,category:"Tea & Coffee"},
+    {name:"Cadbury Dairy Milk",file:"cadbury_dairy_milk.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Cadbury Dairy Milk Silk",file:"cadbury_dairy_milk_silk.png",price:90,category:"Biscuits & Snacks"},
+    {name:"Cadbury Oreo Original",file:"cadbury_oreo_original.png",price:30,category:"Biscuits & Snacks"},
+    {name:"Campa Cola",file:"campa_cola.png",price:20,category:"Beverages"},
+    {name:"Cinthol Lime Soap",file:"cinthol_lime_soap.png",price:40,category:"Personal Care"},
+    {name:"Closeup Everfresh Toothpaste",file:"closeup_everfresh_toothpaste.png",price:55,category:"Personal Care"},
+    {name:"Coca-Cola",file:"coca_cola.png",price:40,category:"Beverages"},
+    {name:"Colgate MaxFresh Toothpaste",file:"colgate_maxfresh_toothpaste.png",price:60,category:"Personal Care"},
+    {name:"Colgate Strong Teeth Toothpaste",file:"colgate_strong_teeth_toothpaste.png",price:55,category:"Personal Care"},
+    {name:"Colgate ZigZag Charcoal Toothbrush",file:"colgate_zigzag_charcoal_toothbrush.png",price:35,category:"Personal Care"},
+    {name:"Colgate ZigZag Deep Clean Toothbrush",file:"colgate_zigzag_deep_clean_toothbrush.png",price:35,category:"Personal Care"},
+    {name:"Dabur Red Toothpaste",file:"dabur_red_toothpaste.png",price:55,category:"Personal Care"},
+    {name:"Dark Fantasy Choco Chunks",file:"dark_fantasy_desserts_choco_chunks.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Dark Fantasy Choco Nut Dipped",file:"dark_fantasy_desserts_choco_nut_dipped.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Dark Fantasy Chocolate Cream",file:"dark_fantasy_sandwich_creme_chocolate.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Dark Fantasy Vanilla Cream",file:"dark_fantasy_sandwich_creme_vanilla.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Dove Beauty Bar",file:"dove_cream_beauty_bar.png",price:55,category:"Personal Care"},
+    {name:"Dove Intense Repair Shampoo",file:"dove_intense_repair_shampoo.png",price:120,category:"Personal Care"},
+    {name:"Fogg Paradise Body Spray",file:"fogg_paradise_body_spray.png",price:220,category:"Personal Care"},
+    {name:"Garlic",file:"garlic.png",price:10,category:"Fresh Produce"},
+    {name:"Groundnuts",file:"groundnuts.png",price:30,category:"Fresh Produce"},
+    {name:"Head & Shoulders Classic Clean",file:"head_and_shoulders_classic_clean.png",price:120,category:"Personal Care"},
+    {name:"Head & Shoulders Cool Menthol",file:"head_and_shoulders_cool_menthol.png",price:120,category:"Personal Care"},
+    {name:"KitKat 2 Finger",file:"kitkat_2_finger.png",price:20,category:"Biscuits & Snacks"},
+    {name:"KitKat 4 Finger",file:"kitkat_4_finger.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Kothas Avakaya Pickle",file:"kotthas_avakaya_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Coriander Leaves Pickle",file:"kotthas_coriander_leaves_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Green Tamarind Pickle",file:"kotthas_green_tamarind_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Mango Pickle",file:"kotthas_mango_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Mixed Vegetable Pickle",file:"kotthas_mixed_vegetable_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Red Chillies Pickle",file:"kotthas_red_chillies_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Kothas Tomato Pickle",file:"kotthas_tomato_pickle.jpg",price:80,category:"Rice & Grains"},
+    {name:"Lays American Style Cream & Onion",file:"lays_american_style_cream_onion.png",price:20,category:"Biscuits & Snacks"},
+    {name:"Lotte Choco Pie",file:"lotte_choco_pie.png",price:10,category:"Biscuits & Snacks"},
+    {name:"Maggi Masala Noodles Multipack",file:"maggi_masala_noodles_multipack.jpg",price:60,category:"Rice & Grains"},
+    {name:"Maggi Masala Noodles Single",file:"maggi_masala_noodles_single.jpg",price:14,category:"Rice & Grains"},
+    {name:"Maggi Masala Veg Atta Noodles",file:"maggi_masala_veg_atta_noodles.jpg",price:20,category:"Rice & Grains"},
+    {name:"Minute Maid Pulpy Orange",file:"minute_maid_pulpy_orange.png",price:40,category:"Beverages"},
+    {name:"MTR Pulao Masala",file:"mtr_pulao_masala.jpg",price:60,category:"Rice & Grains"},
+    {name:"MTR Special Garam Masala 100g",file:"mtr_special_garam_masala_100g.jpg",price:80,category:"Rice & Grains"},
+    {name:"MTR Special Garam Masala 50g",file:"mtr_special_garam_masala_50g.jpg",price:40,category:"Rice & Grains"},
+    {name:"Mysore Sandal Soap",file:"mysore_sandal_soap.png",price:50,category:"Personal Care"},
+    {name:"Nature Power Papaya Aura Soap",file:"nature_power_papaya_aura_soap.png",price:35,category:"Personal Care"},
+    {name:"Pantene Lively Clean",file:"pantene_lively_clean.png",price:110,category:"Personal Care"},
+    {name:"Parachute Aloe Vera Hair Oil",file:"parachute_aloe_vera_hair_oil.webp",price:70,category:"Personal Care"},
+    {name:"Parachute Coconut Oil 30ml",file:"parachute_coconut_oil_30ml_free.webp",price:10,category:"Personal Care"},
+    {name:"Parachute Coconut Oil 600ml",file:"parachute_coconut_oil_600ml_bottle.webp",price:300,category:"Personal Care"},
+    {name:"Parachute Coconut Oil Super Saver",file:"parachute_coconut_oil_600ml_super_saver.webp",price:300,category:"Personal Care"},
+    {name:"Parachute Coconut Oil Jar",file:"parachute_coconut_oil_jar.webp",price:150,category:"Personal Care"},
+    {name:"Parle Hide & Seek Almonds",file:"parle_hide_and_seek_almonds.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Parle Hide & Seek Choco Chip",file:"parle_hide_and_seek_choco_chip.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Parrys White Label Sugar",file:"parrys_white_label_sugar.png",price:45,category:"Sugar & Salt"},
+    {name:"Pears Original Glycerin Soap",file:"pears_original_glycerin_soap.png",price:55,category:"Personal Care"},
+    {name:"Quaker Oats",file:"quaker_oats.png",price:100,category:"Rice & Grains"},
+    {name:"Santoor Fresh Skin Soap",file:"santoor_fresh_skin_soap.png",price:35,category:"Personal Care"},
+    {name:"Santoor Sandal Turmeric Soap",file:"santoor_sandal_turmeric_soap.png",price:35,category:"Personal Care"},
+    {name:"Sensodyne Fresh Gel Toothpaste",file:"sensodyne_fresh_gel_toothpaste.png",price:120,category:"Personal Care"},
+    {name:"Sensodyne Sensitive Toothbrush",file:"sensodyne_sensitive_toothbrush.png",price:50,category:"Personal Care"},
+    {name:"Small Red Onions",file:"small_red_onions.png",price:40,category:"Fresh Produce"},
+    {name:"Snickers",file:"snickers.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Sunfeast Dark Fantasy Choco Fills",file:"sunfeast_dark_fantasy_choco_fills.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Sunfeast Dark Fantasy Yumfills Pie",file:"sunfeast_dark_fantasy_yumfills_pie.png",price:40,category:"Biscuits & Snacks"},
+    {name:"Sunfeast Yippee Magic Masala 6-in-1",file:"sunfeast_yippee_magic_masala_6in1.webp",price:60,category:"Rice & Grains"},
+    {name:"Sunfeast Yippee Magic Masala Single",file:"sunfeast_yippee_magic_masala_single.webp",price:15,category:"Rice & Grains"},
+    {name:"Sunsilk Stunning Black Shine",file:"sunsilk_stunning_black_shine.png",price:110,category:"Personal Care"},
+    {name:"Tata Salt",file:"tata_salt.png",price:28,category:"Sugar & Salt"},
+    {name:"Tata Tea Chakra Gold Elaichi",file:"tata_tea_chakra_gold_elaichi.png",price:150,category:"Tea & Coffee"},
+    {name:"Tata Tea Chakra Gold Gemini",file:"tata_tea_chakra_gold_gemini.png",price:140,category:"Tea & Coffee"},
+    {name:"Thums Up 750ml",file:"thums_up_750ml.png",price:40,category:"Beverages"},
+    {name:"Thums Up Bottle",file:"thums_up_bottle.webp",price:40,category:"Beverages"},
+    {name:"Thums Up Large Bottle",file:"thums_up_large_bottle.png",price:60,category:"Beverages"},
+    {name:"Toor Dal",file:"toor_dal.png",price:120,category:"Rice & Grains"},
+    {name:"Unibic Assorted Cookies",file:"unibic_assorted_cookies.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Unibic Butter Cookies",file:"unibic_butter_cookies.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Unibic Choco Chip Cookies",file:"unibic_choco_chip_cookies.png",price:35,category:"Biscuits & Snacks"},
+    {name:"Unibic Fruit Nut Cookies",file:"unibic_fruit_nut_cookies (1).png",price:35,category:"Biscuits & Snacks"}
+  ];
 
-      <label for="otp-input">Enter 4-digit OTP:</label>
-      <input type="text" id="otp-input" placeholder="Enter demo OTP" maxlength="4" inputmode="numeric">
+  const categories = [
+    ["All Products","☷"],
+    ["Biscuits & Snacks","🍟"],
+    ["Rice & Grains","🌾"],
+    ["Sugar & Salt","🧂"],
+    ["Beverages","🥤"],
+    ["Tea & Coffee","☕"],
+    ["Household Care","🧽"],
+    ["Personal Care","🧼"],
+    ["Fresh Produce","🥬"]
+  ];
 
-      <button class="primary-btn" onclick="verifyOTP()">Verify OTP</button>
-      <button class="btn-link" onclick="backToMobile()">Change Number</button>
-    </div>
+  let selectedCategory = "All Products";
+  let cart = [];
 
-    <p id="status-msg" role="status"></p>
-  </div>
-</div>
+  const $ = id => document.getElementById(id);
 
-<script>
-"use strict";
+  function renderCategories() {
+    $("categoryList").innerHTML = categories.map(([name,icon]) =>
+      `<button class="${selectedCategory===name ? "active" : ""}" data-category="${name}">${icon} ${name}</button>`
+    ).join("");
 
-const GITHUB_BASE = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
+    $("categoryList").querySelectorAll("button").forEach(button => {
+      button.addEventListener("click", () => selectCategory(button.dataset.category));
+    });
+  }
 
-const products = [
-  { id: 1, name: "Aashirvaad Iodized Salt", price: 28, category: "Sugar & Salt", image: "aashirvaad_iodized_salt.png", o: "10% off" },
-  { id: 2, name: "Ariel Complete Plus", price: 130, category: "Household Care", image: "ariel_complete_plus.png" },
-  { id: 3, name: "Bingo Cheese Nachos", price: 20, category: "Biscuits & Snacks", image: "bingo_cheese_nachos.png" },
-  { id: 4, name: "Bingo Hashtags Spicy Masala", price: 20, category: "Biscuits & Snacks", image: "bingo_hashtags_spicy_masala.png" },
-  { id: 5, name: "Bingo Korean Style Hot Spicy", price: 20, category: "Biscuits & Snacks", image: "bingo_korean_style_hot_spicy.png" },
-  { id: 6, name: "Bingo Mad Angles", price: 20, category: "Biscuits & Snacks", image: "bingo_mad_angles.png" },
-  { id: 7, name: "Bingo Original Style Chilli", price: 20, category: "Biscuits & Snacks", image: "bingo_original_style_chilli.png" },
-  { id: 8, name: "Bingo Tedhe Medhe Masala Tadka", price: 20, category: "Biscuits & Snacks", image: "bingo_tedhe_medhe_masala_tadka.png" },
-  { id: 9, name: "Bingo Tedhe Medhe Mast Masala", price: 20, category: "Biscuits & Snacks", image: "bingo_tedhe_medhe_mast_masala_tadka.png" },
-  { id: 10, name: "Bounty", price: 20, category: "Biscuits & Snacks", image: "bounty.png" },
-  { id: 11, name: "Britannia Good Day Butter Cookies", price: 35, category: "Biscuits & Snacks", image: "britannia_good_day_butter_cookies.png" },
-  { id: 12, name: "Brooke Bond 3 Roses Natural Care", price: 120, category: "Tea & Coffee", image: "brooke_bond_3_roses_natural_care.png" },
-  { id: 13, name: "Brooke Bond Red Label", price: 120, category: "Tea & Coffee", image: "brooke_bond_red_label.png" },
-  { id: 14, name: "Brooke Bond Taj Mahal", price: 150, category: "Tea & Coffee", image: "brooke_bond_taj_mahal.png" },
-  { id: 15, name: "Cadbury Dairy Milk", price: 40, category: "Biscuits & Snacks", image: "cadbury_dairy_milk.png" },
-  { id: 16, name: "Cadbury Dairy Milk Silk", price: 85, category: "Biscuits & Snacks", image: "cadbury_dairy_milk_silk.png" },
-  { id: 17, name: "Cadbury Oreo Original", price: 30, category: "Biscuits & Snacks", image: "cadbury_oreo_original.png" },
-  { id: 18, name: "Campa Cola", price: 20, category: "Beverages", image: "campa_cola.png" },
-  { id: 19, name: "Cinthol Lime Soap", price: 40, category: "Personal Care", image: "cinthol_lime_soap.png" },
-  { id: 20, name: "Closeup Everfresh Toothpaste", price: 55, category: "Personal Care", image: "closeup_everfresh_toothpaste.png" },
-  { id: 21, name: "Coca-Cola", price: 40, category: "Beverages", image: "coca_cola.png" },
-  { id: 22, name: "Colgate MaxFresh Toothpaste", price: 65, category: "Personal Care", image: "colgate_maxfresh_toothpaste.png" },
-  { id: 23, name: "Colgate Strong Teeth Toothpaste", price: 60, category: "Personal Care", image: "colgate_strong_teeth_toothpaste.png" },
-  { id: 24, name: "Colgate Zigzag Charcoal Toothbrush", price: 30, category: "Personal Care", image: "colgate_zigzag_charcoal_toothbrush.png" },
-  { id: 25, name: "Colgate Zigzag Deep Clean Toothbrush", price: 30, category: "Personal Care", image: "colgate_zigzag_deep_clean_toothbrush.png" },
-  { id: 26, name: "Dabur Red Toothpaste", price: 55, category: "Personal Care", image: "dabur_red_toothpaste.png" },
-  { id: 27, name: "Dark Fantasy Choco Chunks", price: 40, category: "Biscuits & Snacks", image: "dark_fantasy_desserts_choco_chunks.png" },
-  { id: 28, name: "Dark Fantasy Choco Nut Dipped", price: 50, category: "Biscuits & Snacks", image: "dark_fantasy_desserts_choco_nut_dipped.png" },
-  { id: 29, name: "Dark Fantasy Sandwich Creme Chocolate", price: 35, category: "Biscuits & Snacks", image: "dark_fantasy_sandwich_creme_chocolate.png" },
-  { id: 30, name: "Dark Fantasy Sandwich Creme Vanilla", price: 35, category: "Biscuits & Snacks", image: "dark_fantasy_sandwich_creme_vanilla.png" },
-  { id: 31, name: "Dove Cream Beauty Bar", price: 65, category: "Personal Care", image: "dove_cream_beauty_bar.png" },
-  { id: 32, name: "Dove Intense Repair Shampoo", price: 110, category: "Personal Care", image: "dove_intense_repair_shampoo.png" },
-  { id: 33, name: "Fogg Paradise Body Spray", price: 180, category: "Personal Care", image: "fogg_paradise_body_spray.png" },
-  { id: 34, name: "Garlic", price: 40, category: "Fresh Produce", image: "garlic.png" }
-];
+  function selectCategory(name) {
+    selectedCategory = name;
+    renderCategories();
+    renderProducts();
+    $("productsSection").scrollIntoView({behavior:"smooth"});
+  }
 
-let currentCategory = "All Products";
-let cart = new Map();
-let currentUser = null;
-let selectedLang = "English";
-let generatedOTP = "";
-let userMobile = "";
+  function renderProducts() {
+    const query = $("searchInput").value.trim().toLowerCase();
+    const sort = $("sortSelect").value;
 
-document.getElementById("year").textContent = new Date().getFullYear();
+    let list = products.filter(p =>
+      (selectedCategory === "All Products" || p.category === selectedCategory) &&
+      p.name.toLowerCase().includes(query)
+    );
 
-try {
-  cart = new Map(JSON.parse(localStorage.getItem("jmart_cart") || "[]"));
-  currentUser = localStorage.getItem("jmart_user");
-} catch (e) {}
+    if (sort === "low") list.sort((a,b) => a.price-b.price);
+    if (sort === "high") list.sort((a,b) => b.price-a.price);
+    if (sort === "az") list.sort((a,b) => a.name.localeCompare(b.name));
 
-function saveState() {
-  try {
-    localStorage.setItem("jmart_cart", JSON.stringify([...cart]));
-    if (currentUser) {
-      localStorage.setItem("jmart_user", currentUser);
+    $("sectionTitle").textContent = selectedCategory;
+    $("itemCount").textContent = `(${list.length} items)`;
+
+    if (!list.length) {
+      $("productGrid").innerHTML = '<p class="empty">No products found. Try another search.</p>';
+      return;
+    }
+
+    $("productGrid").innerHTML = list.map(p => {
+      const i = products.indexOf(p);
+      return `<article class="product">
+        <img src="${imageURL(p.file)}" alt="${p.name}" loading="lazy"
+          onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
+        <h3>${p.name}</h3>
+        <p class="price">₹${p.price}</p>
+        <button class="add-button" data-index="${i}">Add to Cart</button>
+      </article>`;
+    }).join("");
+
+    $("productGrid").querySelectorAll(".add-button").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const index = parseInt(e.target.dataset.index);
+        addToCart(index);
+      });
+    });
+  }
+
+  function addToCart(index) {
+    const product = products[index];
+    const found = cart.find(item => item.name === product.name);
+
+    if (found) {
+      found.quantity++;
     } else {
-      localStorage.removeItem("jmart_user");
+      cart.push({...product, quantity:1});
     }
-  } catch (e) {}
-}
 
-function updateUI() {
-  let totalCount = 0;
-  for (let qty of cart.values()) {
-    totalCount += qty;
-  }
-  document.getElementById("cart-count").textContent = totalCount;
-  document.getElementById("login-label").textContent = currentUser ? currentUser.split("_")[1] || "Account" : "Login";
-}
-
-function renderProducts() {
-  const query = document.getElementById("search-input").value.trim().toLowerCase();
-  const sortOption = document.getElementById("sort-select").value;
-
-  let filtered = products.filter(p => {
-    const matchCat = currentCategory === "All Products" || p.category === currentCategory;
-    const matchQuery = p.name.toLowerCase().includes(query);
-    return matchCat && matchQuery;
-  });
-
-  if (sortOption === "low") {
-    filtered.sort((a, b) => a.price - b.price);
-  } else if (sortOption === "high") {
-    filtered.sort((a, b) => b.price - a.price);
-  } else if (sortOption === "name") {
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    updateCart();
+    openCart();
+    saveCartToFirestore();
   }
 
-  const grid = document.getElementById("products-grid");
-  document.getElementById("product-count").textContent = `(${filtered.length} items)`;
-  document.getElementById("section-title").textContent = currentCategory;
+  function updateCart() {
+    const count = cart.reduce((sum,item) => sum+item.quantity, 0);
+    $("cartCount").textContent = count;
 
-  if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty-message">No products found matching your search.</div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(p => {
-    const qty = cart.get(p.id) || 0;
-    const badgeHtml = p.o ? `<span class="badge">${p.o}</span>` : "";
-    return `
-      <div class="product-card">
-        <div class="product-image-wrap">
-          ${badgeHtml}
-          <img class="product-image" src="${GITHUB_BASE}${p.image}" alt="${p.name}" loading="lazy">
-        </div>
-        <h3 class="product-name">${p.name}</h3>
-        <div class="price">₹${p.price}</div>
-        <button class="add-btn ${qty > 0 ? 'in' : ''}" onclick="addToCart(${p.id})">
-          ${qty > 0 ? `In Cart (${qty}) ✓` : 'Add to Cart'}
-        </button>
-      </div>
-    `;
-  }).join("");
-}
-
-function selectCategory(category, btn) {
-  currentCategory = category;
-  document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("search-input").value = "";
-  renderProducts();
-}
-
-function shopNow() {
-  document.getElementById("shop").scrollIntoView({ behavior: "smooth" });
-}
-
-function goHome() {
-  currentCategory = "All Products";
-  document.querySelectorAll(".category-btn").forEach(b => {
-    b.classList.toggle("active", b.dataset.category === "All Products");
-  });
-  document.getElementById("search-input").value = "";
-  renderProducts();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function addToCart(productId) {
-  const currentQty = cart.get(productId) || 0;
-  cart.set(productId, currentQty + 1);
-  saveState();
-  updateUI();
-  renderProducts();
-}
-
-function updateCartQty(productId, change) {
-  const currentQty = cart.get(productId) || 0;
-  const newQty = currentQty + change;
-  if (newQty > 0) {
-    cart.set(productId, newQty);
-  } else {
-    cart.delete(productId);
-  }
-  saveState();
-  updateUI();
-  renderProducts();
-  renderCartDrawer();
-}
-
-function removeFromCart(productId) {
-  cart.delete(productId);
-  saveState();
-  updateUI();
-  renderProducts();
-  renderCartDrawer();
-}
-
-function openCart() {
-  renderCartDrawer();
-  document.getElementById("cart-overlay").classList.add("show");
-  document.getElementById("cart-drawer").classList.add("open");
-}
-
-function closeCart() {
-  document.getElementById("cart-overlay").classList.remove("show");
-  document.getElementById("cart-drawer").classList.remove("open");
-}
-
-function renderCartDrawer() {
-  const container = document.getElementById("cart-items");
-  if (cart.size === 0) {
-    container.innerHTML = `<div class="empty-cart">Your cart is empty.</div>`;
-    document.getElementById("cart-summary").textContent = "Items: 0";
-    document.getElementById("cart-total").textContent = "Total: ₹0";
-    return;
-  }
-
-  let html = "";
-  let totalItems = 0;
-  let totalPrice = 0;
-
-  for (let [productId, qty] of cart.entries()) {
-    const p = products.find(item => item.id === productId);
-    if (!p) continue;
-    totalItems += qty;
-    totalPrice += p.price * qty;
-
-    html += `
-      <div class="cart-item">
-        <img src="${GITHUB_BASE}${p.image}" alt="${p.name}">
-        <div>
-          <h3>${p.name}</h3>
-          <p>₹${p.price} × ${qty} = <b>₹${p.price * qty}</b></p>
-          <div class="quantity">
-            <button onclick="updateCartQty(${p.id}, -1)">-</button>
-            <span>${qty}</span>
-            <button onclick="updateCartQty(${p.id}, 1)">+</button>
+    $("cartItems").innerHTML = cart.length
+      ? cart.map((item,index) => `
+        <div class="cart-row">
+          <img src="${imageURL(item.file)}" alt="${item.name}" onerror="this.style.visibility='hidden'">
+          <div>
+            <div class="cart-product-name">${item.name}</div>
+            <div class="cart-product-price">
+              ₹${item.price} × ${item.quantity} = ₹${item.price*item.quantity}
+            </div>
+            <div class="quantity-controls">
+              <button data-action="decrease" data-index="${index}" aria-label="Decrease quantity">−</button>
+              <span>${item.quantity}</span>
+              <button data-action="increase" data-index="${index}" aria-label="Increase quantity">+</button>
+            </div>
           </div>
-          <button class="remove-btn" onclick="removeFromCart(${p.id})">Remove</button>
+          <button class="remove-item" data-action="remove" data-index="${index}" aria-label="Remove ${item.name}">🗑</button>
         </div>
-      </div>
-    `;
+      `).join("")
+      : `<div class="empty-cart">
+          <div style="font-size:36px">🛒</div>
+          <h3>Your cart is empty</h3>
+          <p>Add products to get started.</p>
+        </div>`;
+
+    const total = cart.reduce((sum,item) => sum + item.price*item.quantity, 0);
+    $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
+
+    $("cartItems").querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const index = parseInt(btn.dataset.index);
+        const action = btn.dataset.action;
+        if (action === "increase") changeQuantity(index, 1);
+        if (action === "decrease") changeQuantity(index, -1);
+        if (action === "remove") removeItem(index);
+      });
+    });
   }
 
-  container.innerHTML = html;
-  document.getElementById("cart-summary").textContent = `Items: ${totalItems}`;
-  document.getElementById("cart-total").textContent = `Total: ₹₹{totalPrice}`;
-}
-
-function checkout() {
-  if (!currentUser) {
-    closeCart();
-    openLogin();
-    return;
+  function changeQuantity(index, change) {
+    cart[index].quantity += change;
+    if (cart[index].quantity <= 0) {
+      cart.splice(index,1);
+    }
+    updateCart();
+    saveCartToFirestore();
   }
 
-  let orderText = "🛒 *New J-Mart Order*:\n";
-  let totalPrice = 0;
+  function removeItem(index) {
+    cart.splice(index,1);
+    updateCart();
+    saveCartToFirestore();
+  }
 
-  for (let [productId, qty] of cart.entries()) {
-    const p = products.find(item => item.id === productId);
-    if (p) {
-      orderText += `- ${p.name} x ${qty} = ₹${p.price * qty}\n`;
-      totalPrice += p.price * qty;
+  window.openCart = function() {
+    $("cartPanel").classList.add("open");
+    $("cartOverlay").classList.add("show");
+  };
+
+  window.closeCart = function() {
+    $("cartPanel").classList.remove("open");
+    $("cartOverlay").classList.remove("show");
+  };
+
+  async function saveCartToFirestore() {
+    if (currentUser) {
+      try {
+        await setDoc(doc(db, "carts", currentUser.uid), { cart }, { merge: true });
+      } catch (err) {
+        console.error("Error saving cart to Firestore:", err);
+      }
     }
   }
 
-  orderText += `\n*Total Amount: ₹${totalPrice}*\nCustomer: ${currentUser}`;
-
-  // ఇక్కడ మీ వాట్సాప్ నంబర్‌ని ఇవ్వండి (ఉదాహరణకు: 919)
-  const whatsappNumber = "916281167223"; 
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderText)}`;
-
-  window.open(whatsappUrl, "_blank");
-  
-  cart.clear();
-  saveState();
-  updateUI();
-  closeCart();
-  renderProducts();
-}
-
-function openLogin() {
-  document.getElementById("login-flow").classList.add("show");
-  if (currentUser) {
-    if (confirm(`You are logged in as ${currentUser}. Do you want to logout?`)) {
-      currentUser = null;
-      saveState();
-      updateUI();
-      closeAll();
-    }
-  } else {
-    resetLoginFlow();
-  }
-}
-
-function closeAll() {
-  document.getElementById("login-flow").classList.remove("show");
-}
-
-function resetLoginFlow() {
-  document.getElementById("step-language").style.display = "block";
-  document.getElementById("step-mobile").style.display = "none";
-  document.getElementById("step-verify").style.display = "none";
-  document.getElementById("status-msg").textContent = "";
-  document.getElementById("mobile-input").value = "";
-  document.getElementById("otp-input").value = "";
-}
-
-function setLanguage(lang) {
-  selectedLang = lang;
-  document.getElementById("step-language").style.display = "none";
-  document.getElementById("step-mobile").style.display = "block";
-  document.getElementById("lang-heading").textContent = `Login / Sign Up (${lang})`;
-}
-
-function sendOTP() {
-  const mobile = document.getElementById("mobile-input").value.trim();
-  const status = document.getElementById("status-msg");
-  const isPhone = /^[6-9]\d{9}$/.test(mobile);
-
-  if (!isPhone) {
-    status.textContent = "దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి.";
-    status.style.color = "red";
-    return;
-  }
-
-  userMobile = mobile;
-  generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
-  
-  document.getElementById("step-mobile").style.display = "none";
-  document.getElementById("step-verify").style.display = "block";
-  document.getElementById("otp-sent-msg").textContent = `OTP మీ నంబర్ +91 ${userMobile} కు పంపబడింది. (డెమో OTP: ${generatedOTP})`;
-  status.textContent = "";
-}
-
-function verifyOTP() {
-  const enteredOTP = document.getElementById("otp-input").value.trim();
-  const status = document.getElementById("status-msg");
-
-  if (enteredOTP === generatedOTP) {
-    currentUser = `User_${userMobile.slice(-4)}`;
-    saveState();
-    updateUI();
-    status.textContent = "లాగిన్ విజయవంతమైంది!";
-    status.style.color = "green";
-    setTimeout(() => {
-      closeAll();
-      renderProducts();
-    }, 1200);
-  } else {
-    status.textContent = "తప్పు OTP. దయచేసి మళ్లీ ప్రయత్నించండి.";
-    status.style.color = "red";
-  }
-}
-
-function backToMobile() {
-  document.getElementById("step-mobile").style.display = "block";
-  document.getElementById("step-verify").style.display = "none";
-  document.getElementById("status-msg").textContent = "";
-}
-
-renderProducts();
-updateUI();
-</script>
-</body>
-</html>
+  async function loadCartFromFirestore(uid) {
+    try {
+      const docSnap = await getDoc(doc(db, "carts", uid));
+      if (docSnap.exists() && docSnap.data().cart) {
