@@ -334,6 +334,53 @@ footer {
   line-height: 1.8;
 }
 
+/* Login Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 360px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  position: relative;
+}
+.modal-card h2 { color: var(--green); margin-bottom: 15px; }
+.modal-card input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.modal-card button {
+  width: 100%;
+  padding: 10px;
+  background: var(--green);
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  font-weight: bold;
+}
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #888;
+}
+
 @media (max-width: 700px) {
   header { padding: 9px 11px; }
   .brand h2 { font-size: 21px; }
@@ -379,7 +426,7 @@ footer {
 
 <div class="search-wrap">
   <input id="searchInput" type="search"
-    placeholder="Search for products..." aria-label="Search products">
+    placeholder="Search for products..." aria-label="Search products" oninput="renderProducts()">
   <span class="search-icon">🔎</span>
 </div>
 
@@ -404,7 +451,7 @@ footer {
       <h2 id="sectionTitle">All Products</h2>
       <span id="itemCount"></span>
     </div>
-    <select id="sortSelect" aria-label="Sort products">
+    <select id="sortSelect" aria-label="Sort products" onchange="renderProducts()">
       <option value="popular">Sort by: Popularity</option>
       <option value="low">Price: Low to High</option>
       <option value="high">Price: High to Low</option>
@@ -435,7 +482,20 @@ footer {
   </div>
 </aside>
 
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeLogin()">×</button>
+    <h2>Login with OTP</h2>
+    <input type="email" id="emailInput" placeholder="Enter your email">
+    <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+  </div>
+</div>
+
 <script>
+// IMPORTANT: Replace this with your Render backend URL
+const BACKEND_URL = "YOUR_RENDER_BACKEND_URL"; 
+
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
   REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
@@ -684,4 +744,70 @@ function closeCart() {
   $("cartOverlay").classList.remove("show");
 }
 
-async function sendOTP(email)
+function checkout() {
+  if (cart.length === 0) {
+    alert("మీ కార్ట్ ఖాళీగా ఉంది!");
+    return;
+  }
+  alert("Order placed successfully!");
+  cart = [];
+  updateCart();
+  closeCart();
+}
+
+function login() {
+  $("loginModal").classList.add("show");
+}
+
+function closeLogin() {
+  $("loginModal").classList.remove("show");
+}
+
+async function sendOTP(email) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("OTP Error:", error);
+    return { success: false, message: "సర్వర్‌కి కనెక్ట్ కాలేకపోయాము" };
+  }
+}
+
+async function handleSendOTP() {
+  const email = $("emailInput").value.trim();
+  const btn = $("otpBtn");
+
+  if (!email) {
+    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Sending...";
+  btn.disabled = true;
+
+  const res = await sendOTP(email);
+
+  if (res.success) {
+    alert(res.message);
+    closeLogin();
+  } else {
+    alert(res.message || "OTP పంపడంలో విఫలమైంది");
+  }
+
+  btn.innerText = "Send OTP";
+  btn.disabled = false;
+}
+
+window.onload = () => {
+  renderCategories();
+  renderProducts();
+  $("year").textContent = new Date().getFullYear();
+};
+</script>
+</body>
+</html>
