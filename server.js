@@ -1,20 +1,18 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 require('dotenv').config();
+const SibApiV3Sdk = require('sib-api-v3-sdk');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Email transporter setup using Nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Brevo API కాన్ఫిగరేషన్
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
+
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 // OTP Sending Route
 app.post('/send-otp', async (req, res) => {
@@ -27,24 +25,23 @@ app.post('/send-otp', async (req, res) => {
   // 6 అంకెల రాండమ్ OTP జనరేట్ చేయడం
   const otp = Math.floor(100000 + Math.random() * 900000);
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'J-Mart OTP Verification',
-    text: `Your OTP for J-Mart login/checkout is: ${otp}`
-  };
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  sendSmtpEmail.subject = "J-Mart OTP Verification";
+  sendSmtpEmail.htmlContent = `<html><body><h3>Your OTP for J-Mart login/checkout is: <b>${otp}</b></h3></body></html>`;
+  sendSmtpEmail.sender = { "name": "J-Mart", "email": process.env.EMAIL_USER };
+  sendSmtpEmail.to = [{ "email": email }];
 
   try {
-    await transporter.sendMail(mailOptions);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log(`OTP sent successfully to ${email}`);
     res.status(200).json({ success: true, message: "OTP విజయవంతంగా పంపబడింది!" });
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email via Brevo:", error);
     res.status(500).json({ success: false, message: "OTP పంపడంలో విఫలమైంది" });
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
