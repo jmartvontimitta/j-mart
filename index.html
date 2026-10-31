@@ -493,7 +493,6 @@ footer {
 </div>
 
 <script>
-// మీ రెండర్ బ్యాకెండ్ లింక్ ఇక్కడ సరిగ్గా సెట్ చేయబడింది
 const BACKEND_URL = "https://j-mart-de1c.onrender.com"; 
 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
@@ -765,7 +764,7 @@ function closeLogin() {
 
 async function sendOTP(email) {
   try {
-    const response = await fetch(`${BACKEND_URL}/send-otp`, {
+    const response = await fetch(`${BACKEND_URL}/api/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
