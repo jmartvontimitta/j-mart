@@ -6,17 +6,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// OTPలను తాత్కాలికంగా దాచుకోవడానికి
 const otps = {};
 
-// Send OTP Route
 app.post('/send-otp', async (req, res) => {
     const { email } = req.body;
     if (!email) {
         return res.status(400).json({ success: false, message: "దయచేసి ఈమెయిల్ ఇవ్వండి" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otps[email] = otp;
 
     try {
@@ -24,11 +22,11 @@ app.post('/send-otp', async (req, res) => {
             method: 'POST',
             headers: {
                 'accept': 'application/json',
-                'api-key': process.env.EMAIL_PASS, // మీ Render Environment Variable లోని EMAIL_PASS
+                'api-key': process.env.EMAIL_PASS,
                 'content-type': 'application/json'
             },
             body: JSON.stringify({
-                sender: { name: "J-Mart", email: process.env.EMAIL_USER }, // మీ Render లోని EMAIL_USER
+                sender: { name: "J-Mart", email: process.env.EMAIL_USER },
                 to: [{ email: email }],
                 subject: "Your J-Mart OTP Code",
                 textContent: `మీ J-Mart లాగిన్ OTP: ${otp}`
@@ -38,7 +36,7 @@ app.post('/send-otp', async (req, res) => {
         const data = await response.json();
 
         if (response.ok) {
-            res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది. ఈమెయిల్ చెక్ చేయండి." });
+            res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది." });
         } else {
             console.error("Brevo Error:", data);
             res.status(500).json({ success: false, message: "OTP పంపడంలో విఫలమైంది." });
