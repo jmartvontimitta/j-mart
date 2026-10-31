@@ -764,7 +764,7 @@ function closeLogin() {
 
 async function sendOTP(email) {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/send-otp`, {
+    const response = await fetch(`${BACKEND_URL}/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
