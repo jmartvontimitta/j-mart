@@ -1,54 +1,41 @@
-const express = require('express');
-const nodemailer = require('nodemailer');
-const cors = require('cors');
-require('dotenv').config();
+import fetch from 'node-fetch'; // ఒకవేళ లేకపోతే: npm install node-fetch
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+// OTP పంపడానికి ఈ ఫంక్షన్ వాడండి
+async function sendOtpEmail(recipientEmail, otpCode) {
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    
+    // Render లో పెట్టుకున్న API కీ మరియు మీ వెరిఫైడ్ ఈమెయిల్ ఇక్కడ వస్తాయి
+    const apiKey = process.env.EMAIL_PASS; // Render లోని EMAIL_PASS వేరియబుల్
+    const senderEmail = process.env.EMAIL_USER; // మీ మెయిల్ ID
 
-// Nodemailer Transporter Setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+    const data = {
+        sender: { email: senderEmail, name: "J-Mart" },
+        to: [{ email: recipientEmail }],
+        subject: "Your J-Mart OTP Code",
+        textContent: `Your OTP code is: ${otpCode}`
+    };
 
-// Store OTPs temporarily (In-memory storage)
-const otpStorage = {};
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
 
-// Send OTP Route
-app.post('/send-otp', async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: "దయచేసి ఈమెయిల్ ఎంటర్ చేయండి" });
-  }
-
-  // Generate 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otpStorage[email] = otp;
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'J-Mart Login OTP',
-    text: `మీ J-Mart లాగిన్ కోసం వన్-టైమ్ పాస్‌వర్డ్ (OTP): ${otp}`
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`OTP sent successfully to ${email}`);
-    res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది! మీ ఈమెయిల్ చెక్ చేయండి." });
-  } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ success: false, message: "OTP పంపడంలో విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి." });
-  }
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+        if (response.ok) {
+            console.log("OTP Email sent successfully via HTTP API!");
+            return true;
+        } else {
+            const errorData = await response.json();
+            console.error("Failed to send email:", errorData);
+            return false;
+        }
+    } catch (error) {
+        console.error("Error sending email:", error);
+        return false;
+    }
+}
