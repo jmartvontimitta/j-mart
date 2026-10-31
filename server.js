@@ -6,15 +6,17 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// స్టోర్ OTPల కోసం సింపుల్ ఆబ్జెక్ట్
 const otps = {};
 
+// Send OTP Route
 app.post('/send-otp', async (req, res) => {
     const { email } = req.body;
     if (!email) {
         return res.status(400).json({ success: false, message: "దయచేసి ఈమెయిల్ ఇవ్వండి" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000);
     otps[email] = otp;
 
     try {
@@ -22,7 +24,7 @@ app.post('/send-otp', async (req, res) => {
             method: 'POST',
             headers: {
                 'accept': 'application/json',
-                'api-key': process.env.EMAIL_PASS,
+                'api-key': process.env.BREVO_API_KEY,
                 'content-type': 'application/json'
             },
             body: JSON.stringify({
@@ -36,7 +38,7 @@ app.post('/send-otp', async (req, res) => {
         const data = await response.json();
 
         if (response.ok) {
-            res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది." });
+            res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది. ఈమెయిల్ చెక్ చేయండి." });
         } else {
             console.error("Brevo Error:", data);
             res.status(500).json({ success: false, message: "OTP పంపడంలో విఫలమైంది." });
