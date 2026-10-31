@@ -806,6 +806,9 @@ window.onload = () => {
   renderCategories();
   renderProducts();
   $("year").textContent = new Date().getFullYear();
+
+  // Render బ్యాకెండ్ సర్వర్ స్లీప్ మోడ్ లోకి వెళ్లకుండా వేక్ అప్ చేయడానికి పింగ్ చేయడం
+  fetch(`${BACKEND_URL}/`).catch(() => {});
 };
 </script>
 </body>
