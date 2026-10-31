@@ -1,54 +1,41 @@
 const express = require('express');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
 require('dotenv').config();
-const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.status(200).send('Server is active');
-});
-
-app.post('/send-otp', async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ success: false, message: "దయచేసి ఈమెయిల్ ఎంటర్ చేయండి" });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+// ట్రాన్సాక్షన్ లేదా ఓటీపీ పంపే రౌట్
+app.post('/api/send-otp', async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "accept": "application/json",
-        "api-key": process.env.EMAIL_PASS,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        sender: { email: process.env.EMAIL_USER },
-        to: [{ email: email }],
-        subject: "Your J-Mart OTP Code",
-        htmlContent: `<p>Your J-Mart OTP: <strong>${otp}</strong></p>`
-      })
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
     });
 
-    if (response.ok) {
-      res.status(200).json({ success: true, message: "OTP విజయవంతంగా పంపబడింది!" });
-    } else {
-      const errorText = await response.text();
-      console.error("Brevo API Error:", errorText);
-      res.status(500).json({ success: false, message: "OTP పంపడంలో విఫలమైంది." });
-    }
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'J Mart - OTP Verification',
+      text: `Your OTP for J Mart login/checkout is: ${otp}`
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ success: true, message: 'OTP sent successfully!' });
   } catch (error) {
-    console.error("Server Error:", error);
-    res.status(500).json({ success: false, message: "సర్వర్ లోపం సంభవించింది." });
+    console.error('Error sending email:', error);
+    res.status(500).json({ success: false, error: 'Failed to send OTP' });
   }
 });
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
