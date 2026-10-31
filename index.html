@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -685,40 +684,40 @@ function closeCart() {
   $("cartOverlay").classList.remove("show");
 }
 
-function login() {
-  alert("Customer login can be connected to a secure login service.");
+async function sendOTP(email) {
+  try {
+    const response = await fetch('http://localhost:5000/send-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email })
+    });
+    const data = await response.json();
+    alert(data.message);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('OTP పంపడంలో విఫలమైంది. బ్యాకెండ్ సర్వర్ రన్ అవుతుందో లేదో చెక్ చేయండి.');
+  }
 }
 
-function checkout() {
+function login() {
+  const userEmail = prompt("దయచేసి మీ ఈమెయిల్ ఐడి ఎంటర్ చేయండి:");
+  if (userEmail) {
+    sendOTP(userEmail);
+  }
+}
+
+async function checkout() {
   if (!cart.length) {
-    alert("Please add products to your cart first.");
+    alert("దయచేసి ముందుగా మీ కార్ట్‌కి ఉత్పత్తులను జోడించండి.");
     return;
   }
 
-  const total = cart.reduce(
-    (sum,item) => sum + item.price*item.quantity, 0
-  );
-
-  const message = [
-    "Hello J-Mart! My order:",
-    ...cart.map(item =>
-      `${item.name} x ${item.quantity} = ₹${item.price*item.quantity}`
-    ),
-    `Total: ₹${total}`
-  ].join("\n");
-
-  // Replace this with your WhatsApp number and country code.
-  const phone = "91XXXXXXXXXX";
-
-  if (phone.includes("X")) {
-    alert("Replace 91XXXXXXXXXX in checkout() with your WhatsApp number.");
-    return;
+  const userEmail = prompt("ఆర్డర్ కన్ఫర్మేషన్ OTP కోసం మీ ఈమెయిల్ ఎంటర్ చేయండి:");
+  if (userEmail) {
+    await sendOTP(userEmail);
   }
-
-  window.open(
-    `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-    "_blank"
-  );
 }
 
 $("searchInput").addEventListener("input", renderProducts);
