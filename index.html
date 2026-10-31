@@ -493,7 +493,7 @@ footer {
 </div>
 
 <script>
-const BACKEND_URL = "https://j-mart-de1c.onrender.com"; 
+const BACKEND_URL = "https://j-mart-mawl.onrender.com";
 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
@@ -807,7 +807,7 @@ window.onload = () => {
   renderProducts();
   $("year").textContent = new Date().getFullYear();
 
-  // Render బ్యాకెండ్ సర్వర్ స్లీప్ మోడ్ లోకి వెళ్లకుండా వేక్ అప్ చేయడానికి పింగ్ చేయడం
+  // Render బ్యాకెండ్ సర్వర్ వేక్ అప్ చేయడానికి పింగ్ చేయడం
   fetch(`${BACKEND_URL}/`).catch(() => {});
 };
 </script>
