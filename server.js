@@ -121,7 +121,7 @@ app.get("/", (req, res) => {
       </script>
     </body>
     </html>
-  `);
+  );
 };
 
 // Generate and send OTP
