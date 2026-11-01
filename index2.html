@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J Mart Login</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f1f3f6;
+    padding: 15px;
+}
+
+.container {
+    display: flex;
+    width: 900px;
+    min-height: 550px;
+    background: white;
+    box-shadow: 0 4px 20px #0002;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.left {
+    width: 40%;
+    background: linear-gradient(140deg,#2874f0,#0754bd);
+    color: white;
+    padding: 45px 35px;
+}
+
+.left h1 {
+    font-size: 40px;
+    margin-bottom: 25px;
+}
+
+.left p {
+    font-size: 21px;
+    line-height: 1.6;
+}
+
+.cart {
+    font-size: 100px;
+    text-align: center;
+    margin-top: 130px;
+}
+
+.right {
+    width: 60%;
+    padding: 65px 55px;
+}
+
+h2 {
+    font-size: 25px;
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    color: #777;
+    margin-bottom: 35px;
+    font-size: 17px;
+}
+
+.input {
+    width: 100%;
+    padding: 17px;
+    border: 2px solid #2874f0;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    margin: 20px 0;
+}
+
+.terms {
+    color: #777;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 20px 0 45px;
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    background: #2874f0;
+    color: white;
+    font-size: 17px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1259c3;
+}
+
+.hidden {
+    display: none;
+}
+
+.otp {
+    width: 100%;
+    padding: 18px;
+    font-size: 22px;
+    letter-spacing: 12px;
+    border: none;
+    border-bottom: 2px solid #2874f0;
+    outline: none;
+    margin: 25px 0;
+}
+
+.message {
+    margin-top: 15px;
+    color: #2874f0;
+    font-size: 14px;
+}
+
+.resend, .edit {
+    color: #2874f0;
+    margin: 20px 0;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.success {
+    text-align: center;
+    padding-top: 50px;
+}
+
+.success .icon {
+    font-size: 80px;
+    margin: 30px;
+}
+
+@media(max-width:650px) {
+    .container {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .left {
+        width: 100%;
+        padding: 25px;
+    }
+
+    .left h1 {
+        font-size: 30px;
+    }
+
+    .left p {
+        font-size: 17px;
+    }
+
+    .cart {
+        display: none;
+    }
+
+    .right {
+        width: 100%;
+        padding: 35px 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LEFT PANEL -->
+
+    <div class="left">
+        <h1>J Mart</h1>
+
+        <p>
+            Login to access your orders,
+            exclusive offers, rewards
+            and recommendations.
+        </p>
+
+        <div class="cart">🛒</div>
+    </div>
+
+
+    <!-- RIGHT PANEL -->
+
+    <div class="right">
+
+        <!-- EMAIL LOGIN -->
+
+        <div id="loginPage">
+
+            <h2>Log in for the best experience</h2>
+
+            <p class="subtitle">
+                Enter your Email ID to continue
+            </p>
+
+            <input
+                type="email"
+                id="email"
+                class="input"
+                placeholder="Email ID"
+                required
+            >
+
+            <p class="terms">
+                By continuing, you agree to J Mart's
+                Terms of Use and Privacy Policy.
+            </p>
+
+            <button onclick="sendOTP()">
+                Continue
+            </button>
+
+            <p class="message" id="loginMessage"></p>
+
+        </div>
+
+
+        <!-- EMAIL OTP VERIFICATION -->
+
+        <div id="otpPage" class="hidden">
+
+            <h2>Verify your Email ID</h2>
+
+            <p class="subtitle" id="otpInfo">
+                Enter the verification code sent to your email.
+            </p>
+
+            <input
+                type="text"
+                id="otpInput"
+                class="otp"
+                placeholder="Enter OTP"
+                maxlength="6"
+                inputmode="numeric"
+            >
+
+            <span class="resend" onclick="resendOTP()">
+                Resend OTP
+            </span>
+
+            <button onclick="verifyOTP()">
+                Verify
+            </button>
+
+            <p class="message" id="otpMessage"></p>
+
+            <span class="edit" onclick="backLogin()">
+                Edit Email ID
+            </span>
+
+        </div>
+
+
+        <!-- SUCCESS PAGE -->
+
+        <div id="successPage" class="hidden">
+
+            <div class="success">
+
+                <h2>Login Successful!</h2>
+
+                <div class="icon">✅</div>
+
+                <p class="subtitle">
+                    Welcome to J Mart!
+                </p>
+
+                <button onclick="logout()">
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let generatedOTP = "123456";
+let userEmail = "";
+
+// EMAIL VALIDATION AND OTP REQUEST
+
+function sendOTP() {
+
+    let email = document.getElementById("email").value.trim();
+
+    let message = document.getElementById("loginMessage");
+
+    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+
+        message.innerText = "Please enter a valid Email ID.";
+        return;
+    }
+
+    userEmail = email;
+
+    // DEMO ONLY - No actual email is sent.
+    generatedOTP = "123456";
+
+    document.getElementById("loginPage")
+        .classList.add("hidden");
+
+    document.getElementById("otpPage")
+        .classList.remove("hidden");
+
+    document.getElementById("otpInfo").innerText =
+        "Enter the verification code sent to " + userEmail;
+
+    document.getElementById("otpMessage").innerText =
+        "Demo OTP: 123456";
+
+    document.getElementById("otpInput").value = "";
+}
+
+
+// RESEND OTP
+
+function resendOTP() {
+
+    generatedOTP = "123456";
+
+    document.getElementById("otpMessage").innerText =
+        "Demo OTP: 123456";
+
+}
+
+
+// VERIFY OTP
+
+function verifyOTP() {
+
+    let enteredOTP =
+        document.getElementById("otpInput").value.trim();
+
+    let message =
+        document.getElementById("otpMessage");
+
+    if (!/^[0-9]{6}$/.test(enteredOTP)) {
+
+        message.innerText = "Enter a valid 6-digit OTP.";
+        return;
+    }
+
+    if (enteredOTP === generatedOTP) {
+
+        document.getElementById("otpPage")
+            .classList.add("hidden");
+
+        document.getElementById("successPage")
+            .classList.remove("hidden");
+
+    } else {
+
+        message.innerText = "Incorrect OTP. Try again.";
+
+    }
+}
+
+
+// EDIT EMAIL
+
+function backLogin() {
+
+    document.getElementById("otpPage")
+        .classList.add("hidden");
+
+    document.getElementById("loginPage")
+        .classList.remove("hidden");
+
+    document.getElementById("otpMessage").innerText = "";
+
+}
+
+
+// LOGOUT
+
+function logout() {
+
+    document.getElementById("successPage")
+        .classList.add("hidden");
+
+    document.getElementById("loginPage")
+        .classList.remove("hidden");
+
+    document.getElementById("email").value = "";
+    document.getElementById("otpInput").value = "";
+
+    document.getElementById("loginMessage").innerText = "";
+
+    userEmail = "";
+    generatedOTP = "123456";
+
+}
+
+</script>
+
+</body>
+</html>
