@@ -480,23 +480,34 @@ footer {
     <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
     
     <div id="checkoutActions">
-      <button id="placeOrderBtn" class="place-order" onclick="showEmailStep()">Place Order</button>
+      <button id="placeOrderBtn" class="place-order" onclick="showLocationStep()">Place Order</button>
       
-      <!-- Checkout Step 1: Email Input -->
+      <!-- Checkout Step 1: Location Permission -->
+      <div id="checkoutLocationStep" style="display: none; margin-top: 10px;">
+        <p style="margin-bottom: 8px;">Please allow location access for delivery:</p>
+        <button class="place-order" onclick="requestLocation()">Allow Location</button>
+      </div>
+
+      <!-- Checkout Step 2: Address Input -->
+      <div id="checkoutAddressStep" style="display: none; margin-top: 10px;">
+        <input type="text" id="addressInput" placeholder="Enter your delivery address" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
+        <button class="place-order" onclick="showEmailStep()">Confirm Address</button>
+      </div>
+
+      <!-- Checkout Step 3: Email Input -->
       <div id="checkoutEmailStep" style="display: none; margin-top: 10px;">
         <input type="email" id="checkoutEmailInput" placeholder="Enter your email" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
         <button id="checkoutOtpBtn" class="place-order" onclick="handleCheckoutSendOTP()">Send OTP</button>
       </div>
 
-      <!-- Checkout Step 2: OTP Input -->
+      <!-- Checkout Step 4: OTP Input -->
       <div id="checkoutOtpStep" style="display: none; margin-top: 10px;">
         <input type="text" id="checkoutOtpInput" placeholder="Enter 6-digit OTP" maxlength="6" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
         <button id="checkoutVerifyBtn" class="place-order" onclick="handleCheckoutVerifyOTP()">Verify OTP</button>
       </div>
 
-      <!-- Checkout Step 3: Address Input -->
-      <div id="checkoutAddressStep" style="display: none; margin-top: 10px;">
-        <input type="text" id="addressInput" placeholder="Enter your delivery address" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
+      <!-- Checkout Step 5: Finalize -->
+      <div id="checkoutFinalStep" style="display: none; margin-top: 10px;">
         <button class="place-order" onclick="finalizeCheckout()">Complete Order</button>
       </div>
     </div>
@@ -707,7 +718,6 @@ function addToCart(index) {
   }
 
   updateCart();
-  // సైడ్ ప్యానెల్ ఆటోమేటిక్‌గా ఓపెన్ అవ్వకుండా కేవలం కౌంట్ అప్‌డేట్ అవుతుంది
 }
 
 function updateCart() {
@@ -772,19 +782,51 @@ function openCart() {
 function closeCart() {
   $("cartPanel").classList.remove("open");
   $("cartOverlay").classList.remove("show");
-  // రీసెట్ చెక్అవుట్ స్టెప్స్
   $("placeOrderBtn").style.display = 'block';
+  $("checkoutLocationStep").style.display = 'none';
+  $("checkoutAddressStep").style.display = 'none';
   $("checkoutEmailStep").style.display = 'none';
   $("checkoutOtpStep").style.display = 'none';
-  $("checkoutAddressStep").style.display = 'none';
+  $("checkoutFinalStep").style.display = 'none';
 }
 
-function showEmailStep() {
+function showLocationStep() {
   if (cart.length === 0) {
     alert("మీ కార్ట్ ఖాళీగా ఉంది!");
     return;
   }
   $("placeOrderBtn").style.display = 'none';
+  $("checkoutLocationStep").style.display = 'block';
+}
+
+function requestLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                alert("Location access granted!");
+                $("checkoutLocationStep").style.display = 'none';
+                $("checkoutAddressStep").style.display = 'block';
+            },
+            (error) => {
+                alert("Location access denied or unavailable. Please enter address manually.");
+                $("checkoutLocationStep").style.display = 'none';
+                $("checkoutAddressStep").style.display = 'block';
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by your browser.");
+        $("checkoutLocationStep").style.display = 'none';
+        $("checkoutAddressStep").style.display = 'block';
+    }
+}
+
+function showEmailStep() {
+  const address = $("addressInput").value.trim();
+  if(!address) {
+      alert("దయచేసి మీ అడ్రస్ ఎంటర్ చేయండి");
+      return;
+  }
+  $("checkoutAddressStep").style.display = 'none';
   $("checkoutEmailStep").style.display = 'block';
 }
 
@@ -832,7 +874,7 @@ async function handleCheckoutVerifyOTP() {
   if (res.success) {
     alert("వెరిఫికేషన్ పూర్తయింది!");
     $("checkoutOtpStep").style.display = 'none';
-    $("checkoutAddressStep").style.display = 'block';
+    $("checkoutFinalStep").style.display = 'block';
   } else {
     alert(res.message || "తప్పు OTP ఎంటర్ చేశారు");
   }
@@ -842,13 +884,6 @@ async function handleCheckoutVerifyOTP() {
 }
 
 function finalizeCheckout() {
-  const address = $("addressInput").value.trim();
-
-  if (!address) {
-    alert("దయచేసి మీ అడ్రస్ ఎంటర్ చేయండి");
-    return;
-  }
-
   alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది!");
   cart = [];
   updateCart();
