@@ -557,29 +557,26 @@ footer {
       <button class="checkout-close-btn" onclick="closeFullCheckout()">×</button>
     </div>
 
-    <!-- Step 1: Address Display / Edit View -->
+    <!-- Step 1: Address Display / Add New Address View -->
     <div id="addressSectionView">
-      <div class="address-box">
+      <div class="address-box" id="addressDisplayBox" style="display: none;">
         <div class="address-top">
-          <h3 id="addrNameDisplay">Deliver to: <b>Jagadeesh</b></h3>
-          <button class="change-addr-btn" onclick="showAddressForm()">Change</button>
+          <h3 id="addrNameDisplay">Deliver to: <b>-</b></h3>
+          <button class="change-addr-btn" onclick="showAddressForm()">Change / Add New</button>
         </div>
-        <div class="address-details" id="addrTextDisplay">
-          1/40, J-mart Vontimitta bus stand, Vontimitta (m), Kadapa (dist), Andhra Pradesh - 516213<br>
-          Phone: 6281167223
-        </div>
+        <div class="address-details" id="addrTextDisplay"></div>
       </div>
 
-      <!-- Editable Address Form (Hidden by default, opens on Change) -->
+      <!-- Editable Address Form (Opens automatically if no address exists) -->
       <div id="addressFormEdit" style="display:none; margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
-        <h3 style="margin-bottom: 10px; color: var(--green);">Add / Edit Delivery Address</h3>
+        <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add New Delivery Address</h3>
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" id="inputName" value="Jagadeesh">
+          <input type="text" id="inputName" placeholder="Enter full name">
         </div>
         <div class="form-group">
           <label>Mobile Number</label>
-          <input type="text" id="inputPhone" value="6281167223">
+          <input type="text" id="inputPhone" placeholder="Enter mobile number">
         </div>
         <div class="form-group">
           <label>Flat, House no., Building, Apartment</label>
@@ -600,10 +597,18 @@ footer {
           </div>
           <div class="form-group">
             <label>Town/City</label>
-            <input type="text" id="inputCity" value="Kadapa">
+            <input type="text" id="inputCity" placeholder="City">
           </div>
         </div>
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
+      </div>
+
+      <!-- Order Items Summary List (Appears below address) -->
+      <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+        <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Items List</h3>
+        <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+          <!-- Items will populate dynamically -->
+        </div>
       </div>
 
       <!-- Email & OTP Verification Section -->
@@ -772,6 +777,8 @@ const categories = [
 
 let selectedCategory = "All Products";
 let cart = [];
+let savedAddress = null; // Stores user saved address
+
 const $ = id => document.getElementById(id);
 
 function renderCategories() {
@@ -908,7 +915,7 @@ function closeCart() {
   $("cartOverlay").classList.remove("show");
 }
 
-// Full Checkout Flow Control
+/* Full Screen Checkout Logic with Dynamic Address Check */
 function openFullCheckout() {
   if (cart.length === 0) {
     alert("మీ కార్ట్ ఖాళీగా ఉంది!");
@@ -916,18 +923,54 @@ function openFullCheckout() {
   }
   closeCart();
   $("fullCheckoutOverlay").classList.add("show");
-  // Reset view
+  
+  // Render Cart Items inside checkout view
+  renderCheckoutItems();
+
+  // Check if address exists
+  if (savedAddress) {
+    $("addressDisplayBox").style.display = "block";
+    $("addressFormEdit").style.display = "none";
+    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b>`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}<br>Phone: ${savedAddress.phone}`;
+  } else {
+    // If no address exists, directly show Add New Address Form
+    $("addressDisplayBox").style.display = "none";
+    $("addressFormEdit").style.display = "block";
+    $("formHeading").innerText = "Add New Delivery Address";
+  }
+
   $("addressSectionView").style.display = "block";
   $("paymentSectionView").style.display = "none";
-  $("addressFormEdit").style.display = "none";
 }
 
 function closeFullCheckout() {
   $("fullCheckoutOverlay").classList.remove("show");
 }
 
+function renderCheckoutItems() {
+  $("checkoutItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px;">
+      <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 45px; height: 45px; object-fit: contain;">
+      <div style="flex: 1; font-size: 13px;">
+        <div style="font-weight: bold;">${item.name}</div>
+        <div style="color: #666;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
 function showAddressForm() {
   $("addressFormEdit").style.display = "block";
+  if (savedAddress) {
+    $("inputName").value = savedAddress.name;
+    $("inputPhone").value = savedAddress.phone;
+    $("inputHouse").value = savedAddress.house;
+    $("inputStreet").value = savedAddress.street;
+    $("inputLandmark").value = savedAddress.landmark;
+    $("inputPincode").value = savedAddress.pincode;
+    $("inputCity").value = savedAddress.city;
+  }
 }
 
 function saveNewAddress() {
@@ -939,15 +982,18 @@ function saveNewAddress() {
   const pincode = $("inputPincode").value.trim();
   const city = $("inputCity").value.trim();
 
-  if (!house || !pincode) {
-    alert("దయచేసి ఇల్లు నంబర్ మరియు పిన్‌కోడ్ ఎంటర్ చేయండి");
+  if (!house || !pincode || !name) {
+    alert("దయచేసి పేరు, ఇల్లు నంబర్ మరియు పిన్‌కోడ్ ఎంటర్ చేయండి");
     return;
   }
 
+  savedAddress = { name, phone, house, street, landmark, pincode, city };
+
+  $("addressDisplayBox").style.display = "block";
+  $("addressFormEdit").style.display = "none";
   $("addrNameDisplay").innerHTML = `Deliver to: <b>${name}</b>`;
   $("addrTextDisplay").innerHTML = `${house}, ${street}, ${landmark}, ${city} - ${pincode}<br>Phone: ${phone}`;
-  $("addressFormEdit").style.display = "none";
-  alert("అడ్రస్ విజయవంతంగా మార్చబడింది!");
+  alert("అడ్రస్ విజయవంతంగా సేవ్ చేయబడింది!");
 }
 
 async function handleCheckoutSendOTP() {
@@ -993,7 +1039,6 @@ async function handleCheckoutVerifyOTP() {
 
   if (res.success) {
     alert("వెరిఫికేషన్ పూర్తయింది!");
-    // Hide address/email part, show Payment Section
     $("addressSectionView").style.display = "none";
     $("paymentSectionView").style.display = "block";
   } else {
@@ -1024,7 +1069,6 @@ function closeLogin() {
   $("otpInput").value = "";
 }
 
-// Backend API Calls
 async function sendOTP(email) {
   try {
     const response = await fetch(`${BACKEND_URL}/send-otp`, {
