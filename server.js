@@ -75,3 +75,18 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+// ఆర్డర్ వివరాలు అడ్మిన్‌కి పంపే ఫంక్షన్
+const sendOrderEmail = async (orderDetails) => {
+    const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSibiEmail.sender = { name: "J-Mart", email: "jmartvontimitta@gmail.com" };
+    sendSibiEmail.to = [{ email: "jmartvontimitta@gmail.com" }]; // మీ అడ్మిన్ ఈమెయిల్ ఇక్కడ ఇవ్వండి
+    sendSibiEmail.subject = "New Order Received - J-Mart";
+    sendSibiEmail.htmlContent = `<h3>కొత్త ఆర్డర్ వచ్చింది!</h3><p>${orderDetails}</p>`;
+
+    try {
+        await apiInstance.sendTransacEmail(sendSibiEmail);
+        console.log("Order email sent successfully to admin");
+    } catch (error) {
+        console.error("Error sending order email:", error);
+    }
+};
