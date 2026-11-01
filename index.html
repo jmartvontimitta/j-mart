@@ -418,7 +418,7 @@ footer {
     <button class="nav-button" onclick="openCart()">
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
-    <button class="nav-button" onclick="login()">
+    <button class="nav-button" id="loginNavBtn" onclick="login()">
       <span>👤</span>Login
     </button>
   </nav>
@@ -482,13 +482,23 @@ footer {
   </div>
 </aside>
 
-<!-- Login Modal -->
+<!-- Login / OTP Modal -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal-card">
     <button class="modal-close" onclick="closeLogin()">×</button>
-    <h2>Login with OTP</h2>
-    <input type="email" id="emailInput" placeholder="Enter your email">
-    <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+    <h2 id="modalTitle">Login with OTP</h2>
+    
+    <!-- Step 1: Send OTP Section -->
+    <div id="emailStep">
+      <input type="email" id="emailInput" placeholder="Enter your email">
+      <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+    </div>
+
+    <!-- Step 2: Verify OTP Section (Hidden initially) -->
+    <div id="otpStep" style="display: none;">
+      <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+      <button id="verifyBtn" onclick="handleVerifyOTP()">Verify OTP</button>
+    </div>
   </div>
 </div>
 
@@ -760,8 +770,15 @@ function login() {
 
 function closeLogin() {
   $("loginModal").classList.remove("show");
+  // Reset modal state
+  $("emailStep").style.display = "block";
+  $("otpStep").style.display = "none";
+  $("modalTitle").innerText = "Login with OTP";
+  $("emailInput").value = "";
+  $("otpInput").value = "";
 }
 
+// Backend API Calls
 async function sendOTP(email) {
   try {
     const response = await fetch(`${BACKEND_URL}/send-otp`, {
@@ -769,10 +786,23 @@ async function sendOTP(email) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
     });
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("OTP Error:", error);
+    return { success: false, message: "సర్వర్‌కి కనెక్ట్ కాలేకపోయాము" };
+  }
+}
+
+async function verifyOTP(email, otp) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Verify Error:", error);
     return { success: false, message: "సర్వర్‌కి కనెక్ట్ కాలేకపోయాము" };
   }
 }
@@ -793,12 +823,42 @@ async function handleSendOTP() {
 
   if (res.success) {
     alert(res.message);
-    closeLogin();
+    // Switch to OTP Input Step
+    $("emailStep").style.display = "none";
+    $("otpStep").style.display = "block";
+    $("modalTitle").innerText = "Enter OTP";
   } else {
     alert(res.message || "OTP పంపడంలో విఫలమైంది");
   }
 
   btn.innerText = "Send OTP";
+  btn.disabled = false;
+}
+
+async function handleVerifyOTP() {
+  const email = $("emailInput").value.trim();
+  const otp = $("otpInput").value.trim();
+  const btn = $("verifyBtn");
+
+  if (!otp) {
+    alert("దయచేసి OTP ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Verifying...";
+  btn.disabled = true;
+
+  const res = await verifyOTP(email, otp);
+
+  if (res.success) {
+    alert("లాగిన్ విజయవంతమైంది!");
+    $("loginNavBtn").innerHTML = `<span>👤</span> ${email.split('@')[0]}`;
+    closeLogin();
+  } else {
+    alert(res.message || "తప్పు OTP ఎంటర్ చేశారు");
+  }
+
+  btn.innerText = "Verify OTP";
   btn.disabled = false;
 }
 
