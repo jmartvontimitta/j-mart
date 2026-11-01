@@ -503,7 +503,7 @@ footer {
 </div>
 
 <script>
-const BACKEND_URL = "https://j-mart-mawl.onrender.com";
+const BACKEND_URL = "https://j-mart-mmlx.onrender.com";
 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
@@ -770,7 +770,7 @@ function login() {
 
 function closeLogin() {
   $("loginModal").classList.remove("show");
-  // Reset modal state
+  
   $("emailStep").style.display = "block";
   $("otpStep").style.display = "none";
   $("modalTitle").innerText = "Login with OTP";
@@ -778,7 +778,6 @@ function closeLogin() {
   $("otpInput").value = "";
 }
 
-// Backend API Calls
 async function sendOTP(email) {
   try {
     const response = await fetch(`${BACKEND_URL}/send-otp`, {
@@ -823,7 +822,7 @@ async function handleSendOTP() {
 
   if (res.success) {
     alert(res.message);
-    // Switch to OTP Input Step
+    
     $("emailStep").style.display = "none";
     $("otpStep").style.display = "block";
     $("modalTitle").innerText = "Enter OTP";
@@ -867,7 +866,6 @@ window.onload = () => {
   renderProducts();
   $("year").textContent = new Date().getFullYear();
 
-  // Render బ్యాకెండ్ సర్వర్ వేక్ అప్ చేయడానికి పింగ్ చేయడం
   fetch(`${BACKEND_URL}/`).catch(() => {});
 };
 </script>
