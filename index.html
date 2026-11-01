@@ -478,7 +478,28 @@ footer {
   <div class="cart-list" id="cartItems"></div>
   <div class="cart-footer">
     <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
-    <button class="place-order" onclick="checkout()">Place Order</button>
+    
+    <div id="checkoutActions">
+      <button id="placeOrderBtn" class="place-order" onclick="showEmailStep()">Place Order</button>
+      
+      <!-- Checkout Step 1: Email Input -->
+      <div id="checkoutEmailStep" style="display: none; margin-top: 10px;">
+        <input type="email" id="checkoutEmailInput" placeholder="Enter your email" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
+        <button id="checkoutOtpBtn" class="place-order" onclick="handleCheckoutSendOTP()">Send OTP</button>
+      </div>
+
+      <!-- Checkout Step 2: OTP Input -->
+      <div id="checkoutOtpStep" style="display: none; margin-top: 10px;">
+        <input type="text" id="checkoutOtpInput" placeholder="Enter 6-digit OTP" maxlength="6" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
+        <button id="checkoutVerifyBtn" class="place-order" onclick="handleCheckoutVerifyOTP()">Verify OTP</button>
+      </div>
+
+      <!-- Checkout Step 3: Address Input -->
+      <div id="checkoutAddressStep" style="display: none; margin-top: 10px;">
+        <input type="text" id="addressInput" placeholder="Enter your delivery address" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px;">
+        <button class="place-order" onclick="finalizeCheckout()">Complete Order</button>
+      </div>
+    </div>
   </div>
 </aside>
 
@@ -686,7 +707,7 @@ function addToCart(index) {
   }
 
   updateCart();
-  openCart();
+  // సైడ్ ప్యానెల్ ఆటోమేటిక్‌గా ఓపెన్ అవ్వకుండా కేవలం కౌంట్ అప్‌డేట్ అవుతుంది
 }
 
 function updateCart() {
@@ -751,14 +772,84 @@ function openCart() {
 function closeCart() {
   $("cartPanel").classList.remove("open");
   $("cartOverlay").classList.remove("show");
+  // రీసెట్ చెక్అవుట్ స్టెప్స్
+  $("placeOrderBtn").style.display = 'block';
+  $("checkoutEmailStep").style.display = 'none';
+  $("checkoutOtpStep").style.display = 'none';
+  $("checkoutAddressStep").style.display = 'none';
 }
 
-function checkout() {
+function showEmailStep() {
   if (cart.length === 0) {
     alert("మీ కార్ట్ ఖాళీగా ఉంది!");
     return;
   }
-  alert("Order placed successfully!");
+  $("placeOrderBtn").style.display = 'none';
+  $("checkoutEmailStep").style.display = 'block';
+}
+
+async function handleCheckoutSendOTP() {
+  const email = $("checkoutEmailInput").value.trim();
+  const btn = $("checkoutOtpBtn");
+
+  if (!email) {
+    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Sending...";
+  btn.disabled = true;
+
+  const res = await sendOTP(email);
+
+  if (res.success) {
+    alert(res.message);
+    $("checkoutEmailStep").style.display = 'none';
+    $("checkoutOtpStep").style.display = 'block';
+  } else {
+    alert(res.message || "OTP పంపడంలో విఫలమైంది");
+  }
+
+  btn.innerText = "Send OTP";
+  btn.disabled = false;
+}
+
+async function handleCheckoutVerifyOTP() {
+  const email = $("checkoutEmailInput").value.trim();
+  const otp = $("checkoutOtpInput").value.trim();
+  const btn = $("checkoutVerifyBtn");
+
+  if (!otp) {
+    alert("దయచేసి OTP ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Verifying...";
+  btn.disabled = true;
+
+  const res = await verifyOTP(email, otp);
+
+  if (res.success) {
+    alert("వెరిఫికేషన్ పూర్తయింది!");
+    $("checkoutOtpStep").style.display = 'none';
+    $("checkoutAddressStep").style.display = 'block';
+  } else {
+    alert(res.message || "తప్పు OTP ఎంటర్ చేశారు");
+  }
+
+  btn.innerText = "Verify OTP";
+  btn.disabled = false;
+}
+
+function finalizeCheckout() {
+  const address = $("addressInput").value.trim();
+
+  if (!address) {
+    alert("దయచేసి మీ అడ్రస్ ఎంటర్ చేయండి");
+    return;
+  }
+
+  alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది!");
   cart = [];
   updateCart();
   closeCart();
