@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
 require('dotenv').config();
 
 // పేమెంట్ రూట్స్ ఫైల్ ని ఇంపోర్ట్ చేయడం
@@ -11,6 +13,12 @@ const app = express();
 // CORS ఎనేబుల్ చేయడం (ఫ్రంటెండ్ కనెక్షన్ కోసం ఇది చాలా ముఖ్యం)
 app.use(cors());
 app.use(express.json());
+
+// Firebase ఇనిషియలైజేషన్
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
 
 // Brevo API సెటప్
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -63,29 +71,42 @@ app.post('/verify-otp', (req, res) => {
     }
 });
 
-// 3. Payment Routes ని ఇక్కడ మౌంట్ చేయడం (/api/payment తో మొదలవుతాయి)
-app.use('/api/payment', paymentRoutes);
+// 3. Save Order & Send Email Route (డేటాబేస్ & ఈమెయిల్ నోటిఫికేషన్)
+app.post('/save-order', async (req, res) => {
+    const orderDetails = req.body;
+    
+    try {
+        // ఫైర్‌బేస్ డేటాబేస్‌లో ఆర్డర్ సేవ్ చేయడం
+        const docRef = await db.collection('orders').add({
+            ...orderDetails,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+        console.log("Order saved with ID:", docRef.id);
 
-// Test Route
-app.get('/', (req, res) => {
-    res.send("J-Mart Backend is running!");
+        // అడ్మిన్‌కి ఈమెయిల్ పంపడం
+        const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+        sendSmtpEmail.subject = "New Order Received - J-Mart";
+        sendSmtpEmail.htmlContent = `
+            <h3>కొత్త ఆర్డర్ వచ్చింది!</h3>
+            <p><strong>కస్టమర్ పేరు:</strong> ${orderDetails.name || 'N/A'}</p>
+            <p><strong>ఫోన్ నెంబర్:</strong> ${orderDetails.phone || 'N/A'}</p>
+            <p><strong>అడ్రస్:</strong> ${orderDetails.address || 'N/A'}</p>
+            <p><strong>మొత్తం:</strong> ₹${orderDetails.totalAmount || 'N/A'}</p>
+        `;
+        sendSmtpEmail.sender = { name: "J-Mart", email: "jmartvontimitta@gmail.com" };
+        sendSmtpEmail.to = [{ email: "jmartvontimitta@gmail.com" }]; // మీ అడ్మిన్ ఈమెయిల్ ఇక్కడ ఇవ్వండి
+
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log("Order email sent successfully");
+
+        res.status(200).json({ success: true, message: "ఆర్డర్ సేవ్ అయింది మరియు మెయిల్ పంపబడింది!" });
+    } catch (error) {
+        console.error("Error saving order or sending email:", error);
+        res.status(500).json({ success: false, message: "ఆర్డర్ సేవ్ చేయడంలో లోపం సంభవించింది" });
+    }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
-const sendOrderEmail = async (orderDetails) => {
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-  sendSmtpEmail.subject = "New Order Received";
-  sendSmtpEmail.htmlContent = `<html><body><h3>Order Details:</h3><p>${orderDetails}</p></body></html>`;
-  sendSmtpEmail.sender = { "name": "J-Mart", "email": process.env.EMAIL_USER };
-  sendSmtpEmail.to = [{ "email": "jmartvontimitta@gmail.com" }];
-
-  try {
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log("Order email sent to admin successfully");
-  } catch (error) {
-    console.error("Error sending order email:", error);
-  }
-};
