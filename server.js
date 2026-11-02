@@ -8,7 +8,7 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps || admin.apps.length === 0) {
     admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+        credential: admin.cert(serviceAccount)
     });
 }
 
