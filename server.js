@@ -4,7 +4,6 @@ const admin = require('firebase-admin');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 require('dotenv').config();
 
-// Firebase అడ్మిన్ ఎస్‌డీకే ను రెండర్ ఎన్విరాన్మెంట్ వేరియబుల్ ద్వారా ఇనిషియలైజ్ చేయడం
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps || admin.apps.length === 0) {
@@ -16,11 +15,9 @@ if (!admin.apps || admin.apps.length === 0) {
 const db = admin.firestore();
 const app = express();
 
-// CORS మరియు JSON మిడిల్‌వేర్
 app.use(cors());
 app.use(express.json());
 
-// Brevo API సెటప్
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY;
@@ -29,7 +26,6 @@ const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 let storedOtp = {};
 
-// 1. Send OTP Route
 app.post('/send-otp', async (req, res) => {
     try {
         const { email } = req.body;
@@ -55,7 +51,6 @@ app.post('/send-otp', async (req, res) => {
     }
 });
 
-// 2. Verify OTP Route
 app.post('/verify-otp', (req, res) => {
     const { email, otp } = req.body;
 
@@ -64,14 +59,13 @@ app.post('/verify-otp', (req, res) => {
     }
 
     if (storedOtp[email] === otp) {
-        delete storedOtp[email]; // విజయవంతంగా వెరిఫై అయ్యాక OTP తొలగించడం
+        delete storedOtp[email];
         res.json({ success: true, message: "OTP సరిపోలింది" });
     } else {
         res.status(400).json({ success: false, message: "తప్పు OTP ఎంటర్ చేశారు" });
     }
 });
 
-// ఆర్డర్ వివరాలు అడ్మిన్‌కి పంపే ఫంక్షన్
 const sendOrderEmail = async (orderDetails) => {
     const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
     sendSibiEmail.sender = { name: "J-Mart", email: "jmartvontimitta@gmail.com" };
@@ -87,11 +81,9 @@ const sendOrderEmail = async (orderDetails) => {
     }
 };
 
-// 3. Payment Routes ని ఇక్కడ మౌంట్ చేయడం
 const paymentRoutes = require('./payment');
 app.use('/api/payment', paymentRoutes);
 
-// Test Route
 app.get('/', (req, res) => {
     res.send("J-Mart Backend is running!");
 });
