@@ -157,7 +157,6 @@ app.post('/verify-otp', async (req, res) => {
 
         storedOtp.delete(email);
 
-        // యూజర్ లాగిన్ వివరాలను Firebase Firestore లో సేవ్ చేయడం
         await db.collection('users').doc(email).set({
             email: email,
             verified: true,
@@ -182,7 +181,7 @@ app.post('/verify-otp', async (req, res) => {
 // ORDER EMAIL NOTIFICATION & SAVE ORDER
 // =====================================
 
-async function sendOrderEmail(orderDetails) {
+async function sendOrderEmail(orderData, orderId) {
     try {
         const sendEmail = new SibApiV3Sdk.SendSmtpEmail();
 
@@ -195,16 +194,18 @@ async function sendOrderEmail(orderDetails) {
             email: SENDER_EMAIL
         }];
 
-        sendEmail.subject = 'New Order Received - J-Mart';
+        sendEmail.subject = `New Order Received (#${orderId}) - J-Mart`;
 
-        const safeDetails = String(orderDetails)
+        const formattedJson = JSON.stringify(orderData, null, 2)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
         sendEmail.htmlContent = `
             <h2>New Order Received!</h2>
-            <p>${safeDetails}</p>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <h3>Order & Customer Details:</h3>
+            <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace;">${formattedJson}</pre>
         `;
 
         await apiInstance.sendTransacEmail(sendEmail);
@@ -215,19 +216,24 @@ async function sendOrderEmail(orderDetails) {
     }
 }
 
-// ఆర్డర్ సేవ్ చేయడానికి మరియు మెయిల్ పంపడానికి రూట్
 app.post('/place-order', async (req, res) => {
     try {
         const orderData = req.body;
+        console.log('Incoming Order Data:', orderData);
 
-        // ఆర్డర్ ని Firebase లోని 'orders' కలెక్షన్‌లో సేవ్ చేయడం
+        if (!orderData || Object.keys(orderData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order data is empty'
+            });
+        }
+
         const orderRef = await db.collection('orders').add({
             ...orderData,
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
-        // మెయిల్ పంపడం
-        await sendOrderEmail(JSON.stringify(orderData, null, 2));
+        await sendOrderEmail(orderData, orderRef.id);
 
         res.json({
             success: true,
@@ -238,7 +244,8 @@ app.post('/place-order', async (req, res) => {
         console.error('Place Order Error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to place order'
+            message: 'Failed to place order',
+            error: error.message
         });
     }
 });
@@ -257,7 +264,6 @@ app.get('/', (req, res) => {
 
 app.get('/firebase-status', async (req, res) => {
     try {
-        // డేటాబేస్ పనిచేస్తుందో లేదో చెక్ చేయడానికి ఒక శాంపిల్ డాక్యుమెంట్ రాయడం
         await db.collection('test_connection').doc('status').set({
             connected: true,
             checkedAt: admin.firestore.FieldValue.serverTimestamp()
