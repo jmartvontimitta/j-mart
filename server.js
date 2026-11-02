@@ -52,6 +52,10 @@
             border-radius: 6px;
             font-size: 14px;
         }
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
         .row {
             display: flex;
             gap: 10px;
@@ -118,39 +122,42 @@
 <div class="container">
     <h2>J-Mart Checkout</h2>
 
-    <!-- STEP 1: EMAIL OTP VERIFICATION (Optional or Required) -->
-    <div class="section-title">1. Email Verification (OTP)</div>
-    <label for="customerEmail">Customer Email *</label>
-    <div class="row">
-        <div style="flex: 2;">
-            <input type="email" id="customerEmail" placeholder="Enter your email" required>
-        </div>
-        <div style="flex: 1;">
-            <button type="button" class="btn-secondary" id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
-        </div>
-    </div>
-
-    <div id="otpSection" style="display: none;">
+    <!-- Moved <form> to wrap Step 1 as well so email validation works properly -->
+    <form id="orderForm" onsubmit="placeOrder(event)">
+        
+        <!-- STEP 1: EMAIL OTP VERIFICATION -->
+        <div class="section-title">1. Email Verification (OTP)</div>
+        <label for="customerEmail">Customer Email *</label>
         <div class="row">
             <div style="flex: 2;">
-                <input type="text" id="otpInput" placeholder="Enter 6-digit OTP">
+                <input type="email" id="customerEmail" placeholder="Enter your email" required>
             </div>
             <div style="flex: 1;">
-                <button type="button" class="btn-secondary" id="verifyOtpBtn" onclick="verifyOtp()">Verify OTP</button>
+                <button type="button" class="btn-secondary" id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
             </div>
         </div>
-    </div>
-    <div id="otpStatus" class="status-msg"></div>
 
-    <!-- STEP 2: CUSTOMER & ADDRESS DETAILS -->
-    <form id="orderForm" onsubmit="placeOrder(event)">
+        <div id="otpSection" style="display: none;">
+            <div class="row">
+                <div style="flex: 2;">
+                    <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+                </div>
+                <div style="flex: 1;">
+                    <button type="button" class="btn-secondary" id="verifyOtpBtn" onclick="verifyOtp()">Verify OTP</button>
+                </div>
+            </div>
+        </div>
+        <div id="otpStatus" class="status-msg"></div>
+
+        <!-- STEP 2: CUSTOMER & ADDRESS DETAILS -->
         <div class="section-title">2. Customer & Delivery Address</div>
         
         <label for="fullName">Full Name *</label>
         <input type="text" id="fullName" placeholder="Enter customer name" required>
 
         <label for="phone">Phone Number *</label>
-        <input type="tel" id="phone" placeholder="Enter 10-digit mobile number" required>
+        <!-- Added 10-digit validation pattern -->
+        <input type="tel" id="phone" placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" maxlength="10" required>
 
         <label for="streetAddress">House No / Street / Landmark *</label>
         <textarea id="streetAddress" rows="2" placeholder="Complete delivery address" required></textarea>
@@ -162,7 +169,8 @@
             </div>
             <div>
                 <label for="pincode">Pincode *</label>
-                <input type="text" id="pincode" placeholder="e.g., 516213" required>
+                <!-- Added 6-digit pincode validation pattern -->
+                <input type="text" id="pincode" placeholder="e.g., 516213" pattern="[0-9]{6}" title="Please enter a valid 6-digit pincode" maxlength="6" required>
             </div>
         </div>
 
@@ -179,7 +187,7 @@
                 </div>
                 <div>
                     <label for="totalAmount">Total Price (₹) *</label>
-                    <input type="number" id="totalAmount" min="1" placeholder="e.g., 450" required>
+                    <input type="number" id="totalAmount" min="1" step="0.01" placeholder="e.g., 450" required>
                 </div>
             </div>
 
@@ -212,11 +220,13 @@
 
     // 1. SEND OTP FUNCTION
     async function sendOtp() {
-        const email = document.getElementById('customerEmail').value.trim();
+        const emailInput = document.getElementById('customerEmail');
+        const email = emailInput.value.trim();
         const btn = document.getElementById('sendOtpBtn');
 
-        if (!email) {
-            showMessage('otpStatus', 'Please enter your email first.', false);
+        // Check if email is empty or invalid format
+        if (!email || !emailInput.checkValidity()) {
+            showMessage('otpStatus', 'Please enter a valid email address first.', false);
             return;
         }
 
@@ -232,17 +242,22 @@
 
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 document.getElementById('otpSection').style.display = 'block';
                 showMessage('otpStatus', 'OTP sent to your email!', true);
+                btn.textContent = 'Resend OTP';
             } else {
                 showMessage('otpStatus', data.message || 'Failed to send OTP', false);
+                btn.textContent = 'Send OTP';
             }
         } catch (error) {
             showMessage('otpStatus', 'Server connection error while sending OTP.', false);
-        } finally {
-            btn.disabled = false;
             btn.textContent = 'Send OTP';
+        } finally {
+            // Re-enable button only if email isn't verified yet
+            if (!isEmailVerified) {
+                btn.disabled = false;
+            }
         }
     }
 
@@ -250,15 +265,16 @@
     async function verifyOtp() {
         const email = document.getElementById('customerEmail').value.trim();
         const otp = document.getElementById('otpInput').value.trim();
-        const btn = document.getElementById('verifyOtpBtn');
+        const verifyBtn = document.getElementById('verifyOtpBtn');
+        const sendBtn = document.getElementById('sendOtpBtn');
 
-        if (!otp) {
-            showMessage('otpStatus', 'Please enter the OTP.', false);
+        if (!otp || otp.length < 4) {
+            showMessage('otpStatus', 'Please enter a valid OTP.', false);
             return;
         }
 
-        btn.disabled = true;
-        btn.textContent = 'Verifying...';
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verifying...';
 
         try {
             const response = await fetch(`${BACKEND_URL}/verify-otp`, {
@@ -269,31 +285,41 @@
 
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 isEmailVerified = true;
                 showMessage('otpStatus', 'Email verified & saved to Firebase users!', true);
                 document.getElementById('otpSection').style.display = 'none';
                 document.getElementById('customerEmail').readOnly = true;
+                
+                // Lock the Send OTP button after successful verification
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Verified ✓';
             } else {
                 showMessage('otpStatus', data.message || 'Invalid OTP', false);
             }
         } catch (error) {
             showMessage('otpStatus', 'Error verifying OTP.', false);
         } finally {
-            btn.disabled = false;
-            btn.textContent = 'Verify OTP';
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = 'Verify OTP';
         }
     }
 
-    // 3. PLACE ORDER FUNCTION (Saves to Firebase 'orders' & Sends Email)
+    // 3. PLACE ORDER FUNCTION
     async function placeOrder(event) {
         event.preventDefault();
+
+        // Check if Email OTP is verified before allowing order
+        if (!isEmailVerified) {
+            showMessage('orderStatus', 'Please verify your email with OTP before placing the order.', false);
+            document.getElementById('customerEmail').focus();
+            return;
+        }
 
         const btn = document.getElementById('placeOrderBtn');
         btn.disabled = true;
         btn.textContent = 'Placing Order...';
 
-        // కస్టమర్ వివరాలు, అడ్రస్ మరియు ఆర్డర్ డేటాను ఒక ఆబ్జెక్ట్‌గా తయారు చేయడం
         const orderPayload = {
             customerDetails: {
                 name: document.getElementById('fullName').value.trim(),
@@ -316,13 +342,12 @@
         };
 
         try {
-            // మీ వెబ్‌సైట్ ఇప్పటికే వేరే పేజీలో కార్ట్ (localStorage) వాడుతుంటే ఆ డేటాను కూడా జతచేస్తుంది
             const existingCart = localStorage.getItem('cart') || localStorage.getItem('jmart_cart');
             if (existingCart) {
                 orderPayload.cartItemsFromStorage = JSON.parse(existingCart);
             }
         } catch (e) {
-            console.log('No localStorage cart found');
+            console.log('No valid localStorage cart found');
         }
 
         try {
@@ -336,9 +361,20 @@
 
             const result = await response.json();
 
-            if (result.success) {
+            if (response.ok && result.success) {
                 showMessage('orderStatus', `Order Placed Successfully! Order ID: ${result.orderId}`, true);
+                
+                // Reset form and verification states cleanly
                 document.getElementById('orderForm').reset();
+                document.getElementById('customerEmail').readOnly = false;
+                document.getElementById('sendOtpBtn').disabled = false;
+                document.getElementById('sendOtpBtn').textContent = 'Send OTP';
+                document.getElementById('otpStatus').style.display = 'none';
+                isEmailVerified = false;
+                
+                // Optional: Clear cart storage after successful order
+                localStorage.removeItem('cart');
+                localStorage.removeItem('jmart_cart');
             } else {
                 showMessage('orderStatus', result.message || 'Failed to place order.', false);
             }
