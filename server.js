@@ -1,8 +1,4 @@
 
-// ==========================================
-// J-MART COMPLETE BACKEND SERVER
-// ==========================================
-
 require('dotenv').config();
 
 const express = require('express');
@@ -14,16 +10,16 @@ const crypto = require('crypto');
 
 const app = express();
 
-// ==========================================
+// =====================================
 // MIDDLEWARE
-// ==========================================
+// =====================================
 
 app.use(cors());
 app.use(express.json());
 
-// ==========================================
+// =====================================
 // FIREBASE CONFIGURATION
-// ==========================================
+// =====================================
 
 if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT is missing');
@@ -43,9 +39,9 @@ const db = getFirestore(firebaseApp);
 
 console.log('Firebase connected successfully');
 
-// ==========================================
+// =====================================
 // BREVO EMAIL CONFIGURATION
-// ==========================================
+// =====================================
 
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
@@ -58,15 +54,15 @@ const apiInstance =
 
 const SENDER_EMAIL = 'jmartvontimitta@gmail.com';
 
-// ==========================================
+// =====================================
 // OTP STORAGE
-// ==========================================
+// =====================================
 
 const storedOtp = new Map();
 
-// ==========================================
+// =====================================
 // SEND EMAIL OTP
-// ==========================================
+// =====================================
 
 app.post('/send-otp', async (req, res) => {
     try {
@@ -97,20 +93,15 @@ app.post('/send-otp', async (req, res) => {
             email: SENDER_EMAIL
         };
 
-        sendEmail.to = [
-            { email: email }
-        ];
+        sendEmail.to = [{ email }];
 
         sendEmail.subject = 'J-Mart Email Verification';
 
         sendEmail.htmlContent = `
-            <div style="font-family:Arial;padding:20px">
-                <h2>Welcome to J-Mart!</h2>
-                <p>Your email verification OTP is:</p>
-                <h1 style="color:green">${otp}</h1>
-                <p>This OTP expires in 5 minutes.</p>
-                <p>Please do not share your OTP.</p>
-            </div>
+            <h2>Welcome to J-Mart!</h2>
+            <p>Your verification OTP is:</p>
+            <h1>${otp}</h1>
+            <p>This OTP expires in 5 minutes.</p>
         `;
 
         await apiInstance.sendTransacEmail(sendEmail);
@@ -130,9 +121,9 @@ app.post('/send-otp', async (req, res) => {
     }
 });
 
-// ==========================================
+// =====================================
 // VERIFY EMAIL OTP
-// ==========================================
+// =====================================
 
 app.post('/verify-otp', (req, res) => {
     const email = req.body.email?.trim().toLowerCase();
@@ -178,9 +169,9 @@ app.post('/verify-otp', (req, res) => {
     });
 });
 
-// ==========================================
+// =====================================
 // ORDER EMAIL NOTIFICATION
-// ==========================================
+// =====================================
 
 async function sendOrderEmail(orderDetails) {
     try {
@@ -191,9 +182,9 @@ async function sendOrderEmail(orderDetails) {
             email: SENDER_EMAIL
         };
 
-        sendEmail.to = [
-            { email: SENDER_EMAIL }
-        ];
+        sendEmail.to = [{
+            email: SENDER_EMAIL
+        }];
 
         sendEmail.subject = 'New Order Received - J-Mart';
 
@@ -209,32 +200,24 @@ async function sendOrderEmail(orderDetails) {
 
         await apiInstance.sendTransacEmail(sendEmail);
 
-        console.log('Order notification email sent');
+        console.log('Order email sent successfully');
 
     } catch (error) {
         console.error('Order Email Error:', error);
     }
 }
 
-// ==========================================
-// PAYMENT ROUTES
-// ==========================================
-
-const paymentRoutes = require('./payment');
-
-app.use('/api/payment', paymentRoutes);
-
-// ==========================================
+// =====================================
 // HOME ROUTE
-// ==========================================
+// =====================================
 
 app.get('/', (req, res) => {
     res.send('Welcome to J-Mart Backend!');
 });
 
-// ==========================================
-// FIREBASE CONNECTION TEST
-// ==========================================
+// =====================================
+// FIREBASE STATUS
+// =====================================
 
 app.get('/firebase-status', async (req, res) => {
     try {
@@ -255,18 +238,18 @@ app.get('/firebase-status', async (req, res) => {
     }
 });
 
-// ==========================================
-// SERVER START
-// ==========================================
+// =====================================
+// START SERVER
+// =====================================
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log('================================');
     console.log('J-MART SERVER STARTED');
-    console.log(`Port: ${PORT}`);
+    console.log('Port:', PORT);
     console.log('Firebase: Connected');
     console.log('Email OTP: Ready');
-    console.log('Payment Routes: Loaded');
+    console.log('Payment routes: Removed');
     console.log('================================');
 });
