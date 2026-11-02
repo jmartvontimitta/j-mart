@@ -16,6 +16,6 @@ const firebaseApp = admin.apps.length
         credential: admin.credential.cert(serviceAccount)
     });
 
-const db = getFirestore(firebaseApp);
+const db = getDataBase(firebaseApp);
 
 console.log('Firebase connected successfully');
