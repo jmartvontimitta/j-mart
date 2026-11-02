@@ -7,7 +7,7 @@ require('dotenv').config();
 // Firebase అడ్మిన్ ఎస్‌డీకే ను రెండర్ ఎన్విరాన్మెంట్ వేరియబుల్ ద్వారా ఇనిషియలైజ్ చేయడం
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-if (!admin.apps.length) {
+if (!admin.apps || admin.apps.length === 0) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
     });
