@@ -1,24 +1,24 @@
 const express = require('express');
 const cors = require('cors');
-const SibApiV3Sdk = require('sib-api-v3-sdk');
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json');
+const SibApiV3Sdk = require('sib-api-v3-sdk');
 require('dotenv').config();
 
-// పేమెంట్ రూట్స్ ఫైల్ ని ఇంపోర్ట్ చేయడం
-const paymentRoutes = require('./payment');
+// Firebase అడ్మిన్ ఎస్‌డీకే ను రెండర్ ఎన్విరాన్మెంట్ వేరియబుల్ ద్వారా ఇనిషియలైజ్ చేయడం
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+}
+
+const db = admin.firestore();
 const app = express();
 
-// CORS ఎనేబుల్ చేయడం (ఫ్రంటెండ్ కనెక్షన్ కోసం ఇది చాలా ముఖ్యం)
+// CORS మరియు JSON మిడిల్‌వేర్
 app.use(cors());
 app.use(express.json());
-
-// Firebase ఇనిషియలైజేషన్
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
 
 // Brevo API సెటప్
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -69,4 +69,34 @@ app.post('/verify-otp', (req, res) => {
     } else {
         res.status(400).json({ success: false, message: "తప్పు OTP ఎంటర్ చేశారు" });
     }
+});
+
+// ఆర్డర్ వివరాలు అడ్మిన్‌కి పంపే ఫంక్షన్
+const sendOrderEmail = async (orderDetails) => {
+    const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSibiEmail.sender = { name: "J-Mart", email: "jmartvontimitta@gmail.com" };
+    sendSibiEmail.to = [{ email: "jmartvontimitta@gmail.com" }];
+    sendSibiEmail.subject = "New Order Received - J-Mart";
+    sendSibiEmail.htmlContent = `<h3>కొత్త ఆర్డర్ వచ్చింది!</h3><p>${orderDetails}</p>`;
+
+    try {
+        await apiInstance.sendTransacEmail(sendSibiEmail);
+        console.log("Order email sent successfully to admin");
+    } catch (error) {
+        console.error("Error sending order email:", error);
+    }
+};
+
+// 3. Payment Routes ని ఇక్కడ మౌంట్ చేయడం
+const paymentRoutes = require('./payment');
+app.use('/api/payment', paymentRoutes);
+
+// Test Route
+app.get('/', (req, res) => {
+    res.send("J-Mart Backend is running!");
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
