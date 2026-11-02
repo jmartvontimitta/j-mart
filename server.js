@@ -1,301 +1,356 @@
-require('dotenv').config();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J-Mart - Checkout & Place Order</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: #ffffff;
+            max-width: 550px;
+            width: 100%;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 12px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #16a085;
+            margin: 20px 0 10px 0;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #444;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        .row > div {
+            flex: 1;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #16a085;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #138a72;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: #2980b9;
+            margin-bottom: 12px;
+        }
+        .btn-secondary:hover {
+            background-color: #1f6391;
+        }
+        .status-msg {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .item-box {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
 
-const express = require('express');
-const cors = require('cors');
-const admin = require('firebase-admin');
-const { getFirestore } = require('firebase-admin/firestore');
-const SibApiV3Sdk = require('sib-api-v3-sdk');
-const crypto = require('crypto');
+<div class="container">
+    <h2>J-Mart Checkout</h2>
 
-const app = express();
+    <!-- STEP 1: EMAIL OTP VERIFICATION (Optional or Required) -->
+    <div class="section-title">1. Email Verification (OTP)</div>
+    <label for="customerEmail">Customer Email *</label>
+    <div class="row">
+        <div style="flex: 2;">
+            <input type="email" id="customerEmail" placeholder="Enter your email" required>
+        </div>
+        <div style="flex: 1;">
+            <button type="button" class="btn-secondary" id="sendOtpBtn" onclick="sendOtp()">Send OTP</button>
+        </div>
+    </div>
 
-// =====================================
-// MIDDLEWARE
-// =====================================
+    <div id="otpSection" style="display: none;">
+        <div class="row">
+            <div style="flex: 2;">
+                <input type="text" id="otpInput" placeholder="Enter 6-digit OTP">
+            </div>
+            <div style="flex: 1;">
+                <button type="button" class="btn-secondary" id="verifyOtpBtn" onclick="verifyOtp()">Verify OTP</button>
+            </div>
+        </div>
+    </div>
+    <div id="otpStatus" class="status-msg"></div>
 
-app.use(cors());
-app.use(express.json());
+    <!-- STEP 2: CUSTOMER & ADDRESS DETAILS -->
+    <form id="orderForm" onsubmit="placeOrder(event)">
+        <div class="section-title">2. Customer & Delivery Address</div>
+        
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" placeholder="Enter customer name" required>
 
-// =====================================
-// FIREBASE CONFIGURATION
-// =====================================
+        <label for="phone">Phone Number *</label>
+        <input type="tel" id="phone" placeholder="Enter 10-digit mobile number" required>
 
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT is missing');
-}
+        <label for="streetAddress">House No / Street / Landmark *</label>
+        <textarea id="streetAddress" rows="2" placeholder="Complete delivery address" required></textarea>
 
-const serviceAccount = JSON.parse(
-    process.env.FIREBASE_SERVICE_ACCOUNT
-);
+        <div class="row">
+            <div>
+                <label for="city">Town / City *</label>
+                <input type="text" id="city" placeholder="e.g., Vontimitta / Kadapa" required>
+            </div>
+            <div>
+                <label for="pincode">Pincode *</label>
+                <input type="text" id="pincode" placeholder="e.g., 516213" required>
+            </div>
+        </div>
 
-const firebaseApp = admin.apps.length
-    ? admin.app()
-    : admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
+        <!-- STEP 3: ORDER ITEMS DETAILS -->
+        <div class="section-title">3. Order Details (ఏం ఆర్డర్ చేశారు & ఎన్ని)</div>
+        <div class="item-box">
+            <label for="itemsList">Items Ordered (వస్తువుల పేర్లు) *</label>
+            <textarea id="itemsList" rows="2" placeholder="e.g., Rice 5kg, Oil 2 Liters, Sugar 1kg" required></textarea>
 
-const db = getFirestore(firebaseApp);
+            <div class="row">
+                <div>
+                    <label for="totalQuantity">Total Quantity (ఎన్ని వస్తువులు) *</label>
+                    <input type="number" id="totalQuantity" min="1" value="1" required>
+                </div>
+                <div>
+                    <label for="totalAmount">Total Price (₹) *</label>
+                    <input type="number" id="totalAmount" min="1" placeholder="e.g., 450" required>
+                </div>
+            </div>
 
-console.log('Firebase connected successfully');
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod">
+                <option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+                <option value="Online Payment / UPI">Online Payment / UPI</option>
+            </select>
+        </div>
 
-// =====================================
-// BREVO EMAIL CONFIGURATION
-// =====================================
+        <button type="submit" id="placeOrderBtn">Place Order Now</button>
+        <div id="orderStatus" class="status-msg"></div>
+    </form>
+</div>
 
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+<script>
+    // ====================================================
+    // మీ Render బ్యాకెండ్ URL ఇక్కడ ఇవ్వండి
+    // ====================================================
+    const BACKEND_URL = 'https://j-mart-de1c.onrender.com';
 
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-const SENDER_EMAIL = 'jmartvontimitta@gmail.com';
+    let isEmailVerified = false;
 
-// =====================================
-// OTP STORAGE
-// =====================================
+    function showMessage(elementId, text, isSuccess) {
+        const el = document.getElementById(elementId);
+        el.style.display = 'block';
+        el.textContent = text;
+        el.className = 'status-msg ' + (isSuccess ? 'success' : 'error');
+    }
 
-const storedOtp = new Map();
-
-// =====================================
-// SEND EMAIL OTP
-// =====================================
-
-app.post('/send-otp', async (req, res) => {
-    try {
-        const email = req.body.email?.trim().toLowerCase();
+    // 1. SEND OTP FUNCTION
+    async function sendOtp() {
+        const email = document.getElementById('customerEmail').value.trim();
+        const btn = document.getElementById('sendOtpBtn');
 
         if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please enter your email'
+            showMessage('otpStatus', 'Please enter your email first.', false);
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/send-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
             });
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('otpSection').style.display = 'block';
+                showMessage('otpStatus', 'OTP sent to your email!', true);
+            } else {
+                showMessage('otpStatus', data.message || 'Failed to send OTP', false);
+            }
+        } catch (error) {
+            showMessage('otpStatus', 'Server connection error while sending OTP.', false);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Send OTP';
+        }
+    }
+
+    // 2. VERIFY OTP FUNCTION
+    async function verifyOtp() {
+        const email = document.getElementById('customerEmail').value.trim();
+        const otp = document.getElementById('otpInput').value.trim();
+        const btn = document.getElementById('verifyOtpBtn');
+
+        if (!otp) {
+            showMessage('otpStatus', 'Please enter the OTP.', false);
+            return;
         }
 
-        if (!process.env.BREVO_API_KEY) {
-            throw new Error('BREVO_API_KEY is missing');
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                isEmailVerified = true;
+                showMessage('otpStatus', 'Email verified & saved to Firebase users!', true);
+                document.getElementById('otpSection').style.display = 'none';
+                document.getElementById('customerEmail').readOnly = true;
+            } else {
+                showMessage('otpStatus', data.message || 'Invalid OTP', false);
+            }
+        } catch (error) {
+            showMessage('otpStatus', 'Error verifying OTP.', false);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Verify OTP';
         }
+    }
 
-        const otp = crypto.randomInt(100000, 1000000).toString();
+    // 3. PLACE ORDER FUNCTION (Saves to Firebase 'orders' & Sends Email)
+    async function placeOrder(event) {
+        event.preventDefault();
 
-        storedOtp.set(email, {
-            code: otp,
-            expiresAt: Date.now() + 5 * 60 * 1000
-        });
+        const btn = document.getElementById('placeOrderBtn');
+        btn.disabled = true;
+        btn.textContent = 'Placing Order...';
 
-        const sendEmail = new SibApiV3Sdk.SendSmtpEmail();
-
-        sendEmail.sender = {
-            name: 'J-Mart',
-            email: SENDER_EMAIL
+        // కస్టమర్ వివరాలు, అడ్రస్ మరియు ఆర్డర్ డేటాను ఒక ఆబ్జెక్ట్‌గా తయారు చేయడం
+        const orderPayload = {
+            customerDetails: {
+                name: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('customerEmail').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                emailVerified: isEmailVerified
+            },
+            deliveryAddress: {
+                street: document.getElementById('streetAddress').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                pincode: document.getElementById('pincode').value.trim()
+            },
+            orderSummary: {
+                itemsOrdered: document.getElementById('itemsList').value.trim(),
+                totalQuantity: Number(document.getElementById('totalQuantity').value),
+                totalAmount: Number(document.getElementById('totalAmount').value),
+                paymentMethod: document.getElementById('paymentMethod').value
+            },
+            orderStatus: 'Confirmed'
         };
 
-        sendEmail.to = [{ email }];
-        sendEmail.subject = 'J-Mart Email Verification';
-        sendEmail.htmlContent = `
-            <h2>Welcome to J-Mart!</h2>
-            <p>Your verification OTP is:</p>
-            <h1>${otp}</h1>
-            <p>This OTP expires in 5 minutes.</p>
-        `;
-
-        await apiInstance.sendTransacEmail(sendEmail);
-
-        res.json({
-            success: true,
-            message: 'OTP sent successfully!'
-        });
-
-    } catch (error) {
-        console.error('Send OTP Error:', error);
-
-        res.status(500).json({
-            success: false,
-            message: 'Unable to send OTP'
-        });
-    }
-});
-
-// =====================================
-// VERIFY EMAIL OTP & SAVE USER TO FIREBASE
-// =====================================
-
-app.post('/verify-otp', async (req, res) => {
-    try {
-        const email = req.body.email?.trim().toLowerCase();
-        const otp = String(req.body.otp || '').trim();
-
-        if (!email || !otp) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email or OTP is missing'
-            });
+        try {
+            // మీ వెబ్‌సైట్ ఇప్పటికే వేరే పేజీలో కార్ట్ (localStorage) వాడుతుంటే ఆ డేటాను కూడా జతచేస్తుంది
+            const existingCart = localStorage.getItem('cart') || localStorage.getItem('jmart_cart');
+            if (existingCart) {
+                orderPayload.cartItemsFromStorage = JSON.parse(existingCart);
+            }
+        } catch (e) {
+            console.log('No localStorage cart found');
         }
 
-        const savedOtp = storedOtp.get(email);
-
-        if (!savedOtp) {
-            return res.status(400).json({
-                success: false,
-                message: 'OTP not found or already used'
+        try {
+            const response = await fetch(`${BACKEND_URL}/place-order`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderPayload)
             });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage('orderStatus', `Order Placed Successfully! Order ID: ${result.orderId}`, true);
+                document.getElementById('orderForm').reset();
+            } else {
+                showMessage('orderStatus', result.message || 'Failed to place order.', false);
+            }
+        } catch (error) {
+            console.error('Order Error:', error);
+            showMessage('orderStatus', 'Could not connect to server. Please check your Backend URL.', false);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Place Order Now';
         }
-
-        if (Date.now() > savedOtp.expiresAt) {
-            storedOtp.delete(email);
-
-            return res.status(400).json({
-                success: false,
-                message: 'OTP expired. Please request a new OTP.'
-            });
-        }
-
-        if (savedOtp.code !== otp) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid OTP'
-            });
-        }
-
-        storedOtp.delete(email);
-
-        await db.collection('users').doc(email).set({
-            email: email,
-            verified: true,
-            lastLogin: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        res.json({
-            success: true,
-            message: 'Email verified and saved to database successfully!'
-        });
-
-    } catch (error) {
-        console.error('Verify OTP / Firebase Save Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error verifying OTP or saving user'
-        });
     }
-});
+</script>
 
-// =====================================
-// ORDER EMAIL NOTIFICATION & SAVE ORDER
-// =====================================
-
-async function sendOrderEmail(orderData, orderId) {
-    try {
-        const sendEmail = new SibApiV3Sdk.SendSmtpEmail();
-
-        sendEmail.sender = {
-            name: 'J-Mart',
-            email: SENDER_EMAIL
-        };
-
-        sendEmail.to = [{
-            email: SENDER_EMAIL
-        }];
-
-        sendEmail.subject = `New Order Received (#${orderId}) - J-Mart`;
-
-        const formattedJson = JSON.stringify(orderData, null, 2)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-
-        sendEmail.htmlContent = `
-            <h2>New Order Received!</h2>
-            <p><strong>Order ID:</strong> ${orderId}</p>
-            <h3>Order & Customer Details:</h3>
-            <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-family: monospace;">${formattedJson}</pre>
-        `;
-
-        await apiInstance.sendTransacEmail(sendEmail);
-        console.log('Order email sent successfully');
-
-    } catch (error) {
-        console.error('Order Email Error:', error);
-    }
-}
-
-app.post('/place-order', async (req, res) => {
-    try {
-        const orderData = req.body;
-        console.log('Incoming Order Data:', orderData);
-
-        if (!orderData || Object.keys(orderData).length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Order data is empty'
-            });
-        }
-
-        const orderRef = await db.collection('orders').add({
-            ...orderData,
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-
-        await sendOrderEmail(orderData, orderRef.id);
-
-        res.json({
-            success: true,
-            message: 'Order placed successfully!',
-            orderId: orderRef.id
-        });
-    } catch (error) {
-        console.error('Place Order Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to place order',
-            error: error.message
-        });
-    }
-});
-
-// =====================================
-// HOME ROUTE
-// =====================================
-
-app.get('/', (req, res) => {
-    res.send('Welcome to J-Mart Backend!');
-});
-
-// =====================================
-// FIREBASE STATUS & TEST WRITE
-// =====================================
-
-app.get('/firebase-status', async (req, res) => {
-    try {
-        await db.collection('test_connection').doc('status').set({
-            connected: true,
-            checkedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-
-        res.json({
-            success: true,
-            message: 'Firebase Firestore connected and test data written!'
-        });
-
-    } catch (error) {
-        console.error('Firebase Error:', error);
-
-        res.status(500).json({
-            success: false,
-            message: 'Firebase connection failed',
-            error: error.message
-        });
-    }
-});
-
-// =====================================
-// START SERVER
-// =====================================
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log('================================');
-    console.log('J-MART SERVER STARTED');
-    console.log('Port:', PORT);
-    console.log('Firebase: Connected');
-    console.log('Email OTP: Ready');
-    console.log('================================');
-});
+</body>
+</html>
