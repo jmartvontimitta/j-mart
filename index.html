@@ -997,5 +997,46 @@ function handleCheckoutVerifyOTP() {
 function finalizeCheckout() {
   alert("మీ ఆర్డర్ విజయవంతంగా చేయబడింది! ధన్యవాదాలు.");
   cart = [];
-  updateCart
-  
+  updateCart();
+  closeFullCheckout();
+  $("paymentSectionView").style.display = "none";
+}
+
+function login() {
+  $("loginModal").classList.add("show");
+}
+
+function closeLogin() {
+  $("loginModal").classList.remove("show");
+}
+
+function handleSendOTP() {
+  const email = $("emailInput").value.trim();
+  if(!email) {
+    alert("దయచేసి ఈమెయిల్ ఇవ్వండి!");
+    return;
+  }
+  alert("OTP పంపబడింది!");
+  $("emailStep").style.display = "none";
+  $("otpStep").style.display = "block";
+}
+
+function handleVerifyOTP() {
+  const otp = $("otpInput").value.trim();
+  if(otp.length !== 6) {
+    alert("దయచేసి 6-అంకెల OTP ఎంటర్ చేయండి!");
+    return;
+  }
+  alert("లాగిన్ విజయవంతమైంది!");
+  closeLogin();
+  $("loginNavBtn").innerHTML = `<span>👤</span>Logout`;
+}
+
+window.onload = () => {
+  $("year").textContent = new Date().getFullYear();
+  renderCategories();
+  renderProducts();
+};
+</script>
+</body>
+</html>
