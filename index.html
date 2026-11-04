@@ -334,6 +334,95 @@ footer {
   line-height: 1.8;
 }
 
+/* Full Screen Checkout Overlay */
+.checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: #f4f6f8;
+  z-index: 150;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.checkout-overlay.show { display: flex; }
+.checkout-header {
+  background: white;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.checkout-header h2 { font-size: 18px; color: var(--dark); }
+.checkout-close { background: none; border: 0; font-size: 24px; color: #666; }
+
+.checkout-stepper {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: bold;
+  color: #888;
+}
+.checkout-stepper span.active { color: var(--green); border-bottom: 2px solid var(--green); padding-bottom: 4px; }
+
+.checkout-body {
+  max-width: 600px;
+  width: 100%;
+  margin: 20px auto;
+  padding: 0 15px;
+  flex: 1;
+}
+
+.checkout-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+.checkout-card h3 { font-size: 15px; margin-bottom: 15px; color: #333; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafafa;
+}
+.radio-group { display: flex; gap: 15px; margin-top: 5px; }
+.radio-group label { font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+.payment-option {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.payment-option input { width: auto; }
+.payment-option.selected { border-color: var(--green); background: #e2f4ec; }
+
+/* Success Modal */
+.success-card {
+  text-align: center;
+  padding: 30px 20px;
+}
+.success-icon { font-size: 60px; color: var(--green); margin-bottom: 15px; }
+.success-card h2 { color: var(--green); margin-bottom: 10px; }
+.success-card p { color: #666; font-size: 14px; margin-bottom: 20px; }
+
 /* Login Modal */
 .modal-overlay {
   position: fixed;
@@ -395,6 +484,7 @@ footer {
   .product img { height: 155px; }
   .section-heading h2 { font-size: 17px; }
   .cart-panel { max-width: 100%; }
+  .form-row { grid-template-columns: 1fr; }
 }
 @media (min-width: 1000px) {
   .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -478,9 +568,98 @@ footer {
   <div class="cart-list" id="cartItems"></div>
   <div class="cart-footer">
     <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
-    <button class="place-order" onclick="checkout()">Place Order</button>
+    <button class="place-order" onclick="openCheckout()">Place Order</button>
   </div>
 </aside>
+
+<!-- Full Screen Checkout Overlay -->
+<div class="checkout-overlay" id="checkoutOverlay">
+  <div class="checkout-header">
+    <h2>ADD NEW ADDRESS</h2>
+    <button class="checkout-close" onclick="closeCheckout()">✕</button>
+  </div>
+  <div class="checkout-stepper">
+    <span id="stepBag">Bag</span> —
+    <span id="stepAddress" class="active">Address</span> —
+    <span id="stepPayment">Payment</span>
+  </div>
+  
+  <div class="checkout-body">
+    <!-- Step 1: Address View -->
+    <div id="addressSection" class="checkout-card">
+      <h3>Contact Details</h3>
+      <div class="form-group">
+        <label>Name*</label>
+        <input type="text" id="addrName" placeholder="Enter full name">
+      </div>
+      <div class="form-group">
+        <label>Mobile No*</label>
+        <input type="tel" id="addrMobile" placeholder="Enter mobile number">
+      </div>
+
+      <h3 style="margin-top:20px;">Address</h3>
+      <div class="form-group">
+        <label>Pin Code*</label>
+        <input type="text" id="addrPincode" placeholder="6-digit Pincode">
+      </div>
+      <div class="form-group">
+        <label>House Number/Tower/Block*</label>
+        <input type="text" id="addrHouse" placeholder="e.g. 1/40">
+      </div>
+      <div class="form-group">
+        <label>Address (locality, building, street)*</label>
+        <input type="text" id="addrStreet" placeholder="Locality or Street name">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Locality / Town*</label>
+          <input type="text" id="addrTown" placeholder="Town / City">
+        </div>
+        <div class="form-group">
+          <label>City / District*</label>
+          <input type="text" id="addrCity" placeholder="District">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>State*</label>
+        <input type="text" id="addrState" placeholder="State">
+      </div>
+
+      <div class="form-group">
+        <label>Address Type</label>
+        <div class="radio-group">
+          <label><input type="radio" name="addrType" value="Home" checked> Home</label>
+          <label><input type="radio" name="addrType" value="Office"> Office</label>
+        </div>
+      </div>
+
+      <button class="place-order" style="margin-top:15px;" onclick="goToPayment()">Save & Proceed to Payment</button>
+    </div>
+
+    <!-- Step 2: Payment Section -->
+    <div id="paymentSection" class="checkout-card" style="display:none;">
+      <h3>Select Payment Method</h3>
+      <div class="payment-option selected">
+        <input type="radio" id="cod" name="payOption" checked>
+        <label for="cod">
+          <strong>Cash on Delivery (COD)</strong><br>
+          <small style="color:#666;">Pay cash when product is delivered</small>
+        </label>
+      </div>
+
+      <button class="place-order" style="margin-top:20px;" onclick="confirmOrder()">Confirm & Place Order</button>
+      <button class="add-button" style="width:100%; margin-top:10px;" onclick="backToAddress()">Back to Address</button>
+    </div>
+
+    <!-- Step 3: Success Screen -->
+    <div id="successSection" class="checkout-card success-card" style="display:none;">
+      <div class="success-icon">✓</div>
+      <h2>Order Placed Successfully!</h2>
+      <p>Thank you for shopping with J-Mart. Your items will be delivered soon.</p>
+      <button class="place-order" onclick="finishOrder()">Continue Shopping</button>
+    </div>
+  </div>
+</div>
 
 <!-- Login / OTP Modal -->
 <div class="modal-overlay" id="loginModal">
@@ -753,15 +932,61 @@ function closeCart() {
   $("cartOverlay").classList.remove("show");
 }
 
-function checkout() {
+// Full Screen Checkout Logic
+function openCheckout() {
   if (cart.length === 0) {
     alert("మీ కార్ట్ ఖాళీగా ఉంది!");
     return;
   }
-  alert("Order placed successfully!");
+  closeCart();
+  $("checkoutOverlay").classList.add("show");
+  $("addressSection").style.display = "block";
+  $("paymentSection").style.display = "none";
+  $("successSection").style.display = "none";
+  $("stepAddress").classList.add("active");
+  $("stepPayment").classList.remove("active");
+}
+
+function closeCheckout() {
+  $("checkoutOverlay").classList.remove("show");
+}
+
+function goToPayment() {
+  const name = $("addrName").value.trim();
+  const mobile = $("addrMobile").value.trim();
+  const pincode = $("addrPincode").value.trim();
+  const house = $("addrHouse").value.trim();
+  const street = $("addrStreet").value.trim();
+  const town = $("addrTown").value.trim();
+
+  if (!name || !mobile || !pincode || !house || !street || !town) {
+    alert("దయచేసి నక్షత్రపు గుర్తు (*) ఉన్న వివరాలన్నీ భర్తీ చేయండి!");
+    return;
+  }
+
+  $("addressSection").style.display = "none";
+  $("paymentSection").style.display = "block";
+  $("stepAddress").classList.remove("active");
+  $("stepPayment").classList.add("active");
+}
+
+function backToAddress() {
+  $("paymentSection").style.display = "none";
+  $("addressSection").style.display = "block";
+  $("stepPayment").classList.remove("active");
+  $("stepAddress").classList.add("active");
+}
+
+function confirmOrder() {
+  $("paymentSection").style.display = "none";
+  $("successSection").style.display = "block";
   cart = [];
   updateCart();
-  closeCart();
+}
+
+function finishOrder() {
+  closeCheckout();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function login() {
@@ -797,7 +1022,7 @@ async function verifyOTP(email, otp) {
     const response = await fetch(`${BACKEND_URL}/verify-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp })
+      body: JSON.stringify({ email })
     });
     return await response.json();
   } catch (error) {
