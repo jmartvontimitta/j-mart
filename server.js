@@ -1,232 +1,132 @@
-
-require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
-const admin = require('firebase-admin');
-const { getFirestore } = require('firebase-admin/firestore');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
-const crypto = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// FIREBASE CONFIGURATION
-
-if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT is missing');
-}
-
-const serviceAccount = JSON.parse(
-    process.env.FIREBASE_SERVICE_ACCOUNT
-);
-
-const firebaseApp = admin.apps.length
-    ? admin.app()
-    : admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-
-const db = getFirestore(firebaseApp);
-
-console.log('Firebase connected successfully');
-
-// BREVO EMAIL CONFIGURATION
-
+// Brevo (Sendinblue) API Setup
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
-
 apiKey.apiKey = process.env.BREVO_API_KEY;
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-const apiInstance =
-    new SibApiV3Sdk.TransactionalEmailsApi();
+// Supabase Client Setup
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const SENDER_EMAIL = 'jmartvontimitta@gmail.com';
+let storedOtp = {};
 
-// OTP STORAGE
-
-const storedOtp = new Map();
-
-// SEND OTP
-
+// Send OTP Route
 app.post('/send-otp', async (req, res) => {
     try {
-        const email = req.body.email?.trim().toLowerCase();
-
+        const { email } = req.body;
         if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please enter your email'
-            });
+            return res.status(400).json({ success: false, message: "ఈమెయిల్ ఇవ్వడం మరచిపోయారు" });
         }
 
-        if (!process.env.BREVO_API_KEY) {
-            throw new Error('BREVO_API_KEY is missing');
-        }
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        storedOtp[email] = otp;
 
-        const otp = crypto.randomInt(100000, 1000000).toString();
+        const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
+        sendSibiEmail.sender = { name: "J-Mart", email: process.env.SENDER_EMAIL };
+        sendSibiEmail.to = [{ email: email }];
+        sendSibiEmail.subject = "Your J-Mart OTP code";
+        sendSibiEmail.htmlContent = `<p>Your verification code for J-Mart is: <strong>${otp}</strong></p>`;
 
-        storedOtp.set(email, {
-            code: otp,
-            expiresAt: Date.now() + 5 * 60 * 1000
-        });
+        await apiInstance.sendTransacEmail(sendSibiEmail);
 
-        const sendEmail = new SibApiV3Sdk.SendSmtpEmail();
-
-        sendEmail.sender = {
-            name: 'J-Mart',
-            email: SENDER_EMAIL
-        };
-
-        sendEmail.to = [{ email }];
-
-        sendEmail.subject = 'J-Mart Email Verification';
-
-        sendEmail.htmlContent = `
-            <h2>Welcome to J-Mart!</h2>
-            <p>Your verification OTP is:</p>
-            <h1>${otp}</h1>
-            <p>This OTP expires in 5 minutes.</p>
-        `;
-
-        await apiInstance.sendTransacEmail(sendEmail);
-
-        res.json({
-            success: true,
-            message: 'OTP sent successfully!'
-        });
-
+        res.json({ success: true, message: "OTP విజయవంతంగా పంపబడింది!" });
     } catch (error) {
-        console.error('Send OTP Error:', error);
-
-        res.status(500).json({
-            success: false,
-            message: 'Unable to send OTP'
-        });
+        console.error("Send OTP Error:", error);
+        res.status(500).json({ success: false, message: "OTP పంపడంలో సర్వర్ లోపం" });
     }
 });
 
-// VERIFY OTP
-
+// Verify OTP Route
 app.post('/verify-otp', (req, res) => {
-    const email = req.body.email?.trim().toLowerCase();
-    const otp = String(req.body.otp || '').trim();
+    const { email, otp } = req.body;
 
     if (!email || !otp) {
-        return res.status(400).json({
-            success: false,
-            message: 'Email or OTP is missing'
-        });
+        return res.status(400).json({ success: false, message: "ఈమెయిల్ లేదా OTP ఇవ్వలేదు" });
     }
 
-    const savedOtp = storedOtp.get(email);
-
-    if (!savedOtp) {
-        return res.status(400).json({
-            success: false,
-            message: 'OTP not found or already used'
-        });
+    if (storedOtp[email] === otp) {
+        delete storedOtp[email];
+        res.json({ success: true, message: "OTP సరిపోలింది" });
+    } else {
+        res.status(400).json({ success: false, message: "తప్పు OTP ఎంటర్ చేశారు" });
     }
-
-    if (Date.now() > savedOtp.expiresAt) {
-        storedOtp.delete(email);
-
-        return res.status(400).json({
-            success: false,
-            message: 'OTP expired'
-        });
-    }
-
-    if (savedOtp.code !== otp) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid OTP'
-        });
-    }
-
-    storedOtp.delete(email);
-
-    res.json({
-        success: true,
-        message: 'Email verified successfully!'
-    });
 });
 
-// ORDER EMAIL NOTIFICATION
+// Place Order & Save to Supabase Database Route
+app.post('/api/place-order', async (req, res) => {
+    const { email, address, items, totalAmount } = req.body;
 
-async function sendOrderEmail(orderDetails) {
     try {
-        const sendEmail = new SibApiV3Sdk.SendSmtpEmail();
+        // 1. Save order into Supabase 'orders' table
+        const { data, error } = await supabase
+            .from('orders')
+            .insert([
+                { 
+                    email: email, 
+                    address: address, 
+                    items: items, 
+                    total_amount: totalAmount,
+                    created_at: new Date()
+                }
+            ]);
 
-        sendEmail.sender = {
-            name: 'J-Mart',
-            email: SENDER_EMAIL
-        };
+        if (error) {
+            console.error("Supabase Error:", error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
 
-        sendEmail.to = [{
-            email: SENDER_EMAIL
-        }];
-
-        sendEmail.subject = 'New Order Received - J-Mart';
-
-        const safeDetails = String(orderDetails)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-
-        sendEmail.htmlContent = `
-            <h2>New Order Received!</h2>
-            <p>${safeDetails}</p>
+        // 2. Format items for Admin Email
+        const itemsListStr = items.map(i => `${i.name} (x${i.quantity}) - ₹${i.price * i.quantity}`).join('<br>');
+        const orderDetailsHtml = `
+            <p><b>Customer Email:</b> ${email}</p>
+            <p><b>Delivery Address:</b> ${address.name}, ${address.phone}, ${address.house}, ${address.street}, ${address.landmark}, ${address.city} - ${address.pincode}</p>
+            <p><b>Items Ordered:</b><br>${itemsListStr}</p>
+            <p><b>Total Amount:</b> ₹${totalAmount}</p>
         `;
 
-        await apiInstance.sendTransacEmail(sendEmail);
+        // 3. Send Admin Notification Email via Brevo
+        await sendOrderEmail(orderDetailsHtml);
 
-        console.log('Order email sent successfully');
-
-    } catch (error) {
-        console.error('Order Email Error:', error);
+        res.status(200).json({ success: true, message: 'Order placed successfully!', data });
+    } catch (err) {
+        console.error("Place Order Error:", err);
+        res.status(500).json({ success: false, error: err.message });
     }
-}
-
-// HOME ROUTE
+});
 
 app.get('/', (req, res) => {
-    res.send('Welcome to J-Mart Backend!');
+    res.send("J-Mart Backend is running!");
 });
 
-// FIREBASE STATUS
-
-app.get('/firebase-status', async (req, res) => {
-    try {
-        await db.listCollections();
-
-        res.json({
-            success: true,
-            message: 'Firebase Firestore connected'
-        });
-
-    } catch (error) {
-        console.error('Firebase Error:', error);
-
-        res.status(500).json({
-            success: false,
-            message: 'Firebase connection failed'
-        });
-    }
-});
-
-// START SERVER
-
-const PORT = process.env.PORT || 5000;
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log('==============================');
-    console.log('J-MART SERVER STARTED');
-    console.log('Port:', PORT);
-    console.log('Firebase: Connected');
-    console.log('Email OTP: Ready');
-    console.log('Payment: Removed');
-    console.log('==============================');
+    console.log(`Server running on port ${PORT}`);
 });
+
+// Helper function to send order email to admin
+const sendOrderEmail = async (orderDetails) => {
+    const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSibiEmail.sender = { name: "J-Mart", email: process.env.SENDER_EMAIL };
+    sendSibiEmail.to = [{ email: process.env.ADMIN_MAIL }]; 
+    sendSibiEmail.subject = "New Order Received - J-Mart";
+    sendSibiEmail.htmlContent = `<h3>కొత్త ఆర్డర్ వచ్చింది!</h3>${orderDetails}`;
+
+    try {
+        await apiInstance.sendTransacEmail(sendSibiEmail);
+        console.log("Order email sent successfully to admin");
+    } catch (error) {
+        console.error("Error sending order email:", error);
+    }
+};
