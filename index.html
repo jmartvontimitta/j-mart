@@ -484,7 +484,7 @@ footer {
     <button class="nav-button" onclick="openCart()">
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
-    <button class="nav-button" id="loginNavBtn" onclick="openLogin()">
+    <button class="nav-button" id="loginNavBtn" onclick="login()">
       <span>👤</span>Login
     </button>
   </nav>
@@ -549,7 +549,7 @@ footer {
   </div>
 </aside>
 
-<!-- Full Screen Checkout View -->
+<!-- Full Screen Flipkart/Amazon Style Checkout View -->
 <div class="full-checkout-overlay" id="fullCheckoutOverlay">
   <div class="checkout-container">
     <div class="checkout-header-bar">
@@ -557,7 +557,7 @@ footer {
       <button class="checkout-close-btn" onclick="closeFullCheckout()">×</button>
     </div>
 
-    <!-- Address Section -->
+    <!-- Step 1: Address Display / Add New Address View -->
     <div id="addressSectionView">
       <div class="address-box" id="addressDisplayBox" style="display: none;">
         <div class="address-top">
@@ -567,6 +567,7 @@ footer {
         <div class="address-details" id="addrTextDisplay"></div>
       </div>
 
+      <!-- Editable Address Form (Opens automatically if no address exists) -->
       <div id="addressFormEdit" style="display:none; margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
         <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add New Delivery Address</h3>
         <div class="form-group">
@@ -602,13 +603,15 @@ footer {
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
       </div>
 
-      <!-- Order Items List -->
+      <!-- Order Items Summary List (Appears below address) -->
       <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
         <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Items List</h3>
-        <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;"></div>
+        <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;">
+          <!-- Items will populate dynamically -->
+        </div>
       </div>
 
-      <!-- Email & OTP Verification -->
+      <!-- Email & OTP Verification Section -->
       <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
         <h3 style="margin-bottom: 10px; font-size: 16px;">Email Verification for Order</h3>
         <div id="emailStepBox">
@@ -627,7 +630,7 @@ footer {
       </div>
     </div>
 
-    <!-- Payment Section -->
+    <!-- Step 2: Payment & Finalize Section (Hidden until OTP is verified) -->
     <div id="paymentSectionView" style="display: none; margin-top: 20px;">
       <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
@@ -920,70 +923,7 @@ function closeCart() {
   $("cartOverlay").classList.remove("show");
 }
 
-/* Login Modal Functions */
-function openLogin() {
-  $("loginModal").classList.add("show");
-}
-
-function closeLogin() {
-  $("loginModal").classList.remove("show");
-}
-
-async function handleSendOTP() {
-  const email = $("emailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి.");
-    return;
-  }
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("OTP మీ ఈమెయిల్‌కి పంపబడింది!");
-      $("emailStep").style.display = "none";
-      $("otpStep").style.display = "block";
-    } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
-  }
-}
-
-async function handleVerifyOTP() {
-  const email = $("emailInput").value.trim();
-  const otp = $("otpInput").value.trim();
-  if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
-    return;
-  }
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("లాగిన్ విజయవంతమైంది!");
-      verifiedEmail = email;
-      $("loginNavBtn").innerHTML = `<span>👤</span>${email.split('@')[0]}`;
-      closeLogin();
-    } else {
-      alert(data.error || "తప్పు OTP.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
-  }
-}
-
-/* Full Screen Checkout Logic */
+/* Full Screen Checkout Logic with Dynamic Address Check */
 function openFullCheckout() {
   if (cart.length === 0) {
     alert("మీ కార్ట్ ఖాళీగా ఉంది!");
@@ -997,32 +937,45 @@ function openFullCheckout() {
   if (savedAddress) {
     $("addressDisplayBox").style.display = "block";
     $("addressFormEdit").style.display = "none";
-    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name} (${savedAddress.phone})</b>`;
-    $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`;
+    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b>`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}<br>Phone: ${savedAddress.phone}`;
   } else {
     $("addressDisplayBox").style.display = "none";
     $("addressFormEdit").style.display = "block";
+    $("formHeading").innerText = "Add New Delivery Address";
   }
 
-  $("emailStepBox").style.display = "block";
-  $("otpStepBox").style.display = "none";
+  $("addressSectionView").style.display = "block";
   $("paymentSectionView").style.display = "none";
-  $("checkoutEmailInput").value = verifiedEmail || "";
-  if (verifiedEmail) {
-    $("checkoutEmailInput").disabled = true;
-    $("checkoutOtpBtn").textContent = "Verified";
-    $("checkoutOtpBtn").disabled = true;
-    $("paymentSectionView").style.display = "block";
-  } else {
-    $("checkoutEmailInput").disabled = false;
-    $("checkoutOtpBtn").textContent = "Send OTP";
-    $("checkoutOtpBtn").disabled = false;
-  }
+}
+
+function closeFullCheckout() {
+  $("fullCheckoutOverlay").classList.remove("show");
+}
+
+function renderCheckoutItems() {
+  $("checkoutItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px;">
+      <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 45px; height: 45px; object-fit: contain;">
+      <div style="flex: 1; font-size: 13px;">
+        <div style="font-weight: bold;">${item.name}</div>
+        <div style="color: #666;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+      </div>
+    </div>
+  `).join("");
 }
 
 function showAddressForm() {
-  $("addressDisplayBox").style.display = "none";
   $("addressFormEdit").style.display = "block";
+  if (savedAddress) {
+    $("inputName").value = savedAddress.name;
+    $("inputPhone").value = savedAddress.phone;
+    $("inputHouse").value = savedAddress.house;
+    $("inputStreet").value = savedAddress.street;
+    $("inputLandmark").value = savedAddress.landmark;
+    $("inputPincode").value = savedAddress.pincode;
+    $("inputCity").value = savedAddress.city;
+  }
 }
 
 function saveNewAddress() {
@@ -1034,123 +987,197 @@ function saveNewAddress() {
   const pincode = $("inputPincode").value.trim();
   const city = $("inputCity").value.trim();
 
-  if (!name || !phone || !house || !street || !pincode || !city) {
-    alert("దయచేసి అన్ని అడ్రస్ వివరాలను నింపండి.");
+  if (!house || !pincode || !name) {
+    alert("దయచేసి పేరు, ఇల్లు నంబర్ మరియు పిన్‌కోడ్ ఎంటర్ చేయండి");
     return;
   }
 
   savedAddress = { name, phone, house, street, landmark, pincode, city };
-  
-  $("addressFormEdit").style.display = "none";
+
   $("addressDisplayBox").style.display = "block";
-  $("addrNameDisplay").innerHTML = `Deliver to: <b>${name} (${phone})</b>`;
-  $("addrTextDisplay").textContent = `${house}, ${street}, ${landmark}, ${city} - ${pincode}`;
+  $("addressFormEdit").style.display = "none";
+  $("addrNameDisplay").innerHTML = `Deliver to: <b>${name}</b>`;
+  $("addrTextDisplay").innerHTML = `${house}, ${street}, ${landmark}, ${city} - ${pincode}<br>Phone: ${phone}`;
+  alert("అడ్రస్ విజయవంతంగా సేవ్ చేయబడింది!");
 }
 
-function renderCheckoutItems() {
-  $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px;">
-      <span>${item.name} (x${item.quantity})</span>
-      <b>₹${item.price * item.quantity}</b>
-    </div>
-  `).join("");
-}
-
-function closeFullCheckout() {
-  $("fullCheckoutOverlay").classList.remove("show");
-}
-
-async function handleCheckoutSendOTP() {
-  const email = $("checkoutEmailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి.");
-    return;
-  }
+/* API Helper Functions for Backend Requests */
+async function sendOTP(email) {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
+    const res = await fetch(`${BACKEND_URL}/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
     });
-    const data = await res.json();
-    if (res.ok) {
-      alert("OTP మీ ఈమెయిల్‌కి పంపబడింది!");
-      $("emailStepBox").style.display = "none";
-      $("otpStepBox").style.display = "block";
-    } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
-    }
+    return await res.json();
   } catch (err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
+    return { success: false, message: "సర్వర్ అనుసంధాన లోపం" };
   }
+}
+
+async function verifyOTP(email, otp) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp })
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, message: "సర్వర్ అనుసంధాన లోపం" };
+  }
+}
+
+async function handleCheckoutSendOTP() {
+  const email = $("checkoutEmailInput").value.trim();
+  const btn = $("checkoutOtpBtn");
+
+  if (!email) {
+    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Sending...";
+  btn.disabled = true;
+
+  const res = await sendOTP(email);
+
+  if (res.success) {
+    alert(res.message || "OTP విజయవంతంగా పంపబడింది!");
+    $("emailStepBox").style.display = "none";
+    $("otpStepBox").style.display = "block";
+  } else {
+    alert(res.message || "OTP పంపడంలో విఫలమైంది");
+  }
+
+  btn.innerText = "Send OTP";
+  btn.disabled = false;
 }
 
 async function handleCheckoutVerifyOTP() {
   const email = $("checkoutEmailInput").value.trim();
   const otp = $("checkoutOtpInput").value.trim();
+  const btn = $("checkoutVerifyBtn");
+
   if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
+    alert("దయచేసి OTP ఎంటర్ చేయండి");
     return;
   }
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("ఈమెయిల్ విజయవంతంగా వెరిఫై అయింది!");
-      verifiedEmail = email;
-      $("otpStepBox").style.display = "none";
-      $("paymentSectionView").style.display = "block";
-    } else {
-      alert(data.error || "తప్పు OTP.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
+
+  btn.innerText = "Verifying...";
+  btn.disabled = true;
+
+  const res = await verifyOTP(email, otp);
+
+  if (res.success) {
+    verifiedEmail = email;
+    alert("వెరిఫికేషన్ పూర్తయింది!");
+    $("addressSectionView").style.display = "none";
+    $("paymentSectionView").style.display = "block";
+  } else {
+    alert(res.message || "తప్పు OTP ఎంటర్ చేశారు");
   }
+
+  btn.innerText = "Verify OTP & Proceed to Payment";
+  btn.disabled = false;
 }
 
 async function finalizeCheckout() {
-  if (!savedAddress) {
-    alert("దయచేసి డెలివరీ అడ్రస్‌ని సేవ్ చేయండి.");
-    return;
-  }
-  if (!verifiedEmail) {
-    alert("దయచేసి ఈమెయిల్‌ని వెరిఫై చేయండి.");
-    return;
-  }
-
+  const paymentMethod = document.querySelector('input[name="payMethod"]:checked').parentNode.textContent.trim();
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const orderData = {
-    email: verifiedEmail,
-    address: `${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`,
-    items: cart,
-    total_amount: totalAmount
-  };
+  
+  let orderDetailsHtml = `<h3>J-Mart Order Confirmation</h3>`;
+  orderDetailsHtml += `<p><b>Deliver to:</b> ${savedAddress.name}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode} (Phone: ${savedAddress.phone})</p>`;
+  orderDetailsHtml += `<p><b>Payment Method:</b> ${paymentMethod}</p>`;
+  orderDetailsHtml += `<h4>Items:</h4><ul>`;
+  cart.forEach(item => {
+    orderDetailsHtml += `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}</li>`;
+  });
+  orderDetailsHtml += `</ul>`;
+  orderDetailsHtml += `<h3>Total Amount: ₹${totalAmount}</h3>`;
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/orders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది మరియు డేటాబేస్‌లో సేవ్ అయింది!");
-      cart = [];
-      updateCart();
-      closeFullCheckout();
-    } else {
-      alert(data.error || "ఆర్డర్ సేవ్ అవ్వడంలో సమస్య ఏర్పడింది.");
+  if (verifiedEmail) {
+    try {
+      await fetch(`${BACKEND_URL}/send-order-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: verifiedEmail, orderSummary: orderDetailsHtml })
+      });
+    } catch (e) {
+      console.error("Email send error", e);
     }
-  } catch (err) {
-    console.error(err);
-    alert("ఆర్డర్ రిక్వెస్ట్ విఫలమైంది.");
   }
+
+  alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది! మీ ఈమెయిల్‌కి కన్ఫర్మేషన్ పంపబడింది.");
+  cart = [];
+  updateCart();
+  closeFullCheckout();
+}
+
+function login() {
+  $("loginModal").classList.add("show");
+}
+
+function closeLogin() {
+  $("loginModal").classList.remove("show");
+  $("emailStep").style.display = "block";
+  $("otpStep").style.display = "none";
+  $("modalTitle").innerText = "Login with OTP";
+}
+
+async function handleSendOTP() {
+  const email = $("emailInput").value.trim();
+  const btn = $("otpBtn");
+
+  if (!email) {
+    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Sending...";
+  btn.disabled = true;
+
+  const res = await sendOTP(email);
+
+  if (res.success) {
+    alert(res.message || "OTP పంపబడింది!");
+    $("emailStep").style.display = "none";
+    $("otpStep").style.display = "block";
+    $("modalTitle").innerText = "Enter OTP";
+  } else {
+    alert(res.message || "OTP పంపడంలో విఫలమైంది");
+  }
+
+  btn.innerText = "Send OTP";
+  btn.disabled = false;
+}
+
+async function handleVerifyOTP() {
+  const email = $("emailInput").value.trim();
+  const otp = $("otpInput").value.trim();
+  const btn = $("verifyBtn");
+
+  if (!otp) {
+    alert("దయచేసి OTP ఎంటర్ చేయండి");
+    return;
+  }
+
+  btn.innerText = "Verifying...";
+  btn.disabled = true;
+
+  const res = await verifyOTP(email, otp);
+
+  if (res.success) {
+    verifiedEmail = email;
+    $("loginNavBtn").innerHTML = `<span>👤</span>${email.split("@")[0]}`;
+    alert("లాగిన్ విజయవంతమైంది!");
+    closeLogin();
+  } else {
+    alert(res.message || "తప్పు OTP ఎంటర్ చేశారు");
+  }
+
+  btn.innerText = "Verify OTP";
+  btn.disabled = false;
 }
 </script>
 </body>
