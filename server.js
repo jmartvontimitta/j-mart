@@ -23,7 +23,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 let storedOtp = {};
 
 // Send OTP Route
-app.post('/send-otp', async (req, res) => {
+app.post('/api/send-otp', async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) {
@@ -49,7 +49,7 @@ app.post('/send-otp', async (req, res) => {
 });
 
 // Verify OTP Route
-app.post('/verify-otp', (req, res) => {
+app.post('/api/verify-otp', (req, res) => {
     const { email, otp } = req.body;
 
     if (!email || !otp) {
