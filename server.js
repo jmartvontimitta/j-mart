@@ -89,9 +89,15 @@ app.post('/api/place-order', async (req, res) => {
 
         // 2. Format items for Admin Email
         const itemsListStr = items.map(i => `${i.name} (x${i.quantity}) - ₹${i.price * i.quantity}`).join('<br>');
+        
+        // అడ్రస్ ఆబ్జెక్ట్ లేదా స్ట్రింగ్ హ్యాండిల్ చేయడానికి
+        const addressStr = typeof address === 'object' && address !== null
+            ? `${address.name || ''}, ${address.phone || ''}, ${address.house || ''}, ${address.street || ''}, ${address.landmark ? address.landmark + ', ' : ''}${address.city || ''} - ${address.pincode || ''}`
+            : address;
+
         const orderDetailsHtml = `
             <p><b>Customer Email:</b> ${email}</p>
-            <p><b>Delivery Address:</b> ${address.name}, ${address.phone}, ${address.house}, ${address.street}, ${address.landmark}, ${address.city} - ${address.pincode}</p>
+            <p><b>Delivery Address:</b> ${addressStr}</p>
             <p><b>Items Ordered:</b><br>${itemsListStr}</p>
             <p><b>Total Amount:</b> ₹${totalAmount}</p>
         `;
