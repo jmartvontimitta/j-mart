@@ -64,13 +64,18 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// 3. Place Order & Save to Supabase & Send Admin Email Route
+// 3. Place Order & Save to Supabase & Send Admin Email Route (With Payment Verification Check)
 app.post('/api/place-order', async (req, res) => {
     try {
-        const { email, address, items, totalAmount } = req.body;
+        const { email, address, items, totalAmount, paymentVerified } = req.body;
 
         if (!email || !address || !items || items.length === 0) {
             return res.status(400).json({ success: false, message: "ఆర్డర్ వివరాలు అసంపూర్తిగా ఉన్నాయి" });
+        }
+
+        // పేమెంట్ వెరిఫై అయిందా లేదా అని చెక్ చేయడం (కచ్చితంగా పేమెంట్ జరగాలి)
+        if (!paymentVerified) {
+            return res.status(400).json({ success: false, message: "పేమెంట్ నిర్ధారణ కాలేదు. దయచేసి చెల్లింపు పూర్తి చేయండి." });
         }
 
         // Address formatting
@@ -87,6 +92,7 @@ app.post('/api/place-order', async (req, res) => {
                     address: addressStr, 
                     items: items, 
                     total_amount: totalAmount,
+                    payment_status: "Verified",
                     created_at: new Date()
                 }
             ]);
@@ -105,6 +111,7 @@ app.post('/api/place-order', async (req, res) => {
             <p><b>ఆర్డర్ చేసిన వస్తువులు:</b></p>
             <ul>${itemsListHtml}</ul>
             <p><b>మొత్తం బిల్లు:</b> ₹${totalAmount}</p>
+            <p><b>పేమెంట్ స్టేటస్:</b> చెల్లించబడింది (Verified)</p>
         `;
 
         // 3. Send email to Admin via Brevo
@@ -116,7 +123,7 @@ app.post('/api/place-order', async (req, res) => {
 
         await apiInstance.sendTransacEmail(sendSibiEmail);
 
-        res.json({ success: true, message: "ఆర్డర్ విజయవంతంగా సేవ్ చేయబడింది మరియు ఈమెయిల్ పంపబడింది!" });
+        res.json({ success: true, message: "పేమెంట్ విజయవంతమైంది, ఆర్డర్ కన్ఫర్మ్ చేయబడింది!" });
     } catch (error) {
         console.error("Error placing order:", error);
         res.status(500).json({ success: false, message: "ఆర్డర్ ప్రాసెస్ చేయడంలో సర్వర్ లోపం" });
