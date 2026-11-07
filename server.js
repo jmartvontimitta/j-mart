@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
@@ -8,15 +9,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Brevo API Setup
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY;
-
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Supabase Client Setup
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 let storedOtp = {};
 
-// 1. Send OTP Route (Added /api prefix to match frontend)
+// 1. Send OTP Route
 app.post('/api/send-otp', async (req, res) => {
     try {
         const { email } = req.body;
@@ -42,7 +48,7 @@ app.post('/api/send-otp', async (req, res) => {
     }
 });
 
-// 2. Verify OTP Route (Added /api prefix)
+// 2. Verify OTP Route
 app.post('/api/verify-otp', (req, res) => {
     const { email, otp } = req.body;
 
@@ -58,7 +64,7 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// 3. Place Order Route (Newly added to handle checkout & send email to admin)
+// 3. Place Order Route (Saves to Supabase AND sends Email to Admin)
 app.post('/api/place-order', async (req, res) => {
     try {
         const { email, address, items, totalAmount } = req.body;
@@ -67,24 +73,41 @@ app.post('/api/place-order', async (req, res) => {
             return res.status(400).json({ success: false, message: "ఆర్డర్ వివరాలు అసంపూర్తిగా ఉన్నాయి" });
         }
 
-        // Format order details for admin email
+        // Address formatting
+        const addressStr = typeof address === 'object' && address !== null
+            ? `${address.name || ''}, ${address.phone || ''}, ${address.house || ''}, ${address.street || ''}, ${address.landmark ? address.landmark + ', ' : ''}${address.city || ''} - ${address.pincode || ''}`
+            : address;
+
+        // 1. Save order into Supabase 'orders' table
+        const { data, error } = await supabase
+            .from('orders')
+            .insert([
+                { 
+                    email: email, 
+                    address: addressStr, 
+                    items: items, 
+                    total_amount: totalAmount,
+                    created_at: new Date()
+                }
+            ]);
+
+        if (error) {
+            console.error("Supabase Error:", error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+
+        // 2. Format order details for admin email
         let itemsListHtml = items.map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</li>`).join('');
         
         const orderDetailsString = `
             <p><b>కస్టమర్ ఈమెయిల్:</b> ${email}</p>
-            <p><b>డెలివరీ అడ్రస్:</b><br>
-               పేరు: ${address.name}<br>
-               ఫోన్: ${address.phone}<br>
-               ఇంటి నెం: ${address.house}, వీధి: ${address.street}<br>
-               ల్యాండ్‌మార్క్: ${address.landmark || 'లేవు'}<br>
-               నగరం: ${address.city} - ${address.pincode}
-            </p>
+            <p><b>డెలివరీ అడ్రస్:</b> ${addressStr}</p>
             <p><b>ఆర్డర్ చేసిన వస్తువులు:</b></p>
             <ul>${itemsListHtml}</ul>
             <p><b>మొత్తం బిల్లు:</b> ₹${totalAmount}</p>
         `;
 
-        // Send email to Admin
+        // 3. Send email to Admin via Brevo
         const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSibiEmail.sender = { name: "J-Mart Orders", email: process.env.SENDER_EMAIL };
         sendSibiEmail.to = [{ email: process.env.ADMIN_MAIL }]; 
@@ -93,7 +116,7 @@ app.post('/api/place-order', async (req, res) => {
 
         await apiInstance.sendTransacEmail(sendSibiEmail);
 
-        res.json({ success: true, message: "ఆర్డర్ విజయవంతంగా స్వీకరించబడింది!" });
+        res.json({ success: true, message: "ఆర్డర్ విజయవంతంగా సేవ్ చేయబడింది మరియు ఈమెయిల్ పంపబడింది!" });
     } catch (error) {
         console.error("Error placing order:", error);
         res.status(500).json({ success: false, message: "ఆర్డర్ ప్రాసెస్ చేయడంలో సర్వర్ లోపం" });
