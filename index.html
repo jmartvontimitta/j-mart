@@ -631,12 +631,34 @@ footer {
     <div id="paymentSectionView" style="display: none; margin-top: 20px;">
       <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod" checked> <b>Cash on Delivery (COD)</b></label>
+        <label><input type="radio" name="payMethod" checked onchange="togglePaymentMethod('cod')"> <b>Cash on Delivery (COD)</b></label>
       </div>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod"> <b>UPI / Online Payment</b></label>
+        <label><input type="radio" name="payMethod" onchange="togglePaymentMethod('upi')"> <b>UPI / Online Payment (QR Scanner)</b></label>
       </div>
+
+      <!-- UPI QR Code Box -->
+      <div id="upiQrBox" style="display: none; text-align: center; background: #fff; padding: 15px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px;">
+        <p style="font-weight: bold; margin-bottom: 10px; color: var(--dark);">Scan QR to Pay via UPI</p>
+        <img id="upiQrImage" src="" alt="UPI QR Code" style="width: 180px; height: 180px; object-fit: contain; border: 1px solid #eee; padding: 5px;">
+        <p id="upiIdText" style="font-size: 13px; color: #666; margin-top: 8px;"></p>
+      </div>
+
       <button class="place-order" onclick="finalizeCheckout()">Proceed to Buy / Place Order</button>
+    </div>
+
+    <!-- Success Order Receipt View -->
+    <div id="orderSuccessView" style="display: none; text-align: center; padding: 20px;">
+      <div style="font-size: 50px; color: var(--green); margin-bottom: 10px;">✅</div>
+      <h2 style="color: var(--dark); margin-bottom: 5px;">ఆర్డర్ విజయవంతంగా పూర్తి అయింది!</h2>
+      <p style="color: #666; margin-bottom: 20px;">Thank you for shopping with J-Mart. Your order has been placed successfully.</p>
+      
+      <div style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Receipt / Summary</h3>
+        <div id="successReceiptItems"></div>
+      </div>
+
+      <button class="place-order" onclick="closeFullCheckout(); window.location.reload();">Continue Shopping</button>
     </div>
 
   </div>
@@ -662,6 +684,7 @@ footer {
 
 <script>
 const BACKEND_URL = "https://j-mart-mawl.onrender.com";
+const MERCHANT_UPI = "6281167223-k982@ybl"; // <--- మీ UPI ID ఇక్కడ మార్చుకోండి
 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
@@ -989,6 +1012,10 @@ function openFullCheckout() {
   }
   closeCart();
   $("fullCheckoutOverlay").classList.add("show");
+  $("addressSectionView").style.display = "block";
+  $("paymentSectionView").style.display = "none";
+  $("orderSuccessView").style.display = "none";
+  
   renderCheckoutItems();
   
   if (savedAddress) {
@@ -1045,8 +1072,11 @@ function saveNewAddress() {
 
 function renderCheckoutItems() {
   $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px;">
-      <span>${item.name} (x${item.quantity})</span>
+    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 35px; height: 35px; object-fit: contain;">
+        <span>${item.name} (x${item.quantity})</span>
+      </div>
       <b>₹${item.price * item.quantity}</b>
     </div>
   `).join('');
@@ -1104,6 +1134,19 @@ async function handleCheckoutVerifyOTP() {
   }
 }
 
+function togglePaymentMethod(method) {
+  const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  if (method === 'upi') {
+    $("upiQrBox").style.display = "block";
+    const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${totalAmount}&cu=INR`;
+    $("upiQrImage.src") = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiLink)}`;
+    document.getElementById("upiQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiLink)}`;
+    $("upiIdText").textContent = `UPI ID: ${MERCHANT_UPI} | Amount: ₹${totalAmount}`;
+  } else {
+    $("upiQrBox").style.display = "none";
+  }
+}
+
 async function finalizeCheckout() {
   if (!savedAddress) {
     alert("దయచేసి అడ్రస్ సేవ్ చేయండి.");
@@ -1118,7 +1161,6 @@ async function finalizeCheckout() {
     return;
   }
 
-  // టోటల్ అమౌంట్ కరెక్ట్ గా లెక్కించడం
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const orderData = {
@@ -1137,10 +1179,26 @@ async function finalizeCheckout() {
 
     const result = await response.json();
     if (response.ok && result.success) {
-      alert("ఆర్డర్ విజయవంతంగా పూర్తయింది!");
+      // Show Success Receipt View with Photos & Total Price
+      $("addressSectionView").style.display = "none";
+      $("paymentSectionView").style.display = "none";
+      $("orderSuccessView").style.display = "block";
+
+      let receiptHtml = cart.map(item => `
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain;">
+            <span><b>${item.name}</b> (Qty: ${item.quantity})</span>
+          </div>
+          <b>₹${item.price * item.quantity}</b>
+        </div>
+      `).join('');
+
+      receiptHtml += `<div style="text-align: right; font-size: 15px; margin-top: 10px; font-weight: bold; color: var(--dark);">Total Amount Paid: ₹${totalAmount}</div>`;
+      $("successReceiptItems").innerHTML = receiptHtml;
+
       cart = [];
       updateCart();
-      closeFullCheckout();
     } else {
       alert("లోపం: " + (result.message || "ఆర్డర్ ఫెయిల్ అయింది"));
     }
