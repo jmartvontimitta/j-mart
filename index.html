@@ -907,7 +907,7 @@ async function handleSendOTP() {
   const email = $("emailInput").value.trim();
   if(!email) { alert("Please enter your email"); return; }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/send-otp`, {
+    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({email})
@@ -930,7 +930,7 @@ async function handleVerifyOTP() {
   const otp = $("otpInput").value.trim();
   if(!otp) { alert("Please enter OTP"); return; }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
+    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({email, otp})
