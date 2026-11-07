@@ -334,7 +334,7 @@ footer {
   line-height: 1.8;
 }
 
-/* Full Screen Flipkart/Amazon Style Checkout Modal */
+/* Full Screen Checkout Modal */
 .full-checkout-overlay {
   position: fixed;
   inset: 0;
@@ -485,14 +485,14 @@ footer {
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
     <button class="nav-button" id="loginNavBtn" onclick="openLogin()">
-      <span>👤</span>Login
+      <span>👤</span><span id="loginNavText">Login</span>
     </button>
   </nav>
 </header>
 
 <div class="search-wrap">
   <input id="searchInput" type="search"
-    placeholder="Search for products..." aria-label="Search products" oninput="renderProducts()">
+    placeholder="Search for products or categories..." aria-label="Search products" oninput="renderProducts()">
   <span class="search-icon">🔎</span>
 </div>
 
@@ -545,7 +545,7 @@ footer {
   <div class="cart-list" id="cartItems"></div>
   <div class="cart-footer">
     <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
-    <button class="place-order" onclick="openFullCheckout()">Place Order</button>
+    <button class="place-order" onclick="handlePlaceOrderClick()">Place Order</button>
   </div>
 </aside>
 
@@ -585,6 +585,18 @@ footer {
           <label>Area, Street, Sector, Village</label>
           <input type="text" id="inputStreet" placeholder="e.g. Vontimitta bus stand">
         </div>
+        <div class="form-group">
+          <label>Landmark (Optional)</label>
+          <input type="text" id="inputLandmark" placeholder="e.g. Near Ramalayam">
+        </div>
+        <div class="form-group">
+          <label>City / Town</label>
+          <input type="text" id="inputCity" placeholder="e.g. Kadapa">
+        </div>
+        <div class="form-group">
+          <label>Pincode</label>
+          <input type="text" id="inputPincode" placeholder="e.g. 516213">
+        </div>
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
       </div>
 
@@ -616,7 +628,7 @@ footer {
         <img id="upiQrImg" src="" alt="UPI QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px; background: #fff;">
       </div>
       <p style="font-size: 13px; margin-bottom: 15px;">UPI ID: <b>jmartvontimitta@okaxis</b></p>
-      <button class="place-order" style="background: #2874f0;" onclick="finalizeCheckout()">Payment Completed / Confirm Order</button>
+      <button class="place-order" style="background: #2874f0;" onclick="finalizeVerifiedOrder()">Payment Completed / Confirm Order</button>
     </div>
 
     <!-- Receipt Section (Hidden by default) -->
@@ -766,6 +778,7 @@ const categories = [
 let selectedCategory = "All Products";
 let cart = [];
 let savedAddress = null;
+let loggedInUserEmail = localStorage.getItem("jmart_user_email") || null;
 let timerInterval = null;
 
 const $ = id => document.getElementById(id);
@@ -775,7 +788,16 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCategories();
   renderProducts();
   updateCart();
+  checkLoginState();
 });
+
+function checkLoginState() {
+  if (loggedInUserEmail) {
+    $("loginNavText").textContent = loggedInUserEmail.split('@')[0];
+  } else {
+    $("loginNavText").textContent = "Login";
+  }
+}
 
 function renderCategories() {
   $("categoryList").innerHTML = categories.map(([name,icon]) =>
@@ -803,7 +825,7 @@ function renderProducts() {
 
   let list = products.filter(p =>
     (selectedCategory === "All Products" || p.category === selectedCategory) &&
-    p.name.toLowerCase().includes(query)
+    (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query))
   );
 
   if (sort === "low") list.sort((a,b) => a.price-b.price);
@@ -901,82 +923,122 @@ function closeCart() {
 }
 
 /* Login Modal Functions */
-function openLogin() { $("loginModal").classList.add("show"); }
-function closeLogin() { $("loginModal").classList.remove("show"); }
+function openLogin() { 
+  $("loginModal").classList.add("show"); 
+}
+function closeLogin() { 
+  $("loginModal").classList.remove("show"); 
+}
 
 async function handleSendOTP() {
   const email = $("emailInput").value.trim();
-  if (!email) { alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి."); return; }
+  if(!email) { alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి"); return; }
+  
+  $("otpBtn").textContent = "Sending...";
   try {
     const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ email })
     });
     const data = await res.json();
-    if (res.ok) {
-      alert("OTP మీ ఈమెయిల్‌కి పంపబడింది!");
+    if(data.success) {
+      alert(data.message);
       $("emailStep").style.display = "none";
       $("otpStep").style.display = "block";
     } else {
-      alert(data.message || "లోపం సంభవించింది");
+      alert(data.message || "OTP పంపడంలో విఫలమైంది");
     }
-  } catch (err) {
-    alert("సర్వర్ కనెక్షన్ కాలేదు");
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం");
+  } finally {
+    $("otpBtn").textContent = "Send OTP";
   }
 }
 
 async function handleVerifyOTP() {
   const email = $("emailInput").value.trim();
   const otp = $("otpInput").value.trim();
-  if (!otp) { alert("దయచేసి OTP ఎంటర్ చేయండి."); return; }
+  if(!otp) { alert("దయచేసి OTP ఎంటర్ చేయండి"); return; }
+
+  $("verifyBtn").textContent = "Verifying...";
   try {
     const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ email, otp })
     });
     const data = await res.json();
-    if (res.ok) {
-      alert("లాగిన్ విజయవంతమైంది!");
-      verifiedEmail = email;
-      $("loginNavBtn").innerHTML = `<span>👤</span>${email}`;
+    if(data.success) {
+      loggedInUserEmail = email;
+      localStorage.setItem("jmart_user_email", email);
+      checkLoginState();
       closeLogin();
+      alert("లాగిన్ విజయవంతమైంది!");
+      // If we were waiting for checkout flow, resume checkout
+      if(window.pendingCheckoutResume) {
+        window.pendingCheckoutResume();
+        window.pendingCheckoutResume = null;
+      }
     } else {
       alert(data.message || "తప్పు OTP");
     }
-  } catch (err) {
-    alert("లోపం ఏర్పడింది");
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ లోపం");
+  } finally {
+    $("verifyBtn").textContent = "Verify OTP";
   }
 }
 
-let verifiedEmail = "";
+/* Checkout Logic */
+function handlePlaceOrderClick() {
+  if(cart.length === 0) {
+    alert("మీ కార్ట్ ఖాళీగా ఉంది!");
+    return;
+  }
+  closeCart();
+  
+  // Check if user is logged in first. If not, trigger login modal and pause.
+  if(!loggedInUserEmail) {
+    window.pendingCheckoutResume = () => {
+      openFullCheckout();
+      initCheckoutView();
+    };
+    openLogin();
+    return;
+  }
+
+  openFullCheckout();
+  initCheckoutView();
+}
 
 function openFullCheckout() {
-  if (cart.length === 0) { alert("మీ కార్ట్ ఖాళీగా ఉంది."); return; }
-  closeCart();
   $("fullCheckoutOverlay").classList.add("show");
-  $("addressSectionView").style.display = "block";
-  $("paymentSectionView").style.display = "block";
-  $("upiScannerSection").style.display = "none";
-  $("receiptSection").style.display = "none";
-  
   renderCheckoutItems();
-  
-  if (savedAddress) {
-    $("addressDisplayBox").style.display = "block";
-    $("addressFormEdit").style.display = "none";
-    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name} (${savedAddress.phone})</b>`;
-    $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}`;
-  } else {
-    $("addressDisplayBox").style.display = "none";
-    $("addressFormEdit").style.display = "block";
-  }
 }
 
 function closeFullCheckout() {
   $("fullCheckoutOverlay").classList.remove("show");
-  if (timerInterval) clearInterval(timerInterval);
+  if(timerInterval) clearInterval(timerInterval);
+}
+
+function initCheckoutView() {
+  $("addressSectionView").style.display = "block";
+  $("paymentSectionView").style.display = "block";
+  $("upiScannerSection").style.display = "none";
+  $("receiptSection").style.display = "none";
+
+  if(savedAddress) {
+    $("addressDisplayBox").style.display = "block";
+    $("addressFormEdit").style.display = "none";
+    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b> (${savedAddress.phone})`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
+  } else {
+    $("addressDisplayBox").style.display = "none";
+    $("addressFormEdit").style.display = "block";
+  }
 }
 
 function showAddressForm() {
@@ -986,123 +1048,136 @@ function showAddressForm() {
 
 function saveNewAddress() {
   const name = $("inputName").value.trim();
-  const phone = $("inputPhone").value.trim();
+  const phone = $("inputPhone.value") || $("inputPhone").value.trim();
   const house = $("inputHouse").value.trim();
   const street = $("inputStreet").value.trim();
+  const landmark = $("inputLandmark").value.trim();
+  const city = $("inputCity").value.trim();
+  const pincode = $("inputPincode").value.trim();
 
-  if (!name || !phone || !house || !street) {
-    alert("దయచేసి అన్ని అడ్రస్ వివరాలను పూరించండి.");
+  if(!name || !phone || !house || !street || !city || !pincode) {
+    alert("దయచేసి అన్ని ముఖ్యమైన అడ్రస్ వివరాలను నింపండి.");
     return;
   }
 
-  savedAddress = { name, phone, house, street };
-  $("addressFormEdit").style.display = "none";
-  $("addressDisplayBox").style.display = "block";
-  $("addrNameDisplay").innerHTML = `Deliver to: <b>${name} (${phone})</b>`;
-  $("addrTextDisplay").textContent = `${house}, ${street}`;
+  savedAddress = { name, phone, house, street, landmark, city, pincode };
+  initCheckoutView();
 }
 
 function renderCheckoutItems() {
   $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f1f1f1; padding-bottom: 6px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 35px; height: 35px; object-fit: contain;">
-        <span>${item.name} (x${item.quantity})</span>
+        <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain;">
+        <span style="font-size: 13px; font-weight: bold;">${item.name} (×${item.quantity})</span>
       </div>
-      <b>₹${item.price * item.quantity}</b>
+      <span style="font-size: 13px; color: var(--green); font-weight: bold;">₹${item.price * item.quantity}</span>
     </div>
-  `).join('');
+  `).join("");
 }
 
 function proceedToPaymentOrOrder() {
-  if (!savedAddress) { alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి."); return; }
-  if (!verifiedEmail) { alert("దయచేసి ముందుగా Login అవ్వండి (Email OTP ద్వారా)."); openLogin(); return; }
+  if(!savedAddress) {
+    alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి.");
+    return;
+  }
 
-  const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
-
-  if (payMethod === 'upi') {
-    // Show UPI Scanner & Start Timer
+  const selectedMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  if(selectedMethod === 'cod') {
+    // For COD, verify = false or true depending on policy, but requirement says payment must be verified. For COD, let's treat as verified or direct order.
+    submitOrderToBackend(true);
+  } else {
+    // UPI QR Code flow
     $("addressSectionView").style.display = "none";
     $("paymentSectionView").style.display = "none";
     $("upiScannerSection").style.display = "block";
 
-    const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${totalAmount}&cu=INR`;
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
     $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
-    startTimer(300); // 5 minutes timer
-  } else {
-    finalizeCheckout();
+    startCheckoutTimer();
   }
 }
 
-function startTimer(duration) {
-  let timer = duration, minutes, seconds;
-  if (timerInterval) clearInterval(timerInterval);
+function startCheckoutTimer() {
+  if(timerInterval) clearInterval(timerInterval);
+  let timeLeft = 300; // 5 minutes
+  const timerDisplay = $("timerDisplay");
+  
   timerInterval = setInterval(() => {
-    minutes = parseInt(timer / 60, 10);
-    seconds = parseInt(timer % 60, 10);
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    seconds = seconds < 10 ? "0" + seconds : seconds;
-
-    $("timerDisplay").textContent = minutes + ":" + seconds;
-
-    if (--timer < 0) {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    if(timeLeft <= 0) {
       clearInterval(timerInterval);
-      // Automatically proceed to finalize checkout or show success after 5 minutes timeout
-      finalizeCheckout();
+      alert("సమయం ముగిసింది! దయచేసి మళ్లీ ప్రయత్నించండి.");
+      closeFullCheckout();
     }
+    timeLeft--;
   }, 1000);
 }
 
-async function finalizeCheckout() {
-  if (timerInterval) clearInterval(timerInterval);
+function finalizeVerifiedOrder() {
+  if(timerInterval) clearInterval(timerInterval);
+  submitOrderToBackend(true);
+}
 
-  const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const orderData = {
-    email: verifiedEmail,
+async function submitOrderToBackend(paymentVerified) {
+  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  const orderPayload = {
+    email: loggedInUserEmail,
     address: savedAddress,
     items: cart,
-    totalAmount: totalAmount
+    totalAmount: totalAmount,
+    paymentVerified: paymentVerified
   };
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/place-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData)
+    const res = await fetch(`${BACKEND_URL}/api/place-order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(orderPayload)
     });
+    const data = await res.json();
 
-    const result = await response.json();
-    if (response.ok && result.success) {
-      // Show Success Receipt
-      $("addressSectionView").style.display = "none";
-      $("paymentSectionView").style.display = "none";
-      $("upiScannerSection").style.display = "none";
-      $("receiptSection").style.display = "block";
-
-      $("receiptDetails").innerHTML = `
-        <p><b>కస్టమర్ ఈమెయిల్:</b> ${verifiedEmail}</p>
-        <p><b>డెలివరీ అడ్రస్:</b> ${savedAddress.house}, ${savedAddress.street}</p>
-        <p><b>మొత్తం చెల్లించిన బిల్లు:</b> ₹${totalAmount}</p>
-      `;
-
-      $("receiptItemsList").innerHTML = cart.map(item => `
-        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain;">
-            <span><b>${item.name}</b> (Qty: ${item.quantity})</span>
-          </div>
-          <b>₹${item.price * item.quantity}</b>
-        </div>
-      `).join('');
+    if(data.success) {
+      showReceiptView(totalAmount);
     } else {
-      alert("లోపం: " + (result.message || "ఆర్డర్ ఫెయిల్ అయింది"));
+      alert(data.message || "ఆర్డర్ ప్లేస్ చేయడంలో విఫలమైంది");
     }
-  } catch (err) {
-    console.error("Error:", err);
-    alert("సర్వర్ కనెక్షన్ కాలేదు.");
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం వల్ల ఆర్డర్ పూర్తి కాలేదు.");
   }
+}
+
+function showReceiptView(totalAmount) {
+  $("upiScannerSection").style.display = "none";
+  $("addressSectionView").style.display = "none";
+  $("paymentSectionView").style.display = "none";
+  $("receiptSection").style.display = "block";
+
+  const addressStr = `${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
+  
+  $("receiptDetails").innerHTML = `
+    <p><b>ఈమెయిల్:</b> ${loggedInUserEmail}</p>
+    <p><b>డెలివరీ అడ్రస్:</b> ${addressStr}</p>
+    <p><b>మొత్తం చెల్లింపు:</b> ₹${totalAmount}</p>
+    <p><b>స్టేటస్:</b> విజయవంతంగా నిర్ధారించబడింది (Verified)</p>
+  `;
+
+  $("receiptItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+      <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 45px; height: 45px; object-fit: contain;">
+      <div>
+        <div style="font-size: 13px; font-weight: bold;">${item.name}</div>
+        <div style="font-size: 12px; color: #666;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+      </div>
+    </div>
+  `).join("");
 }
 </script>
 </body>
