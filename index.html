@@ -947,7 +947,7 @@ async function handleSendOTP() {
       $("emailStep").style.display = "none";
       $("otpStep").style.display = "block";
     } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
+      alert("ఎర్రర్: " + (data.message || "OTP పంపడం విఫలమైంది."));
     }
   } catch (err) {
     console.error(err);
@@ -972,10 +972,10 @@ async function handleVerifyOTP() {
     if (res.ok) {
       alert("లాగిన్ విజయవంతమైంది!");
       verifiedEmail = email;
-      $("loginNavBtn").innerHTML = `<span>👤</span>${email.split('@')[0]}`;
+      $("loginNavBtn").innerHTML = `<span>👤</span> ${email.split('@')[0]}`;
       closeLogin();
     } else {
-      alert(data.error || "తప్పు OTP.");
+      alert("ఎర్రర్: " + (data.message || "తప్పు OTP."));
     }
   } catch (err) {
     console.error(err);
@@ -986,43 +986,51 @@ async function handleVerifyOTP() {
 /* Full Screen Checkout Logic */
 function openFullCheckout() {
   if (cart.length === 0) {
-    alert("మీ కార్ట్ ఖాళీగా ఉంది!");
+    alert("మీ కార్ట్ ఖాళీగా ఉంది.");
     return;
   }
   closeCart();
   $("fullCheckoutOverlay").classList.add("show");
-  
   renderCheckoutItems();
-
+  
   if (savedAddress) {
     $("addressDisplayBox").style.display = "block";
     $("addressFormEdit").style.display = "none";
     $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name} (${savedAddress.phone})</b>`;
-    $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`;
   } else {
-    $("addressDisplayBox").style.display = "none";
-    $("addressFormEdit").style.display = "block";
+    showAddressForm();
   }
 
-  $("emailStepBox").style.display = "block";
-  $("otpStepBox").style.display = "none";
-  $("paymentSectionView").style.display = "none";
-  $("checkoutEmailInput").value = verifiedEmail || "";
   if (verifiedEmail) {
+    $("checkoutEmailInput").value = verifiedEmail;
     $("checkoutEmailInput").disabled = true;
-    $("checkoutOtpBtn").textContent = "Verified";
-    $("checkoutOtpBtn").disabled = true;
+    $("checkoutOtpBtn").style.display = "none";
+    $("otpStepBox").style.display = "none";
     $("paymentSectionView").style.display = "block";
   } else {
-    $("checkoutEmailInput").disabled = false;
-    $("checkoutOtpBtn").textContent = "Send OTP";
-    $("checkoutOtpBtn").disabled = false;
+    $("emailStepBox").style.display = "block";
+    $("otpStepBox").style.display = "none";
+    $("paymentSectionView").style.display = "none";
   }
+}
+
+function closeFullCheckout() {
+  $("fullCheckoutOverlay").classList.remove("show");
 }
 
 function showAddressForm() {
   $("addressDisplayBox").style.display = "none";
   $("addressFormEdit").style.display = "block";
+  if (savedAddress) {
+    $("inputName").value = savedAddress.name;
+    $("inputPhone").value = savedAddress.phone;
+    $("inputHouse").value = savedAddress.house;
+    $("inputStreet").value = savedAddress.street;
+    $("inputLandmark").value = savedAddress.landmark;
+    $("inputPincode").value = savedAddress.pincode;
+    $("inputCity").value = savedAddress.city;
+  }
 }
 
 function saveNewAddress() {
@@ -1035,29 +1043,25 @@ function saveNewAddress() {
   const city = $("inputCity").value.trim();
 
   if (!name || !phone || !house || !street || !pincode || !city) {
-    alert("దయచేసి అన్ని అడ్రస్ వివరాలను నింపండి.");
+    alert("దయచేసి అన్ని అడ్రస్ వివరాలను పూరించండి.");
     return;
   }
 
   savedAddress = { name, phone, house, street, landmark, pincode, city };
-  
   $("addressFormEdit").style.display = "none";
   $("addressDisplayBox").style.display = "block";
   $("addrNameDisplay").innerHTML = `Deliver to: <b>${name} (${phone})</b>`;
-  $("addrTextDisplay").textContent = `${house}, ${street}, ${landmark}, ${city} - ${pincode}`;
+  $("addrTextDisplay").innerHTML = `${house}, ${street}, ${landmark}, ${city} - ${pincode}`;
+  alert("అడ్రస్ విజయవంతంగా సేవ్ చేయబడింది!");
 }
 
 function renderCheckoutItems() {
   $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px;">
-      <span>${item.name} (x${item.quantity})</span>
-      <b>₹${item.price * item.quantity}</b>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f1f1; font-size: 13px;">
+      <div><b>${item.name}</b> (×${item.quantity})</div>
+      <div>₹${item.price * item.quantity}</div>
     </div>
   `).join("");
-}
-
-function closeFullCheckout() {
-  $("fullCheckoutOverlay").classList.remove("show");
 }
 
 async function handleCheckoutSendOTP() {
@@ -1078,7 +1082,7 @@ async function handleCheckoutSendOTP() {
       $("emailStepBox").style.display = "none";
       $("otpStepBox").style.display = "block";
     } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
+      alert("ఎర్రర్: " + (data.message || "OTP పంపడం విఫలమైంది."));
     }
   } catch (err) {
     console.error(err);
@@ -1101,12 +1105,12 @@ async function handleCheckoutVerifyOTP() {
     });
     const data = await res.json();
     if (res.ok) {
-      alert("ఈమెయిల్ విజయవంతంగా వెరిఫై అయింది!");
+      alert("ఈమెయిల్ వెరిఫికేషన్ విజయవంతమైంది!");
       verifiedEmail = email;
       $("otpStepBox").style.display = "none";
       $("paymentSectionView").style.display = "block";
     } else {
-      alert(data.error || "తప్పు OTP.");
+      alert("ఎర్రర్: " + (data.message || "తప్పు OTP."));
     }
   } catch (err) {
     console.error(err);
@@ -1116,15 +1120,16 @@ async function handleCheckoutVerifyOTP() {
 
 async function finalizeCheckout() {
   if (!savedAddress) {
-    alert("దయచేసి డెలివరీ అడ్రస్‌ని సేవ్ చేయండి.");
+    alert("దయచేసి డెలివరీ అడ్రస్‌ను సేవ్ చేయండి.");
     return;
   }
   if (!verifiedEmail) {
-    alert("దయచేసి ఈమెయిల్‌ని వెరిఫై చేయండి.");
+    alert("దయచేసి ఈమెయిల్ వెరిఫికేషన్ పూర్తి చేయండి.");
     return;
   }
 
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   const orderData = {
     email: verifiedEmail,
     address: `${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`,
@@ -1133,23 +1138,24 @@ async function finalizeCheckout() {
   };
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/orders`, {
+    const res = await fetch(`${BACKEND_URL}/api/place-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData)
     });
+
     const data = await res.json();
     if (res.ok) {
-      alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది మరియు డేటాబేస్‌లో సేవ్ అయింది!");
+      alert("ఆర్డర్ విజయవంతంగా ప్లేస్ చేయబడింది!");
       cart = [];
       updateCart();
       closeFullCheckout();
     } else {
-      alert(data.error || "ఆర్డర్ సేవ్ అవ్వడంలో సమస్య ఏర్పడింది.");
+      alert("ఎర్రర్: " + (data.message || "ఆర్డర్ విఫలమైంది."));
     }
   } catch (err) {
     console.error(err);
-    alert("ఆర్డర్ రిక్వెస్ట్ విఫలమైంది.");
+    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
   }
 }
 </script>
