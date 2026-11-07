@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Brevo API Setup
+// Brevo (Sendinblue) API Setup
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY;
@@ -64,7 +64,7 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// 3. Place Order Route (Saves to Supabase AND sends Email to Admin)
+// 3. Place Order & Save to Supabase & Send Admin Email Route
 app.post('/api/place-order', async (req, res) => {
     try {
         const { email, address, items, totalAmount } = req.body;
