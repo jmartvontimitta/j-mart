@@ -69,13 +69,18 @@ app.post('/api/place-order', async (req, res) => {
     const { email, address, items, totalAmount } = req.body;
 
     try {
+        // అడ్రస్ ఆబ్జెక్ట్ లేదా స్ట్రింగ్ సరిగ్గా టెక్స్ట్ ఫార్మాట్‌లోకి మార్చడానికి
+        const addressStr = typeof address === 'object' && address !== null
+            ? `${address.name || ''}, ${address.phone || ''}, ${address.house || ''}, ${address.street || ''}, ${address.landmark ? address.landmark + ', ' : ''}${address.city || ''} - ${address.pincode || ''}`
+            : address;
+
         // 1. Save order into Supabase 'orders' table
         const { data, error } = await supabase
             .from('orders')
             .insert([
                 { 
                     email: email, 
-                    address: address, 
+                    address: addressStr, // <--- ఇక్కడ సరిదిద్దబడింది (ఆబ్జెక్ట్ బదులు స్ట్రింగ్ వెళుతుంది)
                     items: items, 
                     total_amount: totalAmount,
                     created_at: new Date()
@@ -90,11 +95,6 @@ app.post('/api/place-order', async (req, res) => {
         // 2. Format items for Admin Email
         const itemsListStr = items.map(i => `${i.name} (x${i.quantity}) - ₹${i.price * i.quantity}`).join('<br>');
         
-        // అడ్రస్ ఆబ్జెక్ట్ లేదా స్ట్రింగ్ హ్యాండిల్ చేయడానికి
-        const addressStr = typeof address === 'object' && address !== null
-            ? `${address.name || ''}, ${address.phone || ''}, ${address.house || ''}, ${address.street || ''}, ${address.landmark ? address.landmark + ', ' : ''}${address.city || ''} - ${address.pincode || ''}`
-            : address;
-
         const orderDetailsHtml = `
             <p><b>Customer Email:</b> ${email}</p>
             <p><b>Delivery Address:</b> ${addressStr}</p>
