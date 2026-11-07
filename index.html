@@ -374,7 +374,7 @@ footer {
   font-size: 16px;
 }
  
-/* Full Screen Multi-Step Checkout Modal */
+/* Full Screen Multi-Step Checkout View */
 .full-checkout-overlay {
   position: fixed;
   inset: 0;
@@ -1244,12 +1244,10 @@ function finalizeOrder() {
     paymentMethod: payMethod.toUpperCase()
   };
 
-  // Save to user orders local history
   let existingOrders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
   existingOrders.unshift(orderData);
   localStorage.setItem("jmart_user_orders", JSON.stringify(existingOrders));
 
-  // Render receipt
   [1, 2, 3].forEach(s => {
     const st = $("checkoutStep" + s);
     if(st) st.classList.remove("active");
@@ -1315,16 +1313,20 @@ function handleVerifyOTP() {
   }).catch(() => alert("Verification failed"));
 }
 
-/* Your Orders Modal */
+/* Your Orders Modal - Filtered by Logged-in Email */
 function openYourOrders() {
+  if (!loggedInUserEmail) {
+    alert("దయచేసి ముందుగా మీ ఈమెయిల్ తో లాగిన్ అవ్వండి!");
+    openLogin();
+    return;
+  }
+  
   $("ordersModal").classList.add("show");
   const orders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
-  const userOrders = loggedInUserEmail 
-    ? orders.filter(o => o.email === loggedInUserEmail) 
-    : orders;
+  const userOrders = orders.filter(o => o.email.toLowerCase() === loggedInUserEmail.toLowerCase());
 
   if (!userOrders.length) {
-    $("yourOrdersContent").innerHTML = "<p style='text-align:center; padding: 20px; color:#777;'>No previous orders found.</p>";
+    $("yourOrdersContent").innerHTML = `<p style='text-align:center; padding: 20px; color:#777;'>(${loggedInUserEmail}) ఈ మెయిల్ పై ఎటువంటి మునుపటి ఆర్డర్లు లేవు.</p>`;
     return;
   }
 
