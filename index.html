@@ -551,7 +551,7 @@ footer {
 
 <!-- Full Screen Checkout View -->
 <div class="full-checkout-overlay" id="fullCheckoutOverlay">
-  <div class="checkout-container">
+  <div class="checkout-container" id="checkoutMainContainer">
     <div class="checkout-header-bar">
       <h2>J-Mart Checkout</h2>
       <button class="checkout-close-btn" onclick="closeFullCheckout()">×</button>
@@ -567,8 +567,8 @@ footer {
         <div class="address-details" id="addrTextDisplay"></div>
       </div>
 
-      <div id="addressFormEdit" style="display:none; margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
-        <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add New Delivery Address</h3>
+      <div id="addressFormEdit" style="margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
+        <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add Delivery Address</h3>
         <div class="form-group">
           <label>Full Name</label>
           <input type="text" id="inputName" placeholder="Enter full name">
@@ -585,20 +585,6 @@ footer {
           <label>Area, Street, Sector, Village</label>
           <input type="text" id="inputStreet" placeholder="e.g. Vontimitta bus stand">
         </div>
-        <div class="form-group">
-          <label>Landmark</label>
-          <input type="text" id="inputLandmark" placeholder="e.g. near temple">
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div class="form-group">
-            <label>Pincode</label>
-            <input type="text" id="inputPincode" placeholder="6-digit Pincode">
-          </div>
-          <div class="form-group">
-            <label>Town/City</label>
-            <input type="text" id="inputCity" placeholder="City">
-          </div>
-        </div>
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
       </div>
 
@@ -607,36 +593,43 @@ footer {
         <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Items List</h3>
         <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;"></div>
       </div>
-
-      <!-- Email & OTP Verification -->
-      <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-        <h3 style="margin-bottom: 10px; font-size: 16px;">Email Verification for Order</h3>
-        <div id="emailStepBox">
-          <div class="form-group">
-            <input type="email" id="checkoutEmailInput" placeholder="Enter your email for OTP">
-          </div>
-          <button class="place-order" id="checkoutOtpBtn" onclick="handleCheckoutSendOTP()">Send OTP</button>
-        </div>
-
-        <div id="otpStepBox" style="display: none;">
-          <div class="form-group">
-            <input type="text" id="checkoutOtpInput" placeholder="Enter 6-digit OTP" maxlength="6">
-          </div>
-          <button class="place-order" id="checkoutVerifyBtn" onclick="handleCheckoutVerifyOTP()">Verify OTP & Proceed to Payment</button>
-        </div>
-      </div>
     </div>
 
     <!-- Payment Section -->
-    <div id="paymentSectionView" style="display: none; margin-top: 20px;">
+    <div id="paymentSectionView" style="margin-top: 20px;">
       <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod" checked> <b>Cash on Delivery (COD)</b></label>
+        <label><input type="radio" name="payMethod" value="cod" checked> <b>Cash on Delivery (COD)</b></label>
       </div>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod"> <b>UPI / Online Payment</b></label>
+        <label><input type="radio" name="payMethod" value="upi"> <b>UPI / Online Payment (QR Scanner)</b></label>
       </div>
-      <button class="place-order" onclick="finalizeCheckout()">Proceed to Buy / Place Order</button>
+      <button class="place-order" onclick="proceedToPaymentOrOrder()">Proceed to Buy / Place Order</button>
+    </div>
+
+    <!-- UPI Scanner & Timer Section (Hidden by default) -->
+    <div id="upiScannerSection" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa;">
+      <h3 style="color: var(--dark); margin-bottom: 10px;">Scan & Pay via UPI</h3>
+      <p style="font-size: 14px; color: #666; margin-bottom: 15px;">సమయం ముగిసేలోపు చెల్లింపు పూర్తి చేయండి:</p>
+      <div id="timerDisplay" style="font-size: 20px; font-weight: bold; color: #e53935; margin-bottom: 15px;">05:00</div>
+      <div id="qrCodeContainer" style="margin-bottom: 15px;">
+        <!-- Dynamic QR code generated via API -->
+        <img id="upiQrImg" src="" alt="UPI QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px; background: #fff;">
+      </div>
+      <p style="font-size: 13px; margin-bottom: 15px;">UPI ID: <b>jmartvontimitta@okaxis</b></p>
+      <button class="place-order" style="background: #2874f0;" onclick="finalizeCheckout()">Payment Completed / Confirm Order</button>
+    </div>
+
+    <!-- Receipt Section (Hidden by default) -->
+    <div id="receiptSection" style="display: none; margin-top: 20px; padding: 20px; border: 2px dashed var(--green); border-radius: 8px; background: #f8fff9;">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h2 style="color: var(--green);">🎉 Order Successful!</h2>
+        <p style="font-size: 13px; color: #555;">మీ ఆర్డర్ విజయవంతంగా స్వీకరించబడింది. ధన్యవాదాలు!</p>
+      </div>
+      <div id="receiptDetails" style="font-size: 14px; margin-bottom: 15px; line-height: 1.6;"></div>
+      <h4 style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ordered Items & Photos:</h4>
+      <div id="receiptItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
+      <button class="place-order" onclick="closeFullCheckout(); cart=[]; updateCart();">Continue Shopping</button>
     </div>
 
   </div>
@@ -647,12 +640,10 @@ footer {
   <div class="modal-card">
     <button class="modal-close" onclick="closeLogin()">×</button>
     <h2 id="modalTitle">Login with OTP</h2>
-    
     <div id="emailStep">
       <input type="email" id="emailInput" placeholder="Enter your email">
       <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
     </div>
-
     <div id="otpStep" style="display: none;">
       <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
       <button id="verifyBtn" onclick="handleVerifyOTP()">Verify OTP</button>
@@ -662,7 +653,6 @@ footer {
 
 <script>
 const BACKEND_URL = "https://j-mart-mawl.onrender.com";
-
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
   REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
@@ -775,7 +765,7 @@ const categories = [
 let selectedCategory = "All Products";
 let cart = [];
 let savedAddress = null;
-let verifiedEmail = "";
+let timerInterval = null;
 
 const $ = id => document.getElementById(id);
 
@@ -830,7 +820,6 @@ function renderProducts() {
 
   $("productGrid").innerHTML = list.map(p => {
     const i = products.indexOf(p);
-
     return `<article class="product">
       <img src="${imageURL(p.file)}" alt="${p.name}" loading="lazy"
         onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
@@ -846,13 +835,11 @@ function renderProducts() {
 function addToCart(index) {
   const product = products[index];
   const found = cart.find(item => item.name === product.name);
-
   if (found) {
     found.quantity++;
   } else {
     cart.push({...product, quantity:1});
   }
-
   updateCart();
 }
 
@@ -871,15 +858,12 @@ function updateCart() {
             ₹${item.price} × ${item.quantity} = ₹${item.price*item.quantity}
           </div>
           <div class="quantity-controls">
-            <button onclick="changeQuantity(${index},-1)"
-              aria-label="Decrease quantity">−</button>
+            <button onclick="changeQuantity(${index},-1)" aria-label="Decrease quantity">−</button>
             <span>${item.quantity}</span>
-            <button onclick="changeQuantity(${index},1)"
-              aria-label="Increase quantity">+</button>
+            <button onclick="changeQuantity(${index},1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
-        <button class="remove-item" onclick="removeItem(${index})"
-          aria-label="Remove ${item.name}">🗑</button>
+        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑</button>
       </div>
     `).join("")
     : `<div class="empty-cart">
@@ -888,20 +872,15 @@ function updateCart() {
         <p>Add products to get started.</p>
       </div>`;
 
-  const total = cart.reduce(
-    (sum,item) => sum + item.price*item.quantity, 0
-  );
-
+  const total = cart.reduce((sum,item) => sum + item.price*item.quantity, 0);
   $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
 }
 
 function changeQuantity(index, change) {
   cart[index].quantity += change;
-
   if (cart[index].quantity <= 0) {
     cart.splice(index,1);
   }
-
   updateCart();
 }
 
@@ -921,89 +900,86 @@ function closeCart() {
 }
 
 /* Login Modal Functions */
-function openLogin() {
-  $("loginModal").classList.add("show");
-}
-
-function closeLogin() {
-  $("loginModal").classList.remove("show");
-}
+function openLogin() { $("loginModal").classList.add("show"); }
+function closeLogin() { $("loginModal").classList.remove("show"); }
 
 async function handleSendOTP() {
   const email = $("emailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి.");
-    return;
-  }
+  if(!email) { alert("Please enter your email"); return; }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
+    const res = await fetch(`${BACKEND_URL}/api/auth/send-otp`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({email})
     });
     const data = await res.json();
-    if (res.ok) {
-      alert("OTP మీ ఈమెయిల్‌కి పంపబడింది!");
+    if(res.ok) {
+      alert("OTP sent to your email!");
       $("emailStep").style.display = "none";
       $("otpStep").style.display = "block";
     } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
+      alert(data.message || "Failed to send OTP");
     }
-  } catch(err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
+  } catch(e) {
+    alert("Network error. Make sure backend is running.");
   }
 }
 
 async function handleVerifyOTP() {
   const email = $("emailInput").value.trim();
   const otp = $("otpInput").value.trim();
-  if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
-    return;
-  }
+  if(!otp) { alert("Please enter OTP"); return; }
   try {
-    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
+    const res = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp })
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({email, otp})
     });
     const data = await res.json();
-    if (res.ok) {
-      alert("లాగిన్ విజయవంతమైంది!");
-      verifiedEmail = email;
-      $("loginNavBtn").innerHTML = `<span>👤</span> ${email.split('@')[0]}`;
+    if(res.ok) {
+      alert("Login Successful!");
+      $("loginNavBtn").innerHTML = "<span>👤</span> " + email.split('@')[0];
       closeLogin();
     } else {
-      alert(data.error || "తప్పు OTP.");
+      alert(data.message || "Invalid OTP");
     }
-  } catch(err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
+  } catch(e) {
+    alert("Verification error.");
   }
 }
 
+/* Checkout & UPI Scanner Logic */
 function openFullCheckout() {
-  if (cart.length === 0) {
-    alert("మీ కార్ట్ ఖాళీగా ఉంది.");
-    return;
-  }
+  if(cart.length === 0) { alert("Your cart is empty!"); return; }
   closeCart();
   $("fullCheckoutOverlay").classList.add("show");
-  renderCheckoutItems();
   
-  if (savedAddress) {
+  // Render items in checkout list
+  $("checkoutItemsList").innerHTML = cart.map(i => `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+      <span>${i.name} (x${i.quantity})</span>
+      <b>₹${i.price * i.quantity}</b>
+    </div>
+  `).join("");
+
+  if(savedAddress) {
     $("addressDisplayBox").style.display = "block";
     $("addressFormEdit").style.display = "none";
     $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name} (${savedAddress.phone})</b>`;
-    $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark}, ${savedAddress.city} - ${savedAddress.pincode}`;
+    $("addrTextDisplay").innerText = `${savedAddress.house}, ${savedAddress.street}`;
   } else {
-    showAddressForm();
+    $("addressDisplayBox").style.display = "none";
+    $("addressFormEdit").style.display = "block";
   }
+
+  $("paymentSectionView").style.display = "block";
+  $("upiScannerSection").style.display = "none";
+  $("receiptSection").style.display = "none";
 }
 
 function closeFullCheckout() {
   $("fullCheckoutOverlay").classList.remove("show");
+  if(timerInterval) clearInterval(timerInterval);
 }
 
 function showAddressForm() {
@@ -1016,102 +992,91 @@ function saveNewAddress() {
   const phone = $("inputPhone").value.trim();
   const house = $("inputHouse").value.trim();
   const street = $("inputStreet").value.trim();
-  const landmark = $("inputLandmark").value.trim();
-  const pincode = $("inputPincode").value.trim();
-  const city = $("inputCity").value.trim();
 
-  if (!name || !phone || !house || !street || !pincode || !city) {
-    alert("దయచేసి అన్ని అడ్రస్ వివరాలను నింపండి.");
+  if(!name || !phone || !house || !street) {
+    alert("Please fill in all address fields.");
     return;
   }
 
-  savedAddress = { name, phone, house, street, landmark, pincode, city };
+  savedAddress = {name, phone, house, street};
   $("addressFormEdit").style.display = "none";
   $("addressDisplayBox").style.display = "block";
   $("addrNameDisplay").innerHTML = `Deliver to: <b>${name} (${phone})</b>`;
-  $("addrTextDisplay").textContent = `${house}, ${street}, ${landmark}, ${city} - ${pincode}`;
+  $("addrTextDisplay").innerText = `${house}, ${street}`;
 }
 
-function renderCheckoutItems() {
-  $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; border-bottom: 1px solid #f1f1f1; font-size: 13px;">
-      <div><b>${item.name}</b> x ${item.quantity}</div>
-      <div>₹${item.price * item.quantity}</div>
+function proceedToPaymentOrOrder() {
+  if(!savedAddress) {
+    alert("Please save your delivery address first.");
+    return;
+  }
+
+  const selectedMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  
+  if(selectedMethod === "cod") {
+    finalizeCheckout();
+  } else {
+    // UPI QR Code flow
+    const total = cart.reduce((sum,item) => sum + item.price*item.quantity, 0);
+    const upiId = "6281167223-k982@axl";
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=J-Mart&am=${total}&cu=INR`;
+    
+    $("upiQrImg").src = qrUrl;
+    $("paymentSectionView").style.display = "none";
+    $("addressSectionView").style.display = "none";
+    $("upiScannerSection").style.display = "block";
+
+    // 5 Minutes Timer Start
+    startCheckoutTimer();
+  }
+}
+
+function startCheckoutTimer() {
+  if(timerInterval) clearInterval(timerInterval);
+  let timeLeft = 300; // 5 minutes in seconds
+  const timerDisplay = $("timerDisplay");
+  
+  timerInterval = setInterval(() => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("Payment time expired! Returning to cart.");
+      closeFullCheckout();
+    }
+    timeLeft--;
+  }, 1000);
+}
+
+function finalizeCheckout() {
+  if(timerInterval) clearInterval(timerInterval);
+  
+  const total = cart.reduce((sum,item) => sum + item.price*item.quantity, 0);
+  
+  // Show receipt
+  $("addressSectionView").style.display = "none";
+  $("paymentSectionView").style.display = "none";
+  $("upiScannerSection").style.display = "none";
+  $("receiptSection").style.display = "block";
+
+  $("receiptDetails").innerHTML = `
+    <b>Customer:</b> ${savedAddress.name} (${savedAddress.phone})<br>
+    <b>Delivery Address:</b> ${savedAddress.house}, ${savedAddress.street}<br>
+    <b>Total Amount Paid:</b> ₹${total}<br>
+    <b>Payment Mode:</b> ${document.querySelector('input[name="payMethod"]:checked').value.toUpperCase()}
+  `;
+
+  $("receiptItemsList").innerHTML = cart.map(i => `
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+      <img src="${imageURL(i.file)}" style="width:40px; height:40px; object-fit:contain;" onerror="this.style.display='none'">
+      <div style="flex:1; font-size:13px;">
+        <div><b>${i.name}</b></div>
+        <div>Qty: ${i.quantity} | ₹${i.price * i.quantity}</div>
+      </div>
     </div>
   `).join("");
-}
-
-async function handleCheckoutSendOTP() {
-  const email = $("checkoutEmailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి.");
-    return;
-  }
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("OTP ఈమెయిల్‌కి పంపబడింది!");
-      verifiedEmail = email;
-      $("emailStepBox").style.display = "none";
-      $("otpStepBox").style.display = "block";
-    } else {
-      alert(data.error || "OTP పంపడంలో విఫలమైంది.");
-    }
-  } catch(err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం.");
-  }
-}
-
-function handleCheckoutVerifyOTP() {
-  const otp = $("checkoutOtpInput").value.trim();
-  if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
-    return;
-  }
-  // Simplified local verification or call server verify
-  alert("ఈమెయిల్ వెరిఫికేషన్ విజయవంతమైంది!");
-  $("otpStepBox").style.display = "none";
-  $("paymentSectionView").style.display = "block";
-}
-
-async function finalizeCheckout() {
-  if (!savedAddress) {
-    alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి.");
-    return;
-  }
-
-  const orderData = {
-    email: verifiedEmail || "guest@jmart.com",
-    address: savedAddress,
-    items: cart,
-    total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  };
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/place-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData)
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("Order placed successfully!");
-      cart = [];
-      updateCart();
-      closeFullCheckout();
-    } else {
-      alert(data.error || "ఆర్డర్ ప్లేస్ చేయడం కుదరలేదు.");
-    }
-  } catch(err) {
-    console.error(err);
-    alert("సర్వర్ కనెక్షన్ లోపం.");
-  }
 }
 </script>
 </body>
