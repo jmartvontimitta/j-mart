@@ -2,12 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const { createClient } = require('@supabase/supabase-js');
+const multer = require('multer'); // Multer import చేయబడింది
 require('dotenv').config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Multer setup for handling file upload in memory storage
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Brevo (Sendinblue) API Setup
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -64,23 +69,32 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// 3. Place Order & Save to Supabase & Send Admin Email Route (With Payment Verification Check)
-app.post('/api/place-order', async (req, res) => {
+// 3. Place Order & Save to Supabase & Send Admin Email Route (With Multer for Payment Proof Screenshot)
+app.post('/api/place-order', upload.single('paymentProof'), async (req, res) => {
     try {
         const { email, address, items, totalAmount, paymentVerified } = req.body;
+        const proofFile = req.file; // యూజర్ అప్‌లోడ్ చేసిన స్క్రీన్ షాట్ ఫైల్
 
-        if (!email || !address || !items || items.length === 0) {
+        if (!email || !address || !items) {
             return res.status(400).json({ success: false, message: "ఆర్డర్ వివరాలు అసంపూర్తిగా ఉన్నాయి" });
         }
 
-        // పేమెంట్ వెరిఫై అయిందా లేదా అని చెక్ చేయడం (కచ్చితంగా పేమెంట్ జరగాలి)
-        if (!paymentVerified) {
-            return res.status(400).json({ success: false, message: "పేమెంట్ నిర్ధారణ కాలేదు. దయచేసి చెల్లింపు పూర్తి చేయండి." });
+        // Parse items if sent as string from FormData
+        const parsedItems = typeof items === 'string' ? JSON.parse(items) : items;
+        const parsedAddress = typeof address === 'string' ? JSON.parse(address) : address;
+
+        if (!parsedItems || parsedItems.length === 0) {
+            return res.status(400).json({ success: false, message: "ఆర్డర్‌లో వస్తువులు లేవు" });
+        }
+
+        // పేమెంట్ వెరిఫై అయిందా లేదా అని చెక్ చేయడం
+        if (paymentVerified !== "true" && paymentVerified !== true) {
+            return res.status(400).json({ success: false, message: "పేమెంట్ నిర్ధారణ కాలేదు. దయచేసి చెల్లింపు పూర్తి చేసి స్క్రీన్ షాట్ అప్‌లోడ్ చేయండి." });
         }
 
         // Address formatting
-        const addressStr = typeof address === 'object' && address !== null
-            ? `${address.name || ''}, ${address.phone || ''}, ${address.house || ''}, ${address.street || ''}, ${address.landmark ? address.landmark + ', ' : ''}${address.city || ''} - ${address.pincode || ''}`
+        const addressStr = typeof parsedAddress === 'object' && parsedAddress !== null
+            ? `${parsedAddress.name || ''}, ${parsedAddress.phone || ''}, ${parsedAddress.house || ''}, ${parsedAddress.street || ''}, ${parsedAddress.landmark ? parsedAddress.landmark + ', ' : ''}${parsedAddress.city || ''} - ${parsedAddress.pincode || ''}`
             : address;
 
         // 1. Save order into Supabase 'orders' table
@@ -90,7 +104,7 @@ app.post('/api/place-order', async (req, res) => {
                 { 
                     email: email, 
                     address: addressStr, 
-                    items: items, 
+                    items: parsedItems, 
                     total_amount: totalAmount,
                     payment_status: "Verified",
                     created_at: new Date()
@@ -103,7 +117,7 @@ app.post('/api/place-order', async (req, res) => {
         }
 
         // 2. Format order details for admin email
-        let itemsListHtml = items.map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</li>`).join('');
+        let itemsListHtml = parsedItems.map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</li>`).join('');
         
         const orderDetailsString = `
             <p><b>కస్టమర్ ఈమెయిల్:</b> ${email}</p>
@@ -111,19 +125,30 @@ app.post('/api/place-order', async (req, res) => {
             <p><b>ఆర్డర్ చేసిన వస్తువులు:</b></p>
             <ul>${itemsListHtml}</ul>
             <p><b>మొత్తం బిల్లు:</b> ₹${totalAmount}</p>
-            <p><b>పేమెంట్ స్టేటస్:</b> చెల్లించబడింది (Verified)</p>
+            <p><b>పేమెంట్ స్టేటస్:</b> చెల్లించబడింది & స్క్రీన్ షాట్ అటాచ్ చేయబడింది (Verified)</p>
         `;
 
-        // 3. Send email to Admin via Brevo
+        // 3. Send email to Admin via Brevo with attachment
         const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSibiEmail.sender = { name: "J-Mart Orders", email: process.env.SENDER_EMAIL };
+        sendSidnibEmailTo = [{ email: process.env.ADMIN_MAIL }]; 
         sendSibiEmail.to = [{ email: process.env.ADMIN_MAIL }]; 
-        sendSibiEmail.subject = "New Order Received - J-Mart";
+        sendSibiEmail.subject = "New Order Received - J-Mart (With Payment Proof)";
         sendSibiEmail.htmlContent = `<h3>కొత్త ఆర్డర్ వచ్చింది!</h3>${orderDetailsString}`;
+
+        // ఒకవేళ యూజర్ స్క్రీన్ షాట్ అప్‌లోడ్ చేసి ఉంటే దాన్ని ఈమెయిల్‌కు అటాచ్ చేయడం
+        if (proofFile) {
+            sendSibiEmail.attachment = [
+                {
+                    content: proofFile.buffer.toString('base64'),
+                    name: proofFile.originalname || 'payment_proof.jpg'
+                }
+            ];
+        }
 
         await apiInstance.sendTransacEmail(sendSibiEmail);
 
-        res.json({ success: true, message: "పేమెంట్ విజయవంతమైంది, ఆర్డర్ కన్ఫర్మ్ చేయబడింది!" });
+        res.json({ success: true, message: "పేమెంట్ స్క్రీన్ షాట్ అప్‌లోడ్ చేయబడింది, ఆర్డర్ కన్ఫర్మ్ చేయబడింది!" });
     } catch (error) {
         console.error("Error placing order:", error);
         res.status(500).json({ success: false, message: "ఆర్డర్ ప్రాసెస్ చేయడంలో సర్వర్ లోపం" });
