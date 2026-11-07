@@ -684,7 +684,7 @@ footer {
 
 <script>
 const BACKEND_URL = "https://j-mart-mawl.onrender.com";
-const MERCHANT_UPI = "6281167223-k982@ybl"; // <--- మీ UPI ID ఇక్కడ మార్చుకోండి
+const MERCHANT_UPI = "6281167223-k982@axl"; // <--- మీ UPI ID ఇక్కడ మార్చుకోండి
 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
@@ -1139,7 +1139,6 @@ function togglePaymentMethod(method) {
   if (method === 'upi') {
     $("upiQrBox").style.display = "block";
     const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${totalAmount}&cu=INR`;
-    $("upiQrImage.src") = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiLink)}`;
     document.getElementById("upiQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiLink)}`;
     $("upiIdText").textContent = `UPI ID: ${MERCHANT_UPI} | Amount: ₹${totalAmount}`;
   } else {
