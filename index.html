@@ -1168,6 +1168,9 @@ function saveNewAddress() {
   const pincode = $("inputPincode").value.trim();
 
   if (!name || !phone || !house || !street || !city || !pincode) {
+    alert("దయచేసి అన్ని వివరాలు పూరించండి!");
+    return;
+  }
 
   savedAddress = { name, phone, house, street, landmark, city, pincode };
   localStorage.setItem("jmart_saved_address", JSON.stringify(savedAddress));
@@ -1247,8 +1250,14 @@ function finalizeOrder() {
   localStorage.setItem("jmart_user_orders", JSON.stringify(existingOrders));
 
   // Render receipt
-  [1, 2, 3].forEach(s => $("checkoutStep" + s).classList.remove("active"));
-  $("checkoutReceipt").classList.add("active");
+  [1, 2, 3].forEach(s => {
+    const st = $("checkoutStep" + s);
+    if(st) st.classList.remove("active");
+  });
+  
+  const receiptEl = $("checkoutReceipt");
+  if(receiptEl) receiptEl.classList.add("active");
+
   $("receiptDetails").innerHTML = `
     <b>Order ID:</b> ${orderData.id}<br>
     <b>Date:</b> ${orderData.date}<br>
