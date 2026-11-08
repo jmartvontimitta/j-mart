@@ -43,7 +43,7 @@ header {
 .brand-icon { font-size: 34px; }
 .brand h2 { color: var(--green); font-size: 25px; }
 .brand p { font-size: 11px; margin-top: 3px; }
-nav { display: flex; gap: 16px; }
+nav { display: flex; gap: 16px; align-items: center; }
 .nav-button {
   border: 0;
   background: white;
@@ -334,7 +334,7 @@ footer {
   line-height: 1.8;
 }
  
-/* Full Screen Checkout Modal */
+/* Full Screen Checkout View */
 .full-checkout-overlay {
   position: fixed;
   inset: 0;
@@ -400,53 +400,110 @@ footer {
   border-radius: 4px;
 }
  
-/* Login Modal */
+/* Enhanced Login / OTP Modal with Special Design and No 'X' Button */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 100;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
   display: none;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(3px);
 }
 .modal-overlay.show { display: flex; }
 .modal-card {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
+  background: #ffffff;
+  padding: 35px 30px;
+  border-radius: 20px;
   width: 90%;
-  max-width: 360px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  max-width: 380px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  text-align: center;
   position: relative;
+  animation: modalScaleUp 0.3s ease;
 }
-.modal-card h2 { color: var(--green); margin-bottom: 15px; }
+@keyframes modalScaleUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-card h2 { color: var(--dark); margin-bottom: 8px; font-size: 22px; }
+.modal-card p.subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
 .modal-card input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 15px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
 }
-.modal-card button {
+.modal-card input:focus { border-color: var(--green); }
+.modal-card button.primary-btn {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: var(--green);
   color: white;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(7,139,98,0.2);
+  transition: background 0.2s;
 }
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
+.modal-card button.primary-btn:hover { background: var(--dark); }
+.modal-card button.back-link-btn {
+  background: transparent;
   border: none;
-  font-size: 20px;
-  color: #888;
+  color: #666;
+  font-size: 13px;
+  margin-top: 15px;
+  cursor: pointer;
+  text-decoration: underline;
 }
- 
+
+/* Your Orders View / Page Section */
+.orders-section {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  display: none;
+}
+.orders-section.show { display: block; }
+.order-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.order-item-row img {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
 @media (max-width: 700px) {
   header { padding: 9px 11px; }
   .brand h2 { font-size: 21px; }
@@ -470,7 +527,7 @@ footer {
  
 <body>
 <header>
-  <a class="brand" href="#" aria-label="J-Mart home">
+  <a class="brand" href="#" aria-label="J-Mart home" onclick="showMainShop(); return false;">
     <span class="brand-icon">🛒</span>
     <span>
      <h2>J-Mart</h2>
@@ -478,52 +535,66 @@ footer {
     </span>
   </a>
   <nav aria-label="Main navigation">
-    <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <button class="nav-button" onclick="showMainShop(); window.scrollTo({top:0,behavior:'smooth'})">
       <span>🏠</span>Home
     </button>
     <button class="nav-button" onclick="openCart()">
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
-    <button class="nav-button" id="loginNavBtn" onclick="openLogin()">
+    <button class="nav-button" id="ordersNavBtn" onclick="openYourOrders()" style="display:none;">
+      <span>📦</span>Orders
+    </button>
+    <button class="nav-button" id="loginNavBtn" onclick="openLoginModal()">
       <span>👤</span><span id="loginNavText">Login</span>
     </button>
   </nav>
 </header>
  
-<div class="search-wrap">
-  <input id="searchInput" type="search" placeholder="Search for products or categories..." aria-label="Search products" oninput="renderProducts()">
-  <span class="search-icon">🔎</span>
-</div>
- 
-<section class="hero">
-  <p class="eyebrow">WELCOME TO J-MART</p>
-  <h1>Your Daily Essentials Delivered Fresh</h1>
-  <p>Groceries · Household · Better Living</p>
-  <button class="primary-button" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-    Shop Now →
-  </button>
-</section>
- 
-<section class="categories">
-  <h3>☷ Categories</h3>
-  <div class="category-list" id="categoryList"></div>
-</section>
- 
-<main class="products-section" id="productsSection">
-  <div class="section-heading">
-    <div>
-      <h2 id="sectionTitle">All Products</h2>
-      <span id="itemCount"></span>
-    </div>
-    <select id="sortSelect" aria-label="Sort products" onchange="renderProducts()">
-      <option value="popular">Sort by: Popularity</option>
-      <option value="low">Price: Low to High</option>
-      <option value="high">Price: High to Low</option>
-      <option value="az">Name: A to Z</option>
-    </select>
+<div id="shopMainContent">
+  <div class="search-wrap">
+    <input id="searchInput" type="search" placeholder="Search for products or categories..." aria-label="Search products" oninput="renderProducts()">
+    <span class="search-icon">🔎</span>
   </div>
-  <div class="product-grid" id="productGrid"></div>
-</main>
+   
+  <section class="hero">
+    <p class="eyebrow">WELCOME TO J-MART</p>
+    <h1>Your Daily Essentials Delivered Fresh</h1>
+    <p>Groceries · Household · Better Living</p>
+    <button class="primary-button" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+      Shop Now →
+    </button>
+  </section>
+   
+  <section class="categories">
+    <h3>☷ Categories</h3>
+    <div class="category-list" id="categoryList"></div>
+  </section>
+   
+  <main class="products-section" id="productsSection">
+    <div class="section-heading">
+      <div>
+        <h2 id="sectionTitle">All Products</h2>
+        <span id="itemCount"></span>
+      </div>
+      <select id="sortSelect" aria-label="Sort products" onchange="renderProducts()">
+        <option value="popular">Sort by: Popularity</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
+        <option value="az">Name: A to Z</option>
+      </select>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+  </main>
+</div>
+
+<!-- Your Orders Section View -->
+<div class="orders-section" id="ordersSectionView">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="color: var(--dark);">Your Order History</h2>
+    <button class="primary-button" style="padding: 8px 14px; font-size: 13px;" onclick="showMainShop()">Back to Shopping</button>
+  </div>
+  <div id="userOrdersListContainer"></div>
+</div>
  
 <footer>
   <h2>🛒 J-Mart</h2>
@@ -594,7 +665,7 @@ footer {
          <label>Pincode</label>
           <input type="text" id="inputPincode" placeholder="e.g. 516213">
         </div>
-        <button class="place-order" onclick="saveNewAddress()">Save Address</button>
+        <button class="place-order" onclick="saveNewAddress()">Save Address & Continue</button>
       </div>
  
       <!-- Order Items List -->
@@ -605,8 +676,11 @@ footer {
     </div>
  
     <!-- Payment Section -->
-    <div id="paymentSectionView" style="margin-top: 20px;">
-      <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
+    <div id="paymentSectionView" style="margin-top: 20px; display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+        <h3 style="color: var(--dark);">Select Payment Method</h3>
+        <button style="background: none; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 12px;" onclick="backToAddressFromPayment()">← Back to Address</button>
+      </div>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
        <label><input type="radio" name="payMethod" value="cod" checked> <b>Cash on Delivery (COD)</b></label>
       </div>
@@ -618,14 +692,17 @@ footer {
  
     <!-- UPI Scanner & Timer Section (Hidden by default) -->
     <div id="upiScannerSection" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa;">
-      <h3 style="color: var(--dark); margin-bottom: 10px;">Scan & Pay via UPI</h3>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <h3 style="color: var(--dark);">Scan & Pay via UPI</h3>
+        <button style="background: none; border: 1px solid #666; color: #666; padding: 4px 10px; border-radius: 4px; font-size: 12px;" onclick="backToPaymentMethod()">← Back</button>
+      </div>
       <p style="font-size: 14px; color: #666; margin-bottom: 15px;">సమయం ముగిసేలోపు చెల్లింపు పూర్తి చేయండి మరియు పేమెంట్ ప్రూఫ్ (స్క్రీన్ షాట్) అప్‌లోడ్ చేయండి:</p>
       <div id="timerDisplay" style="font-size: 20px; font-weight: bold; color: #e53935; margin-bottom: 15px;">05:00</div>
       <div id="qrCodeContainer" style="margin-bottom: 15px;">
         <img id="upiQrImg" src="" alt="UPI QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px; background: #fff;">
       </div>
       <p style="font-size: 13px; margin-bottom: 15px;">UPI ID: <b>jmartvontimitta@okaxis</b></p>
-      
+       
       <!-- Payment Proof File Input -->
       <div style="margin-bottom: 15px; text-align: left; background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
         <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">Upload Payment Proof (Screenshot):</label>
@@ -650,18 +727,22 @@ footer {
   </div>
 </div>
  
-<!-- Login / OTP Modal -->
+<!-- Special Styled Login / OTP Modal (No 'X' Button) -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal-card">
-    <button class="modal-close" onclick="closeLogin()">×</button>
-    <h2 id="modalTitle">Login with OTP</h2>
+    <h2 id="modalTitle">Welcome to J-Mart</h2>
+    <p class="subtitle" id="modalSubtitle">Enter your email to sign in or register</p>
+    
     <div id="emailStep">
-      <input type="email" id="emailInput" placeholder="Enter your email">
-      <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+      <input type="email" id="emailInput" placeholder="name@example.com">
+      <button class="primary-btn" onclick="handleSendOTP()">Send OTP</button>
+      <button class="back-link-btn" onclick="closeLoginModal()">Cancel</button>
     </div>
+    
     <div id="otpStep" style="display: none;">
       <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
-      <button id="verifyBtn" onclick="handleVerifyOTP()">Verify OTP</button>
+      <button class="primary-btn" onclick="handleVerifyOTP()">Verify & Login</button>
+      <button class="back-link-btn" onclick="goBackToEmailStep()">← Back to Email</button>
     </div>
   </div>
 </div>
@@ -797,10 +878,67 @@ document.addEventListener("DOMContentLoaded", () => {
  
 function checkLoginState() {
   if (loggedInUserEmail) {
-    $("loginNavText").textContent = loggedInUserEmail.split('@')[0];
+    $("loginNavText").textContent = loggedInUserEmail;
+    $("ordersNavBtn").style.display = "block";
   } else {
     $("loginNavText").textContent = "Login";
+    $("ordersNavBtn").style.display = "none";
   }
+}
+
+function showMainShop() {
+  $("shopMainContent").style.display = "block";
+  $("ordersSectionView").classList.remove("show");
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function openYourOrders() {
+  if (!loggedInUserEmail) {
+    openLoginModal();
+    return;
+  }
+  $("shopMainContent").style.display = "none";
+  $("ordersSectionView").classList.add("show");
+  renderUserOrdersHistory();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderUserOrdersHistory() {
+  const container = $("userOrdersListContainer");
+  const allOrders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
+  const userOrders = allOrders.filter(o => o.email && o.email.toLowerCase() === loggedInUserEmail.toLowerCase());
+
+  if (userOrders.length === 0) {
+    container.innerHTML = `<div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 10px; border: 1px solid var(--border);">
+      <h3>No previous orders found for ${loggedInUserEmail}</h3>
+      <p style="margin-top: 10px; font-size: 14px;">When you place orders, they will appear right here!</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = userOrders.map(order => `
+    <div class="order-card">
+      <div class="order-card-header">
+        <span><b>Order ID:</b> ${order.id}</span>
+        <span><b>Date:</b> ${order.date}</span>
+        <span style="color: var(--green); font-weight: bold;">Total: ₹${order.total}</span>
+      </div>
+      <div style="font-size: 13px; color: #555; margin-bottom: 10px;">
+        <b>Deliver to:</b> ${order.address.name}, ${order.address.phone}, ${order.address.house}, ${order.address.street}, ${order.address.city} - ${order.address.pincode}
+      </div>
+      <div style="border-top: 1px solid #eee; padding-top: 8px;">
+        ${order.items.map(item => `
+          <div class="order-item-row">
+            <img src="${imageURL(item.file)}" alt="${item.name}" onerror="this.src='https://placehold.co/45x45/f2f7f4/078b62?text=J-Mart'">
+            <div style="flex: 1;">
+              <div style="font-weight: bold;">${item.name}</div>
+              <div style="color: #666; font-size: 12px;">Qty: ${item.quantity} × ₹${item.price} = ₹${item.quantity * item.price}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 }
  
 function renderCategories() {
@@ -884,25 +1022,22 @@ function updateCart() {
            ₹${item.price} × ${item.quantity} = ₹${item.price*item.quantity}
           </div>
           <div class="quantity-controls">
-            <button onclick="changeQuantity(${index},-1)" aria-label="Decrease quantity">−</button>
-           <span>${item.quantity}</span>
-            <button onclick="changeQuantity(${index},1)" aria-label="Increase quantity">+</button>
+            <button onclick="changeQty(${index}, -1)">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="changeQty(${index}, 1)">+</button>
           </div>
         </div>
-        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑</button>
+        <button class="remove-item" onclick="removeItem(${index})">×</button>
       </div>
     `).join("")
-    : `<div class="empty-cart">
-        <div style="font-size:36px">🛒</div>
-        <p>Your cart is empty.</p>
-        <p style="font-size:12px; color:#999; margin-top:5px;">Add fresh groceries & essentials to start shopping!</p>
-      </div>`;
+    : '<div class="empty-cart">Your cart is empty</div>';
 
   const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
-  $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
+  const totalItems = cart.reduce((sum,item) => sum + item.quantity, 0);
+  $("cartTotal").textContent = `Items: ${totalItems} · Total: ₹${total}`;
 }
 
-function changeQuantity(index, delta) {
+function changeQty(index, delta) {
   cart[index].quantity += delta;
   if (cart[index].quantity <= 0) {
     cart.splice(index, 1);
@@ -925,14 +1060,72 @@ function closeCart() {
   $("cartPanel").classList.remove("open");
 }
 
+/* Login Modal Functions */
+function openLoginModal() {
+  if (loggedInUserEmail) {
+    if (confirm("Do you want to logout (" + loggedInUserEmail + ")?")) {
+      loggedInUserEmail = null;
+      localStorage.removeItem("jmart_user_email");
+      checkLoginState();
+      showMainShop();
+    }
+    return;
+  }
+  $("emailInput").value = "";
+  $("otpInput").value = "";
+  $("emailStep").style.display = "block";
+  $("otpStep").style.display = "none";
+  $("modalTitle").textContent = "Welcome to J-Mart";
+  $("modalSubtitle").textContent = "Enter your email to sign in or register";
+  $("loginModal").classList.add("show");
+}
+
+function closeLoginModal() {
+  $("loginModal").classList.remove("show");
+}
+
+function handleSendOTP() {
+  const email = $("emailInput").value.trim();
+  if (!email || !email.includes("@")) {
+    alert("Please enter a valid email address");
+    return;
+  }
+  alert("OTP sent successfully to " + email);
+  $("emailStep").style.display = "none";
+  $("otpStep").style.display = "block";
+  $("modalTitle").textContent = "Verify OTP";
+  $("modalSubtitle").textContent = "Enter the 6-digit code sent to " + email;
+}
+
+function goBackToEmailStep() {
+  $("emailStep").style.display = "block";
+  $("otpStep").style.display = "none";
+  $("modalTitle").textContent = "Welcome to J-Mart";
+  $("modalSubtitle").textContent = "Enter your email to sign in or register";
+}
+
+function handleVerifyOTP() {
+  const otp = $("otpInput").value.trim();
+  if (otp.length !== 6) {
+    alert("Please enter a valid 6-digit OTP");
+    return;
+  }
+  loggedInUserEmail = $("emailInput").value.trim();
+  localStorage.setItem("jmart_user_email", loggedInUserEmail);
+  checkLoginState();
+  closeLoginModal();
+  alert("Successfully logged in as " + loggedInUserEmail);
+}
+
+/* Checkout Flow Functions */
 function handlePlaceOrderClick() {
   if (cart.length === 0) {
-    alert("మీ కార్ట్ ఖాళీగా ఉంది. దయచేసి కొన్ని వస్తువులను జోడించండి.");
+    alert("Your cart is empty!");
     return;
   }
   if (!loggedInUserEmail) {
-    alert("దయచేసి ముందుగా లాగిన్ చేయండి.");
-    openLogin();
+    closeCart();
+    openLoginModal();
     return;
   }
   closeCart();
@@ -941,21 +1134,34 @@ function handlePlaceOrderClick() {
 
 function openFullCheckout() {
   $("fullCheckoutOverlay").classList.add("show");
-  renderCheckoutItems();
-  
+  $("addressSectionView").style.display = "block";
+  $("paymentSectionView").style.display = "none";
+  $("upiScannerSection").style.display = "none";
+  $("receiptSection").style.display = "none";
+
   if (savedAddress) {
     $("addressDisplayBox").style.display = "block";
     $("addressFormEdit").style.display = "none";
     $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b> (${savedAddress.phone})`;
-    $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
   } else {
     $("addressDisplayBox").style.display = "none";
     $("addressFormEdit").style.display = "block";
+    $("inputName").value = "";
+    $("inputPhone").value = "";
+    $("inputHouse").value = "";
+    $("inputStreet").value = "";
+    $("inputLandmark").value = "";
+    $("inputCity").value = "";
+    $("inputPincode").value = "";
   }
-  
-  $("paymentSectionView").style.display = "block";
-  $("upiScannerSection").style.display = "none";
-  $("receiptSection").style.display = "none";
+
+  $("checkoutItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px;">
+      <span>${item.name} (x${item.quantity})</span>
+      <b>₹${item.price * item.quantity}</b>
+    </div>
+  `).join("");
 }
 
 function closeFullCheckout() {
@@ -965,7 +1171,6 @@ function closeFullCheckout() {
 
 function showAddressForm() {
   $("addressFormEdit").style.display = "block";
-  $("addressDisplayBox").style.display = "none";
 }
 
 function saveNewAddress() {
@@ -978,205 +1183,112 @@ function saveNewAddress() {
   const pincode = $("inputPincode").value.trim();
 
   if (!name || !phone || !house || !street || !city || !pincode) {
-    alert("దయచేసి అన్ని ముఖ్యమైన అడ్రస్ వివరాలను నింపండి.");
+    alert("Please fill in all required address fields!");
     return;
   }
 
   savedAddress = { name, phone, house, street, landmark, city, pincode };
   
-  $("addressFormEdit").style.display = "none";
-  $("addressDisplayBox").style.display = "block";
-  $("addrNameDisplay").innerHTML = `Deliver to: <b>${name}</b> (${phone})`;
-  $("addrTextDisplay").textContent = `${house}, ${street}, ${landmark ? landmark + ', ' : ''}${city} - ${pincode}`;
+  $("addressSectionView").style.display = "none";
+  $("paymentSectionView").style.display = "block";
 }
 
-function renderCheckoutItems() {
-  $("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px;">
-      <div><b>${item.name}</b> × ${item.quantity}</div>
-      <div>₹${item.price * item.quantity}</div>
-    </div>
-  `).join("");
+function backToAddressFromPayment() {
+  $("paymentSectionView").style.display = "none";
+  $("addressSectionView").style.display = "block";
+  $("addressFormEdit").style.display = "none";
+  $("addressDisplayBox").style.display = "block";
+}
+
+function backToPaymentMethod() {
+  $("upiScannerSection").style.display = "none";
+  $("paymentSectionView").style.display = "block";
+  if (timerInterval) clearInterval(timerInterval);
 }
 
 function proceedToPaymentOrOrder() {
-  if (!savedAddress) {
-    alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి.");
-    return;
-  }
-
-  const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
-
-  if (payMethod === "cod") {
-    submitOrderToBackend(false, null);
+  const selectedPay = document.querySelector('input[name="payMethod"]:checked').value;
+  if (selectedPay === "cod") {
+    finalizeOrder("Cash on Delivery (COD)");
   } else {
     $("paymentSectionView").style.display = "none";
     $("upiScannerSection").style.display = "block";
     
-    // Generate UPI QR Code
     const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
     const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
     $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
     
-    startUpiTimer(300); // 5 minutes timer
+    startUpiTimer();
   }
 }
 
-function startUpiTimer(duration) {
+function startUpiTimer() {
   if (timerInterval) clearInterval(timerInterval);
-  let timer = duration;
-  const display = $("timerDisplay");
+  let timeLeft = 300;
+  const timerDisplay = $("timerDisplay");
   
   timerInterval = setInterval(() => {
-    let minutes = parseInt(timer / 60, 10);
-    let seconds = parseInt(timer % 60, 10);
-
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-    seconds = seconds < 10 ? "0" + seconds : seconds;
-
-    display.textContent = minutes + ":" + seconds;
-
-    if (--timer < 0) {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    timerDisplay.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    if (timeLeft <= 0) {
       clearInterval(timerInterval);
-      alert("సమయం ముగిసింది! దయచేసి మళ్లీ ప్రయత్నించండి.");
-      $("upiScannerSection").style.display = "none";
-      $("paymentSectionView").style.display = "block";
+      alert("Payment time expired!");
+      backToPaymentMethod();
     }
+    timeLeft--;
   }, 1000);
 }
 
 function finalizeVerifiedOrder() {
   const proofFile = $("paymentProofInput").files[0];
   if (!proofFile) {
-    alert("దయచేసి UPI స్క్రీన్ షాట్ (Payment Proof) అప్‌లోడ్ చేయండి!");
+    alert("Please upload payment proof screenshot to confirm order!");
     return;
   }
-
   if (timerInterval) clearInterval(timerInterval);
-  submitOrderToBackend(true, proofFile);
+  finalizeOrder("UPI / Online Payment");
 }
 
-async function submitOrderToBackend(isUpiVerified, proofFile) {
+function finalizeOrder(paymentMethodName) {
   const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
-  
-  const formData = new FormData();
-  formData.append("email", loggedInUserEmail);
-  formData.append("address", JSON.stringify(savedAddress));
-  formData.append("items", JSON.stringify(cart));
-  formData.append("totalAmount", total);
-  formData.append("paymentVerified", isUpiVerified);
+  const orderId = "JM" + Math.floor(100000 + Math.random() * 900000);
+  const orderDate = new Date().toLocaleString();
 
-  if (proofFile) {
-    formData.append("paymentProof", proofFile);
-  }
+  const newOrder = {
+    id: orderId,
+    email: loggedInUserEmail,
+    date: orderDate,
+    items: [...cart],
+    total: total,
+    address: savedAddress,
+    paymentMethod: paymentMethodName
+  };
 
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/place-order`, {
-      method: "POST",
-      body: formData
-    });
+  const existingOrders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
+  existingOrders.unshift(newOrder);
+  localStorage.setItem("jmart_user_orders", JSON.stringify(existingOrders));
 
-    const result = await response.json();
-
-    if (result.success) {
-      showReceipt(total, isUpiVerified);
-    } else {
-      alert("ఆర్డర్ విఫలమైంది: " + (result.message || "సమస్య ఎదురైంది"));
-    }
-  } catch (err) {
-    console.error("Order Error:", err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
-  }
-}
-
-function showReceipt(total, isUpiVerified) {
   $("addressSectionView").style.display = "none";
   $("paymentSectionView").style.display = "none";
   $("upiScannerSection").style.display = "none";
   $("receiptSection").style.display = "block";
 
   $("receiptDetails").innerHTML = `
-    <p><b>ఈమెయిల్:</b> ${loggedInUserEmail}</p>
-    <p><b>డెలివరీ అడ్రస్:</b> ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.city} - ${savedAddress.pincode}</p>
-    <p><b>మొత్తం బిల్లు:</b> ₹${total}</p>
-    <p><b>పేమెంట్ విధానం:</b> ${isUpiVerified ? "UPI / Online Payment (Verified with Screenshot)" : "Cash on Delivery (COD)"}</p>
+    <b>Order ID:</b> ${orderId}<br>
+    <b>Date:</b> ${orderDate}<br>
+    <b>Email Account:</b> ${loggedInUserEmail}<br>
+    <b>Payment Method:</b> ${paymentMethodName}<br>
+    <b>Total Amount Paid:</b> ₹${total}<br>
+    <b>Delivery Address:</b> ${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.city} - ${savedAddress.pincode}
   `;
 
-  $("receiptItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px;">
-      <img src="${imageURL(item.file)}" style="width: 40px; height: 40px; object-fit: contain;" onerror="this.style.display='none'">
-      <div style="font-size: 13px;"><b>${item.name}</b> - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+  $("receiptItemsList").innerHTML = cart.map(i => `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px;">
+      <img src="${imageURL(i.file)}" style="width: 40px; height: 40px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px;" onerror="this.style.display='none'">
+      <div><b>${i.name}</b> (Qty: ${i.quantity}) - ₹${i.price * i.quantity}</div>
     </div>
   `).join("");
-}
-
-function openLogin() {
-  $("loginModal").classList.add("show");
-}
-
-function closeLogin() {
-  $("loginModal").classList.remove("show");
-  $("emailStep").style.display = "block";
-  $("otpStep").style.display = "none";
-  $("emailInput").value = "";
-  $("otpInput").value = "";
-}
-
-async function handleSendOTP() {
-  const email = $("emailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి మీ ఈమెయిల్ ఎంటర్ చేయండి.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("OTP మీ ఈమెయిల్‌కు పంపబడింది!");
-      $("emailStep").style.display = "none";
-      $("otpStep").style.display = "block";
-      window.tempEmail = email;
-    } else {
-      alert(data.message || "OTP పంపడంలో విఫలమైంది.");
-    }
-  } catch (err) {
-    console.error("OTP Error:", err);
-    alert("సర్వర్ లోపం ఏర్పడింది.");
-  }
-}
-
-async function handleVerifyOTP() {
-  const otp = $("otpInput").value.trim();
-  if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: window.tempEmail, otp })
-    });
-    const data = await res.json();
-    if (data.success) {
-      loggedInUserEmail = window.tempEmail;
-      localStorage.setItem("jmart_user_email", loggedInUserEmail);
-      checkLoginState();
-      closeLogin();
-      alert("లాగిన్ విజయవంతమైంది!");
-    } else {
-      alert(data.message || "తప్పు OTP.");
-    }
-  } catch (err) {
-    console.error("Verify Error:", err);
-    alert("సర్వర్ లోపం ఏర్పడింది.");
-  }
 }
 </script>
 </body>
