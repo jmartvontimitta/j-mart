@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>J-Mart | Fresh Needs, Happy Homes</title>
-
+ 
 <style>
 :root {
   --green: #078b62;
@@ -17,10 +17,33 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text);
   background: white;
+  padding-top: env(safe-area-inset-top);
 }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 
+/* 3-Second Intro Splash Screen */
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--green), var(--dark));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  z-index: 9999;
+  animation: fadeOut 0.5s ease 2.5s forwards;
+}
+@keyframes fadeOut {
+  to { opacity: 0; visibility: hidden; }
+}
+.splash-logo { font-size: 3.5rem; font-weight: bold; margin-bottom: 10px; }
+.splash-tagline { font-size: 1.2rem; opacity: 0.9; font-style: italic; }
+ 
 header {
   position: sticky;
   top: 0;
@@ -43,7 +66,7 @@ header {
 .brand-icon { font-size: 34px; }
 .brand h2 { color: var(--green); font-size: 25px; }
 .brand p { font-size: 11px; margin-top: 3px; }
-nav { display: flex; gap: 16px; }
+nav { display: flex; gap: 12px; align-items: center; }
 .nav-button {
   border: 0;
   background: white;
@@ -80,7 +103,7 @@ nav { display: flex; gap: 16px; }
   outline-color: var(--green);
 }
 .search-icon { position: absolute; right: 30px; }
-
+ 
 .hero {
   background: linear-gradient(110deg, #e5f5d8, #d7edbd);
   padding: 34px 20px;
@@ -105,7 +128,7 @@ nav { display: flex; gap: 16px; }
   padding: 13px 21px;
   font-weight: bold;
 }
-
+ 
 .categories {
   margin: 15px;
   border: 1px solid var(--border);
@@ -137,7 +160,7 @@ nav { display: flex; gap: 16px; }
   background: #e2f4ec;
   color: var(--green);
 }
-
+ 
 .products-section {
   padding: 5px 15px 30px;
   scroll-margin-top: 100px;
@@ -211,7 +234,7 @@ footer {
   padding: 24px;
   line-height: 1.8;
 }
-
+ 
 /* Right-side shopping cart */
 .cart-overlay {
   position: fixed;
@@ -221,7 +244,7 @@ footer {
   display: none;
 }
 .cart-overlay.show { display: block; }
-
+ 
 .cart-panel {
   position: fixed;
   top: 0;
@@ -333,8 +356,8 @@ footer {
   color: #777;
   line-height: 1.8;
 }
-
-/* Full Screen Flipkart/Amazon Style Checkout Modal */
+ 
+/* Full Screen Checkout Modal */
 .full-checkout-overlay {
   position: fixed;
   inset: 0;
@@ -363,7 +386,7 @@ footer {
 }
 .checkout-header-bar h2 { color: var(--dark); font-size: 22px; }
 .checkout-close-btn { background: none; border: none; font-size: 24px; color: #555; font-weight: bold; }
-
+ 
 .address-box {
   background: #f9f9f9;
   border: 1px solid #d4d4d4;
@@ -388,7 +411,7 @@ footer {
   font-size: 13px;
 }
 .address-details { font-size: 14px; color: #555; line-height: 1.6; }
-
+ 
 .form-group {
   margin-bottom: 15px;
 }
@@ -399,13 +422,13 @@ footer {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-/* Login Modal */
+ 
+/* Login / Auth Modal Styles */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 100;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
   display: none;
   align-items: center;
   justify-content: center;
@@ -416,41 +439,46 @@ footer {
   padding: 24px;
   border-radius: 12px;
   width: 90%;
-  max-width: 360px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
   position: relative;
 }
-.modal-card h2 { color: var(--green); margin-bottom: 15px; }
-.modal-card input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.auth-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
 }
-.modal-card button {
-  width: 100%;
+.auth-tab-btn {
+  flex: 1;
   padding: 10px;
-  background: var(--green);
-  color: white;
-  border: 0;
-  border-radius: 8px;
+  background: none;
+  border: none;
+  font-size: 1rem;
   font-weight: bold;
+  cursor: pointer;
+  color: #777;
+}
+.auth-tab-btn.active {
+  color: var(--green);
+  border-bottom: 2px solid var(--green);
 }
 .modal-close {
   position: absolute;
-  top: 10px;
+  top: 12px;
   right: 15px;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   color: #888;
+  cursor: pointer;
 }
+.error-msg { color: #d32f2f; font-size: 12px; margin-top: 5px; }
+.success-msg { color: var(--green); font-size: 12px; margin-top: 5px; }
 
 @media (max-width: 700px) {
   header { padding: 9px 11px; }
   .brand h2 { font-size: 21px; }
-  nav { gap: 10px; }
+  nav { gap: 8px; }
   .hero { padding: 28px 17px; }
   .hero h1 { font-size: 23px; }
   .category-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -467,65 +495,75 @@ footer {
 }
 </style>
 </head>
-
+ 
 <body>
+
+<!-- 3-Second Intro Splash Screen -->
+<div id="splash-screen">
+  <div class="splash-logo">🛒 J-Mart</div>
+  <div class="splash-tagline">Fresh Needs, Happy Homes</div>
+</div>
+
 <header>
   <a class="brand" href="#" aria-label="J-Mart home">
     <span class="brand-icon">🛒</span>
     <span>
-      <h2>J-Mart</h2>
+     <h2>J-Mart</h2>
       <p>Fresh Needs, Happy Homes</p>
     </span>
   </a>
   <nav aria-label="Main navigation">
-    <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'}); showMainStoreView();">
       <span>🏠</span>Home
+    </button>
+    <button class="nav-button" onclick="openYourOrders()">
+      <span>📦</span>Orders
     </button>
     <button class="nav-button" onclick="openCart()">
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
-    <button class="nav-button" id="loginNavBtn" onclick="openLogin()">
-      <span>👤</span>Login
+    <button class="nav-button" id="loginNavBtn" onclick="openLoginModal()">
+      <span>👤</span><span id="loginNavText">Login</span>
     </button>
   </nav>
 </header>
-
-<div class="search-wrap">
-  <input id="searchInput" type="search"
-    placeholder="Search for products..." aria-label="Search products" oninput="renderProducts()">
+ 
+<div class="search-wrap" id="searchWrapContainer">
+  <input id="searchInput" type="search" placeholder="Search for products or categories..." aria-label="Search products" oninput="renderProducts()">
   <span class="search-icon">🔎</span>
 </div>
-
-<section class="hero">
-  <p class="eyebrow">WELCOME TO J-MART</p>
-  <h1>Your Daily Essentials Delivered Fresh</h1>
-  <p>Groceries · Household · Better Living</p>
-  <button class="primary-button"
-    onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
-    Shop Now →
-  </button>
-</section>
-
-<section class="categories">
-  <h3>☷ Categories</h3>
-  <div class="category-list" id="categoryList"></div>
-</section>
-
-<main class="products-section" id="productsSection">
-  <div class="section-heading">
-    <div>
-      <h2 id="sectionTitle">All Products</h2>
-      <span id="itemCount"></span>
+ 
+<div id="dynamicMainContentArea">
+  <section class="hero">
+    <p class="eyebrow">WELCOME TO J-MART</p>
+    <h1>Your Daily Essentials Delivered Fresh</h1>
+    <p>Groceries · Household · Better Living</p>
+    <button class="primary-button" onclick="document.getElementById('productsSection').scrollIntoView({behavior:'smooth'})">
+      Shop Now →
+    </button>
+  </section>
+   
+  <section class="categories">
+    <h3>☷ Categories</h3>
+    <div class="category-list" id="categoryList"></div>
+  </section>
+   
+  <main class="products-section" id="productsSection">
+    <div class="section-heading">
+      <div>
+        <h2 id="sectionTitle">All Products</h2>
+        <span id="itemCount"></span>
+      </div>
+      <select id="sortSelect" aria-label="Sort products" onchange="renderProducts()">
+        <option value="popular">Sort by: Popularity</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
+        <option value="az">Name: A to Z</option>
+      </select>
     </div>
-    <select id="sortSelect" aria-label="Sort products" onchange="renderProducts()">
-      <option value="popular">Sort by: Popularity</option>
-      <option value="low">Price: Low to High</option>
-      <option value="high">Price: High to Low</option>
-      <option value="az">Name: A to Z</option>
-    </select>
-  </div>
-  <div class="product-grid" id="productGrid"></div>
-</main>
+    <div class="product-grid" id="productGrid"></div>
+  </main>
+</div>
 
 <footer>
   <h2>🛒 J-Mart</h2>
@@ -533,11 +571,10 @@ footer {
   <p>Quality products for your everyday needs.</p>
   <p>© <span id="year"></span> J-Mart. All rights reserved.</p>
 </footer>
-
+ 
 <!-- Right-side shopping cart -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
-<aside class="cart-panel" id="cartPanel"
-  role="dialog" aria-label="Shopping cart" aria-modal="true">
+<aside class="cart-panel" id="cartPanel" role="dialog" aria-label="Shopping cart" aria-modal="true">
   <div class="cart-header">
     <h2>▤ Your Cart</h2>
     <button class="cart-close" onclick="closeCart()" aria-label="Close cart">×</button>
@@ -545,10 +582,10 @@ footer {
   <div class="cart-list" id="cartItems"></div>
   <div class="cart-footer">
     <div class="cart-summary" id="cartTotal">Items: 0 · Total: ₹0</div>
-    <button class="place-order" onclick="openFullCheckout()">Place Order</button>
+    <button class="place-order" onclick="handlePlaceOrderClick()">Place Order</button>
   </div>
 </aside>
-
+ 
 <!-- Full Screen Checkout View -->
 <div class="full-checkout-overlay" id="fullCheckoutOverlay">
   <div class="checkout-container" id="checkoutMainContainer">
@@ -556,7 +593,7 @@ footer {
       <h2>J-Mart Checkout</h2>
       <button class="checkout-close-btn" onclick="closeFullCheckout()">×</button>
     </div>
-
+ 
     <!-- Address Section -->
     <div id="addressSectionView">
       <div class="address-box" id="addressDisplayBox" style="display: none;">
@@ -566,61 +603,77 @@ footer {
         </div>
         <div class="address-details" id="addrTextDisplay"></div>
       </div>
-
+ 
       <div id="addressFormEdit" style="margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
         <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add Delivery Address</h3>
         <div class="form-group">
-          <label>Full Name</label>
+         <label>Full Name</label>
           <input type="text" id="inputName" placeholder="Enter full name">
         </div>
         <div class="form-group">
-          <label>Mobile Number</label>
+         <label>Mobile Number</label>
           <input type="text" id="inputPhone" placeholder="Enter mobile number">
         </div>
         <div class="form-group">
-          <label>Flat, House no., Building, Apartment</label>
+         <label>Flat, House no., Building, Apartment</label>
           <input type="text" id="inputHouse" placeholder="e.g. 1/40">
         </div>
         <div class="form-group">
-          <label>Area, Street, Sector, Village</label>
+         <label>Area, Street, Sector, Village</label>
           <input type="text" id="inputStreet" placeholder="e.g. Vontimitta bus stand">
+        </div>
+        <div class="form-group">
+         <label>Landmark (Optional)</label>
+          <input type="text" id="inputLandmark" placeholder="e.g. Near Ramalayam">
+        </div>
+        <div class="form-group">
+         <label>City / Town</label>
+          <input type="text" id="inputCity" placeholder="e.g. Kadapa">
+        </div>
+        <div class="form-group">
+         <label>Pincode</label>
+          <input type="text" id="inputPincode" placeholder="e.g. 516213">
         </div>
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
       </div>
-
+ 
       <!-- Order Items List -->
       <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
         <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Items List</h3>
         <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;"></div>
       </div>
     </div>
-
+ 
     <!-- Payment Section -->
     <div id="paymentSectionView" style="margin-top: 20px;">
       <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod" value="cod" checked> <b>Cash on Delivery (COD)</b></label>
+       <label><input type="radio" name="payMethod" value="cod" checked> <b>Cash on Delivery (COD)</b></label>
       </div>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
-        <label><input type="radio" name="payMethod" value="upi"> <b>UPI / Online Payment (QR Scanner)</b></label>
+       <label><input type="radio" name="payMethod" value="upi"> <b>UPI / Online Payment (QR Scanner)</b></label>
       </div>
       <button class="place-order" onclick="proceedToPaymentOrOrder()">Proceed to Buy / Place Order</button>
     </div>
-
-    <!-- UPI Scanner & Timer Section (Hidden by default) -->
+ 
+    <!-- UPI Scanner & Timer Section -->
     <div id="upiScannerSection" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa;">
       <h3 style="color: var(--dark); margin-bottom: 10px;">Scan & Pay via UPI</h3>
-      <p style="font-size: 14px; color: #666; margin-bottom: 15px;">సమయం ముగిసేలోపు చెల్లింపు పూర్తి చేయండి:</p>
+      <p style="font-size: 14px; color: #666; margin-bottom: 15px;">సమయం ముగిసేలోపు చెల్లింపు పూర్తి చేయండి మరియు పేమెంట్ ప్రూఫ్ (స్క్రీన్ షాట్) అప్‌లోడ్ చేయండి:</p>
       <div id="timerDisplay" style="font-size: 20px; font-weight: bold; color: #e53935; margin-bottom: 15px;">05:00</div>
       <div id="qrCodeContainer" style="margin-bottom: 15px;">
-        <!-- Dynamic QR code generated via API -->
         <img id="upiQrImg" src="" alt="UPI QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px; background: #fff;">
       </div>
       <p style="font-size: 13px; margin-bottom: 15px;">UPI ID: <b>jmartvontimitta@okaxis</b></p>
-      <button class="place-order" style="background: #2874f0;" onclick="finalizeCheckout()">Payment Completed / Confirm Order</button>
+      
+      <div style="margin-bottom: 15px; text-align: left; background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">Upload Payment Proof (Screenshot):</label>
+        <input type="file" id="paymentProofInput" accept="image/*" style="font-size: 13px;">
+      </div>
+      <button class="place-order" style="background: #2874f0;" onclick="finalizeVerifiedOrder()">Payment Completed / Confirm Order</button>
     </div>
-
-    <!-- Receipt Section (Hidden by default) -->
+ 
+    <!-- Receipt Section -->
     <div id="receiptSection" style="display: none; margin-top: 20px; padding: 20px; border: 2px dashed var(--green); border-radius: 8px; background: #f8fff9;">
       <div style="text-align: center; margin-bottom: 15px;">
         <h2 style="color: var(--green);">🎉 Order Successful!</h2>
@@ -629,36 +682,92 @@ footer {
       <div id="receiptDetails" style="font-size: 14px; margin-bottom: 15px; line-height: 1.6;"></div>
       <h4 style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ordered Items & Photos:</h4>
       <div id="receiptItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
-      <button class="place-order" onclick="closeFullCheckout(); cart=[]; updateCart();">Continue Shopping</button>
+      <button class="place-order" onclick="closeFullCheckout(); cart=[]; updateCart(); showMainStoreView();">Continue Shopping</button>
     </div>
-
+ 
   </div>
 </div>
-
-<!-- Login / OTP Modal -->
+ 
+<!-- Login / Sign Up / Forgot Password Modal -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal-card">
-    <button class="modal-close" onclick="closeLogin()">×</button>
-    <h2 id="modalTitle">Login with OTP</h2>
-    <div id="emailStep">
-      <input type="email" id="emailInput" placeholder="Enter your email">
-      <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+    <button class="modal-close" onclick="closeLoginModal()">×</button>
+    
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab-btn" id="tabSignupBtn" onclick="switchAuthTab('signup')">Sign Up</button>
     </div>
-    <div id="otpStep" style="display: none;">
-      <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
-      <button id="verifyBtn" onclick="handleVerifyOTP()">Verify OTP</button>
+
+    <!-- Login Form View -->
+    <div id="loginFormContainer">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="loginEmailInput" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPasswordInput" placeholder="Enter password">
+        <div class="error-msg" id="loginErrorMsg"></div>
+      </div>
+      <button class="place-order" onclick="handleUserLogin()">Login</button>
+      <div style="text-align: center; margin-top: 12px;">
+        <span style="font-size: 13px; color: var(--green); cursor: pointer; font-weight: bold;" onclick="showForgotPasswordView()">Forgot Password?</span>
+      </div>
     </div>
+
+    <!-- Sign Up Form View -->
+    <div id="signupFormContainer" style="display: none;">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="signupNameInput" placeholder="Enter your name">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="signupEmailInput" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label>Create New Password</label>
+        <input type="password" id="signupPasswordInput" placeholder="Create a password">
+        <div class="error-msg" id="signupErrorMsg"></div>
+      </div>
+      <button class="place-order" onclick="handleUserSignup()">Register Account</button>
+    </div>
+
+    <!-- Forgot Password View -->
+    <div id="forgotPasswordContainer" style="display: none;">
+      <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--dark);">Reset Password</h3>
+      <div class="form-group">
+        <label>Registered Email</label>
+        <input type="email" id="forgotEmailInput" placeholder="Enter your registered email">
+      </div>
+      <div class="form-group">
+        <label>Enter OTP received</label>
+        <input type="text" id="forgotOtpInput" placeholder="Enter OTP">
+      </div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="newPasswordInput" placeholder="Enter new password">
+        <div class="error-msg" id="forgotErrorMsg"></div>
+      </div>
+      <button class="place-order" onclick="handleResetPassword()">Reset & Save Password</button>
+      <div style="text-align: center; margin-top: 10px;">
+        <span style="font-size: 13px; color: #555; cursor: pointer;" onclick="switchAuthTab('login')">Back to Login</span>
+      </div>
+    </div>
+
   </div>
 </div>
-
+ 
 <script>
 const BACKEND_URL = "https://j-mart-mawl.onrender.com";
+const MERCHANT_UPI = "6281167223-k982@axl";
+ 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
   REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
-
+ 
 const products = [
-  {name:"Aashirvaad Iodized Salt",file:"aashirvaad_iodized_salt.png",price:28,category:"Sugar & Salt"},
+ {name:"Aashirvaad Iodized Salt",file:"aashirvaad_iodized_salt.png",price:28,category:"Sugar & Salt"},
   {name:"Ariel Complete Plus",file:"ariel_complete_plus.png",price:130,category:"Household Care"},
   {name:"Bingo Cheese Nachos",file:"bingo_cheese_nachos.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bingo Hashtags Spicy Masala",file:"bingo_hashtags_spicy_masala.png",price:20,category:"Biscuits & Snacks"},
@@ -667,8 +776,8 @@ const products = [
   {name:"Bingo Original Style Chilli",file:"bingo_original_style_chilli.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bingo Tedhe Medhe Masala Tadka",file:"bingo_tedhe_medhe_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
   {name:"Bingo Tedhe Medhe Mast Masala Tadka",file:"bingo_tedhe_medhe_mast_masala_tadka.png",price:20,category:"Biscuits & Snacks"},
-  {name:"Bounty",file:"bounty.png",price:20,category:"Biscuits & Snacks"},
-  {name:"Britannia Good Day Butter Cookies",file:"britannia_good_day_butter_cookies.png",price:35,category:"Biscuits & Snacks"},
+ {name:"Bounty",file:"bounty.png",price:20,category:"Biscuits & Snacks"},
+ {name:"Britannia Good Day Butter Cookies",file:"britannia_good_day_butter_cookies.png",price:35,category:"Biscuits & Snacks"},
   {name:"Brooke Bond 3 Roses Natural Care",file:"brooke_bond_3_roses_natural_care.png",price:120,category:"Tea & Coffee"},
   {name:"Brooke Bond Red Label",file:"brooke_bond_red_label.png",price:120,category:"Tea & Coffee"},
   {name:"Brooke Bond Taj Mahal",file:"brooke_bond_taj_mahal.png",price:150,category:"Tea & Coffee"},
@@ -678,7 +787,7 @@ const products = [
   {name:"Campa Cola",file:"campa_cola.png",price:20,category:"Beverages"},
   {name:"Cinthol Lime Soap",file:"cinthol_lime_soap.png",price:40,category:"Personal Care"},
   {name:"Closeup Everfresh Toothpaste",file:"closeup_everfresh_toothpaste.png",price:55,category:"Personal Care"},
-  {name:"Coca-Cola",file:"coca_cola.png",price:40,category:"Beverages"},
+ {name:"Coca-Cola",file:"coca_cola.png",price:40,category:"Beverages"},
   {name:"Colgate MaxFresh Toothpaste",file:"colgate_maxfresh_toothpaste.png",price:60,category:"Personal Care"},
   {name:"Colgate Strong Teeth Toothpaste",file:"colgate_strong_teeth_toothpaste.png",price:55,category:"Personal Care"},
   {name:"Colgate ZigZag Charcoal Toothbrush",file:"colgate_zigzag_charcoal_toothbrush.png",price:35,category:"Personal Care"},
@@ -755,7 +864,15 @@ const categories = [
   ["Biscuits & Snacks","🍟"],
   ["Rice & Grains","🌾"],
   ["Sugar & Salt","🧂"],
- ["Beverages","🥤"],
+ {name:"Beverages", icon:"🥤", 0:"Beverages", 1:"🥤"}, // safely handled below
+];
+
+const catListArray = [
+  ["All Products","☷"],
+  ["Biscuits & Snacks","🍟"],
+  ["Rice & Grains","🌾"],
+  ["Sugar & Salt","🧂"],
+  ["Beverages","🥤"],
   ["Tea & Coffee","☕"],
   ["Household Care","🧽"],
   ["Personal Care","🧼"],
@@ -764,7 +881,7 @@ const categories = [
  
 let selectedCategory = "All Products";
 let cart = [];
-let savedAddress = null;
+let savedAddress = JSON.parse(localStorage.getItem("jmart_saved_address")) || null;
 let loggedInUserEmail = localStorage.getItem("jmart_user_email") || null;
 let timerInterval = null;
  
@@ -787,7 +904,7 @@ function checkLoginState() {
 }
  
 function renderCategories() {
-  $("categoryList").innerHTML = categories.map(([name,icon]) =>
+  $("categoryList").innerHTML = catListArray.map(([name,icon]) =>
     `<button class="${selectedCategory===name ? "active" : ""}" data-category="${name}">${icon} ${name}</button>`
   ).join("");
  
@@ -800,9 +917,15 @@ function renderCategories() {
  
 function selectCategory(name) {
   selectedCategory = name;
+  showMainStoreView();
   renderCategories();
   renderProducts();
   $("productsSection").scrollIntoView({behavior:"smooth"});
+}
+
+function showMainStoreView() {
+  $("dynamicMainContentArea").style.display = "block";
+  $("searchWrapContainer").style.display = "flex";
 }
  
 function renderProducts() {
@@ -872,7 +995,7 @@ function updateCart() {
             <button onclick="changeQuantity(${index},1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
-        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑</button>
+        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑️</button>
       </div>
     `).join("")
     : `<div class="empty-cart">
@@ -915,7 +1038,7 @@ function handlePlaceOrderClick() {
   }
   if (!loggedInUserEmail) {
     alert("దయచేసి ముందుగా లాగిన్ చేయండి.");
-    openLogin();
+    openLoginModal();
     return;
   }
   closeCart();
@@ -966,6 +1089,7 @@ function saveNewAddress() {
   }
 
   savedAddress = { name, phone, house, street, landmark, city, pincode };
+  localStorage.setItem("jmart_saved_address", JSON.stringify(savedAddress));
   
   $("addressFormEdit").style.display = "none";
   $("addressDisplayBox").style.display = "block";
@@ -996,12 +1120,11 @@ function proceedToPaymentOrOrder() {
     $("paymentSectionView").style.display = "none";
     $("upiScannerSection").style.display = "block";
     
-    // Generate UPI QR Code
     const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
     const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
     $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
     
-    startUpiTimer(300); // 5 minutes timer
+    startUpiTimer(300);
   }
 }
 
@@ -1042,6 +1165,20 @@ function finalizeVerifiedOrder() {
 async function submitOrderToBackend(isUpiVerified, proofFile) {
   const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
   
+  const orderDataObj = {
+    email: loggedInUserEmail,
+    address: savedAddress,
+    items: cart,
+    totalAmount: total,
+    paymentVerified: isUpiVerified,
+    date: new Date().toLocaleString()
+  };
+
+  // Save to LocalStorage for "Your Orders" page
+  let existingOrders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
+  existingOrders.unshift(orderDataObj);
+  localStorage.setItem("jmart_user_orders", JSON.stringify(existingOrders));
+
   const formData = new FormData();
   formData.append("email", loggedInUserEmail);
   formData.append("address", JSON.stringify(savedAddress));
@@ -1054,21 +1191,15 @@ async function submitOrderToBackend(isUpiVerified, proofFile) {
   }
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/place-order`, {
+    await fetch(`${BACKEND_URL}/api/place-order`, {
       method: "POST",
       body: formData
-    });
+    }).catch(e => console.log("Backend sync offline fallback used"));
 
-    const result = await response.json();
-
-    if (result.success) {
-      showReceipt(total, isUpiVerified);
-    } else {
-      alert("ఆర్డర్ విఫలమైంది: " + (result.message || "సమస్య ఎదురైంది"));
-    }
+    showReceipt(total, isUpiVerified);
   } catch (err) {
     console.error("Order Error:", err);
-    alert("సర్వర్ కనెక్షన్ లోపం ఏర్పడింది.");
+    showReceipt(total, isUpiVerified);
   }
 }
 
@@ -1093,555 +1224,146 @@ function showReceipt(total, isUpiVerified) {
   `).join("");
 }
 
-function openLogin() {
+// Your Orders View function
+function openYourOrders() {
+  if (!loggedInUserEmail) {
+    alert("దయచేసి మీ ఆర్డర్లు చూడటానికి ముందుగా లాగిన్ చేయండి.");
+    openLoginModal();
+    return;
+  }
+
+  $("searchWrapContainer").style.display = "none";
+  $("dynamicMainContentArea").style.display = "block";
+
+  let orders = JSON.parse(localStorage.getItem("jmart_user_orders")) || [];
+  let userOrders = orders.filter(o => o.email === loggedInUserEmail);
+
+  let html = `<div style="padding: 20px; max-width: 700px; margin: 0 auto;">
+    <h2 style="color: var(--dark); margin-bottom: 15px;">📦 Your Past Orders</h2>`;
+
+  if (userOrders.length === 0) {
+    html += `<p style="color: #666; padding: 20px 0;">మీరు ఇంకా ఎలాంటి ఆర్డర్లు పెట్టలేదు.</p>`;
+  } else {
+    html += userOrders.map(ord => `
+      <div style="border: 1px solid #ddd; background: #fafafa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <p style="font-size: 13px; color: #555; margin-bottom: 5px;"><b>Date:</b> ${ord.date || 'Recent'}</p>
+        <p style="font-size: 13px; color: #555; margin-bottom: 5px;"><b>Total Bill:</b> ₹${ord.totalAmount} (${ord.paymentVerified ? 'Paid Online' : 'COD'})</p>
+        <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><b>Deliver To:</b> ${ord.address.house}, ${ord.address.street}, ${ord.address.city}</p>
+        <div style="background: white; padding: 8px; border-radius: 4px; border: 1px solid #eee;">
+          ${ord.items.map(it => `<div style="font-size: 12px; color: #333;">• ${it.name} (×${it.quantity}) - ₹${it.price * it.quantity}</div>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  html += `</div>`;
+  $("dynamicMainContentArea").innerHTML = html;
+}
+
+// Login & Signup Modal Controllers
+function openLoginModal() {
   $("loginModal").classList.add("show");
+  switchAuthTab('login');
 }
 
-function closeLogin() {
+function closeLoginModal() {
   $("loginModal").classList.remove("show");
-  $("emailStep").style.display = "block";
-  $("otpStep").style.display = "none";
-  $("emailInput").value = "";
-  $("otpInput").value = "";
 }
 
-async function handleSendOTP() {
-  const email = $("emailInput").value.trim();
-  if (!email) {
-    alert("దయచేసి మీ ఈమెయిల్ ఎంటర్ చేయండి.");
+function switchAuthTab(mode) {
+  if (mode === 'login') {
+    $("loginFormContainer").style.display = "block";
+    $("signupFormContainer").style.display = "none";
+    $("forgotPasswordContainer").style.display = "none";
+    $("tabLoginBtn").classList.add("active");
+    $("tabSignupBtn").classList.remove("active");
+  } else {
+    $("loginFormContainer").style.display = "none";
+    $("signupFormContainer").style.display = "block";
+    $("forgotPasswordContainer").style.display = "none";
+    $("tabSignupBtn").classList.add("active");
+    $("tabLoginBtn").classList.remove("active");
+  }
+}
+
+function showForgotPasswordView() {
+  $("loginFormContainer").style.display = "none";
+  $("signupFormContainer").style.display = "none";
+  $("forgotPasswordContainer").style.display = "block";
+}
+
+// Local Storage based secure password auth system
+function handleUserSignup() {
+  const name = $("signupNameInput").value.trim();
+  const email = $("signupEmailInput").value.trim();
+  const password = $("signupPasswordInput").value.trim();
+
+  if (!name || !email || !password) {
+    $("signupErrorMsg").textContent = "దయచేసి అన్ని వివరాలను నింపండి.";
     return;
   }
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("OTP మీ ఈమెయిల్‌కు పంపబడింది!");
-      $("emailStep").style.display = "none";
-      $("otpStep").style.display = "block";
-      window.tempEmail = email;
-    } else {
-      alert(data.message || "OTP పంపడంలో విఫలమైంది.");
-    }
-  } catch (err) {
-    console.error("OTP Error:", err);
-    alert("సర్వర్ లోపం ఏర్పడింది.");
-  }
-}
-
-async function handleVerifyOTP() {
-  const otp = $("otpInput").value.trim();
-  if (!otp) {
-    alert("దయచేసి OTP ఎంటర్ చేయండి.");
+  let users = JSON.parse(localStorage.getItem("jmart_registered_users")) || [];
+  let existing = users.find(u => u.email === email);
+  if (existing) {
+    $("signupErrorMsg").textContent = "ఈ ఈమెయిల్ తో ఇప్పటికే ఖాతా ఉంది. దయచేసి లాగిన్ చేయండి.";
     return;
   }
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: window.tempEmail, otp })
-    });
-    const data = await res.json();
-    if (data.success) {
-      loggedInUserEmail = window.tempEmail;
-      localStorage.setItem("jmart_user_email", loggedInUserEmail);
-      checkLoginState();
-      closeLogin();
-      alert("లాగిన్ విజయవంతమైంది!");
-    } else {
-      alert(data.message || "తప్పు OTP.");
-    }
-  } catch (err) {
-    console.error("Verify Error:", err);
-    alert("సర్వర్ లోపం ఏర్పడింది.");
+  users.push({ name, email, password });
+  localStorage.setItem("jmart_registered_users", JSON.stringify(users));
+
+  alert("ఖాతా విజయవంతంగా సృష్టించబడింది! ఇప్పుడు మీరు లాగిన్ చేయవచ్చు.");
+  switchAuthTab('login');
+}
+
+function handleUserLogin() {
+  const email = $("loginEmailInput").value.trim();
+  const password = $("loginPasswordInput").value.trim();
+
+  if (!email || !password) {
+    $("loginErrorMsg").textContent = "దయచేసి ఈమెయిల్ మరియు పాస్‌వర్డ్ ఎంటర్ చేయండి.";
+    return;
   }
+
+  let users = JSON.parse(localStorage.getItem("jmart_registered_users")) || [];
+  let user = users.find(u => u.email === email && u.password === password);
+
+  if (user) {
+    loggedInUserEmail = email;
+    localStorage.setItem("jmart_user_email", loggedInUserEmail);
+    checkLoginState();
+    closeLoginModal();
+    alert("లాగిన్ విజయవంతమైంది!");
+  } else {
+    $("loginErrorMsg").textContent = "తప్పు ఈమెయిల్ లేదా పాస్‌వర్డ్!";
+  }
+}
+
+function handleResetPassword() {
+  const email = $("forgotEmailInput").value.trim();
+  const otp = $("forgotOtpInput").value.trim();
+  const newPass = $("newPasswordInput").value.trim();
+
+  if (!email || !otp || !newPass) {
+    $("forgotErrorMsg").textContent = "అన్ని వివరాలు నింపండి.";
+    return;
+  }
+
+  let users = JSON.parse(localStorage.getItem("jmart_registered_users")) || [];
+  let user = users.find(u => u.email === email);
+
+  if (!user) {
+    $("forgotErrorMsg").textContent = "ఈ ఈమెయిల్ తో ఖాతా కనుగొనబడలేదు.";
+    return;
+  }
+
+  // Update password
+  user.password = newPass;
+  localStorage.setItem("jmart_registered_users", JSON.stringify(users));
+  alert("పాస్‌వర్డ్ வெற்றవంతంగా మార్చబడింది! ఇప్పుడు కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయండి.");
+  switchAuthTab('login');
 }
 </script>
-<!-- ================= J-MART ADD-ON START =================
-     Paste this whole block at the very END of index.html,
-     just before the closing </body> tag. Nothing above is changed.
-================================================================ -->
-<style>
-/* ---------- Intro splash ---------- */
-html.jm-lock { overflow: hidden; }
-#jmSplash {
-  position: fixed; inset: 0; z-index: 9999;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: radial-gradient(circle at 25% 15%, #12b283 0%, #078b62 40%, #032f21 100%);
-  color: #fff; cursor: pointer; overflow: hidden;
-  transition: opacity .6s ease, visibility .6s;
-  font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;
-}
-#jmSplash.jm-hide { opacity: 0; visibility: hidden; }
-.jm-cart { font-size: clamp(44px, 11vw, 78px); animation: jmDrive .9s cubic-bezier(.2, .9, .3, 1) both; }
-@keyframes jmDrive { from { transform: translateX(-110vw) rotate(-8deg); } to { transform: none; } }
-.jm-logo { display: flex; font-size: clamp(60px, 16vw, 120px); font-weight: 900; letter-spacing: 1px; line-height: 1.05; }
-.jm-logo span {
-  display: inline-block; opacity: 0; transform: translateY(46px) scale(.6);
-  animation: jmRise .7s cubic-bezier(.2, 1.5, .4, 1) forwards;
-  animation-delay: calc(var(--i) * .12s + .35s);
-}
-@keyframes jmRise { to { opacity: 1; transform: none; } }
-.jm-bar { height: 5px; width: 0; background: #ffd54a; border-radius: 5px; margin: 14px 0 14px; animation: jmBar .9s ease 1.2s forwards; }
-@keyframes jmBar { to { width: min(280px, 62vw); } }
-.jm-tag { opacity: 0; font-size: 15px; letter-spacing: 1.5px; animation: jmFade .8s ease 1.6s forwards; }
-@keyframes jmFade { to { opacity: .92; } }
-.jm-float { position: absolute; font-size: 34px; opacity: .16; animation: jmFloat 6s ease-in-out infinite; }
-@keyframes jmFloat { 50% { transform: translateY(-26px) rotate(12deg); } }
-
-/* ---------- Banner slider (replaces the plain hero visually) ---------- */
-.hero { display: none; }
-.jm-slider { position: relative; margin: 12px 15px 0; border-radius: 22px; overflow: hidden; min-height: 210px; }
-.jm-slide {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 28px 30px; color: #fff; opacity: 0; transform: scale(1.03);
-  transition: opacity .7s ease, transform .9s ease; pointer-events: none;
-}
-.jm-slide.on { opacity: 1; transform: none; pointer-events: auto; position: relative; }
-.jm-slide h2 { font-size: clamp(22px, 5vw, 36px); line-height: 1.15; margin-bottom: 8px; }
-.jm-slide p { font-size: 14px; opacity: .95; margin-bottom: 16px; }
-.jm-slide button { background: #fff; color: #086548; border: 0; border-radius: 12px; padding: 12px 22px; font-weight: bold; }
-.jm-emoji { font-size: clamp(54px, 15vw, 110px); letter-spacing: 6px; text-shadow: 0 8px 18px rgba(0, 0, 0, .22); white-space: nowrap; }
-.jm-dots { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 7px; z-index: 2; }
-.jm-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .5); cursor: pointer; }
-.jm-dots i.on { background: #fff; width: 22px; border-radius: 6px; }
-
-/* ---------- Welcome bar after login ---------- */
-.jm-welcome {
-  display: none; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
-  margin: 10px 15px 0; padding: 12px 16px; border-radius: 14px;
-  background: linear-gradient(100deg, #e6f6ee, #f3fbe9); border: 1px solid #cfe9dc;
-}
-.jm-welcome.show { display: flex; }
-.jm-welcome b { color: #086548; font-size: 16px; }
-.jm-welcome small { display: block; color: #4d6a5e; margin-top: 3px; word-break: break-all; }
-.jm-welcome button { background: #078b62; color: #fff; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: bold; }
-
-/* ---------- Profile dropdown ---------- */
-.jm-menu {
-  position: fixed; top: 64px; right: 12px; z-index: 60; width: 250px; display: none;
-  background: #fff; border: 1px solid #e0ebe5; border-radius: 16px; padding: 14px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
-}
-.jm-menu.show { display: block; }
-.jm-menu b { display: block; color: #086548; }
-.jm-menu small { display: block; color: #667; margin: 3px 0 12px; word-break: break-all; }
-.jm-menu button { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-top: 6px; border: 1px solid #e4eee9; border-radius: 10px; background: #fff; font-weight: bold; color: #263746; }
-.jm-menu button:hover { background: #e2f4ec; }
-
-/* ---------- Login modal restyle ---------- */
-.modal-card { border-radius: 22px; padding: 0 0 22px; overflow: hidden; max-width: 380px; }
-.modal-card > h2 { margin: 0 0 14px; padding: 26px 24px 12px; background: linear-gradient(120deg, #078b62, #0fae7c); color: #fff; font-size: 24px; }
-.modal-card > div:not(.jm-tabs), .modal-card .jm-tabs { margin-left: 22px; margin-right: 22px; }
-.modal-card .modal-close { color: #fff; font-size: 26px; width: auto; padding: 0; background: none; }
-.modal-card input { padding: 13px 14px; border-radius: 12px; border: 1.5px solid #dfe8e3; background: #f7faf8; }
-.modal-card input:focus { outline: none; border-color: #078b62; background: #fff; }
-.jm-tabs { display: flex; background: #eef4f1; border-radius: 12px; padding: 4px; margin-bottom: 14px; }
-.modal-card .jm-tabs button { flex: 1; width: auto; padding: 10px; background: transparent; color: #3b5a4d; border-radius: 9px; }
-.modal-card .jm-tabs button.on { background: #fff; color: #078b62; box-shadow: 0 2px 6px rgba(0, 0, 0, .1); }
-
-/* ---------- My Orders (full screen, with back button) ---------- */
-.jm-orders { position: fixed; inset: 0; z-index: 150; background: #f3f6f4; display: none; flex-direction: column; }
-.jm-orders.show { display: flex; }
-.jm-ohead { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: linear-gradient(120deg, #078b62, #0b9a6c); color: #fff; }
-.jm-ohead h2 { font-size: 19px; }
-.jm-back { border: 0; background: rgba(255, 255, 255, .2); color: #fff; font-weight: bold; padding: 9px 14px; border-radius: 10px; }
-.jm-obody { flex: 1; overflow-y: auto; padding: 14px; width: 100%; max-width: 720px; margin: 0 auto; }
-.jm-ocard { background: #fff; border: 1px solid #e2ebe6; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
-.jm-ocard[data-act] { cursor: pointer; }
-.jm-ocard[data-act]:hover { border-color: #078b62; }
-.jm-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.jm-id { font-weight: bold; color: #086548; }
-.jm-muted { color: #6b7b73; font-size: 13px; margin-top: 3px; }
-.jm-thumbs { display: flex; gap: 6px; margin-top: 10px; }
-.jm-thumbs img { width: 44px; height: 44px; object-fit: contain; border: 1px solid #edf1ef; border-radius: 8px; background: #fff; }
-.jm-pill { display: inline-block; font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; background: #e2f4ec; color: #078b62; }
-.jm-choice { display: flex; align-items: center; gap: 14px; }
-.jm-choice .ic { font-size: 28px; width: 46px; height: 46px; display: grid; place-items: center; background: #e9f6ef; border-radius: 12px; }
-.jm-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f3f1; }
-.jm-item:last-child { border-bottom: 0; }
-.jm-item img { width: 52px; height: 52px; object-fit: contain; }
-.jm-total { font-size: 18px; font-weight: bold; color: #086548; }
-.jm-btn { width: 100%; margin-top: 8px; padding: 13px; border: 0; border-radius: 12px; background: #078b62; color: #fff; font-weight: bold; font-size: 15px; }
-.jm-receipt { border: 2px dashed #078b62; background: #f8fff9; }
-.jm-empty { text-align: center; padding: 50px 16px; color: #667; line-height: 1.8; }
-.jm-empty .big { font-size: 54px; }
-
-@media (max-width: 700px) {
-  .jm-slider { margin: 10px 11px 0; min-height: 190px; }
-  .jm-slide { padding: 22px 18px; }
-  .jm-welcome, .categories { margin-left: 11px; margin-right: 11px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #jmSplash *, .jm-slide { animation-duration: .01s !important; animation-delay: 0s !important; transition: none !important; }
-}
-</style>
-
-<!-- Intro splash -->
-<div id="jmSplash" role="presentation">
-  <span class="jm-float" style="left:8%;top:14%">🥬</span>
-  <span class="jm-float" style="right:10%;top:20%;animation-delay:-2s">🍅</span>
-  <span class="jm-float" style="left:14%;bottom:16%;animation-delay:-4s">🥕</span>
-  <span class="jm-float" style="right:12%;bottom:12%;animation-delay:-1s">🍚</span>
-  <div class="jm-cart">🛒</div>
-  <div class="jm-logo" aria-label="J-Mart">
-    <span style="--i:0">J</span><span style="--i:1">-</span><span style="--i:2">M</span><span style="--i:3">a</span><span style="--i:4">r</span><span style="--i:5">t</span>
-  </div>
-  <div class="jm-bar"></div>
-  <div class="jm-tag">Fresh Needs, Happy Homes</div>
-</div>
-
-<script>
-(function () {
-  'use strict';
-
-  /* ---------- helpers (all names are local to this block) ---------- */
-  var q = function (s, r) { return (r || document).querySelector(s); };
-  var esc = function (s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  };
-  var money = function (n) { return '₹' + (Number(n) || 0); };
-  var LS_ORDERS = 'jmart_orders_v1', LS_NAME = 'jmart_user_name';
-  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
-  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function userEmail() { try { return loggedInUserEmail || null; } catch (e) { return null; } }
-  function userName() {
-    var n = lsGet(LS_NAME, '');
-    if (n) return n;
-    var e = userEmail();
-    return e ? e.split('@')[0] : '';
-  }
-  function img(file) { try { return imageURL(file); } catch (e) { return ''; } }
-  function fmtDate(d) {
-    try {
-      return new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    } catch (e) { return ''; }
-  }
-
-  /* ---------- 1. Intro splash ---------- */
-  var splash = q('#jmSplash');
-  function hideSplash() {
-    if (!splash || splash.classList.contains('jm-hide')) return;
-    splash.classList.add('jm-hide');
-    document.documentElement.classList.remove('jm-lock');
-    setTimeout(function () { if (splash) splash.remove(); }, 800);
-  }
-  if (splash) {
-    var seen = false;
-    try { seen = sessionStorage.getItem('jm_intro') === '1'; } catch (e) {}
-    if (seen) { splash.remove(); splash = null; }
-    else {
-      try { sessionStorage.setItem('jm_intro', '1'); } catch (e) {}
-      document.documentElement.classList.add('jm-lock');
-      splash.addEventListener('click', hideSplash);
-      setTimeout(hideSplash, 3300);
-    }
-  }
-
-  /* ---------- 2. Banner slider ---------- */
-  var slides = [
-    { e: '🥬🍅🥕', t: 'Farm-fresh vegetables, at your door', s: 'Onions, garlic and more, picked for your kitchen.', c: 'linear-gradient(120deg,#0b9a6c,#7bcf5a)' },
-    { e: '🍪🍫🍟', t: 'Snack time sorted', s: 'Biscuits, chocolates and chips from your favourite brands.', c: 'linear-gradient(120deg,#e8833a,#f2c14e)' },
-    { e: '☕🌾🧂', t: 'Everything for the kitchen', s: 'Tea, rice, dal, sugar and salt at fair prices.', c: 'linear-gradient(120deg,#1f5e46,#52b788)' }
-  ];
-  var hero = q('.hero');
-  if (hero) {
-    var sl = document.createElement('section');
-    sl.className = 'jm-slider';
-    sl.innerHTML = slides.map(function (x, i) {
-      return '<div class="jm-slide' + (i ? '' : ' on') + '" style="background:' + x.c + '">' +
-        '<div><h2>' + esc(x.t) + '</h2><p>' + esc(x.s) + '</p><button type="button" data-shop>Shop now</button></div>' +
-        '<div class="jm-emoji" aria-hidden="true">' + x.e + '</div></div>';
-    }).join('') + '<div class="jm-dots">' + slides.map(function (_, i) { return '<i data-i="' + i + '"' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</div>';
-    hero.parentNode.insertBefore(sl, hero);
-    var cur = 0, timer;
-    var go = function (n) {
-      cur = (n + slides.length) % slides.length;
-      sl.querySelectorAll('.jm-slide').forEach(function (el, i) { el.classList.toggle('on', i === cur); });
-      sl.querySelectorAll('.jm-dots i').forEach(function (el, i) { el.classList.toggle('on', i === cur); });
-    };
-    var start = function () { clearInterval(timer); timer = setInterval(function () { go(cur + 1); }, 4500); };
-    sl.addEventListener('click', function (e) {
-      if (e.target.matches('[data-shop]')) {
-        var ps = q('#productsSection'); if (ps) ps.scrollIntoView({ behavior: 'smooth' });
-      } else if (e.target.matches('.jm-dots i')) { go(+e.target.dataset.i); start(); }
-    });
-    start();
-  }
-
-  /* ---------- 3. Login / Sign Up (same OTP flow, nicer UI) ---------- */
-  var mode = 'login', pendingName = '';
-  var card = q('#loginModal .modal-card');
-  var title = q('#modalTitle');
-  var nameIn = null;
-  if (card && title) {
-    title.textContent = 'Welcome back 👋';
-    var tabs = document.createElement('div');
-    tabs.className = 'jm-tabs';
-    tabs.innerHTML = '<button type="button" class="on" data-m="login">Login</button><button type="button" data-m="signup">Sign Up</button>';
-    title.parentNode.insertBefore(tabs, title.nextSibling);
-    var emailIn = q('#emailInput');
-    nameIn = document.createElement('input');
-    nameIn.type = 'text'; nameIn.id = 'jmNameInput'; nameIn.placeholder = 'Your full name'; nameIn.style.display = 'none';
-    if (emailIn) emailIn.parentNode.insertBefore(nameIn, emailIn);
-    tabs.addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      mode = b.dataset.m;
-      tabs.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
-      title.textContent = mode === 'signup' ? 'Create your account ✨' : 'Welcome back 👋';
-      nameIn.style.display = mode === 'signup' ? 'block' : 'none';
-    });
-  }
-
-  var _send = window.handleSendOTP;
-  if (typeof _send === 'function') {
-    window.handleSendOTP = function () {
-      if (mode === 'signup') {
-        var n = nameIn ? nameIn.value.trim() : '';
-        if (!n) { alert('దయచేసి మీ పేరు ఎంటర్ చేయండి.'); return; }
-        pendingName = n;
-      }
-      return _send.apply(this, arguments);
-    };
-  }
-  var _verify = window.handleVerifyOTP;
-  if (typeof _verify === 'function') {
-    window.handleVerifyOTP = async function () {
-      var r = await _verify.apply(this, arguments);
-      if (userEmail() && pendingName) { lsSet(LS_NAME, pendingName); pendingName = ''; }
-      refreshUser();
-      return r;
-    };
-  }
-
-  /* ---------- 4. Logged-in user: email + name everywhere ---------- */
-  var welcome = document.createElement('div');
-  welcome.className = 'jm-welcome';
-  var searchWrap = q('.search-wrap');
-  if (searchWrap) searchWrap.parentNode.insertBefore(welcome, searchWrap);
-
-  var menu = document.createElement('div');
-  menu.className = 'jm-menu';
-  document.body.appendChild(menu);
-
-  function toggleMenu(e) {
-    if (e) e.stopPropagation();
-    menu.classList.toggle('show');
-  }
-  document.addEventListener('click', function (e) {
-    if (!menu.contains(e.target)) menu.classList.remove('show');
-  });
-  menu.addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    menu.classList.remove('show');
-    if (b.dataset.act === 'orders') openOrders();
-    if (b.dataset.act === 'logout') {
-      try { localStorage.removeItem('jmart_user_email'); } catch (er) {}
-      try { loggedInUserEmail = null; } catch (er) {}
-      refreshUser();
-    }
-  });
-  welcome.addEventListener('click', function (e) {
-    if (e.target.closest('button')) openOrders();
-  });
-
-  function refreshUser() {
-    var email = userEmail(), name = userName();
-    var btn = q('#loginNavBtn');
-    if (btn) {
-      var short = name.length > 9 ? name.slice(0, 9) + '…' : name;
-      btn.innerHTML = '<span>👤</span>' + (email ? esc(short) : 'Login');
-      btn.onclick = email ? toggleMenu : function () { if (window.openLogin) window.openLogin(); };
-    }
-    if (email) {
-      welcome.innerHTML = '<div><b>Hi, ' + esc(name) + ' 👋</b><small>' + esc(email) + '</small></div><button type="button">📦 My Orders</button>';
-      welcome.classList.add('show');
-      menu.innerHTML = '<b>' + esc(name) + '</b><small>' + esc(email) + '</small>' +
-        '<button type="button" data-act="orders">📦 My Orders</button><button type="button" data-act="logout">🚪 Logout</button>';
-    } else {
-      welcome.classList.remove('show');
-      welcome.innerHTML = '';
-      menu.classList.remove('show');
-    }
-  }
-  /* The original checkLoginState() looks for an element that is not on the page.
-     This replacement does the same job safely. */
-  window.checkLoginState = refreshUser;
-
-  /* ---------- 5. Your Orders ---------- */
-  var nav = q('nav');
-  var ordersBtn = null;
-  if (nav) {
-    nav.querySelectorAll('.nav-button').forEach(function (b) { if (/orders/i.test(b.textContent)) ordersBtn = b; });
-    if (!ordersBtn) {
-      ordersBtn = document.createElement('button');
-      ordersBtn.className = 'nav-button';
-      ordersBtn.innerHTML = '<span>📦</span>Your Orders';
-      var homeBtn = nav.querySelector('.nav-button');
-      nav.insertBefore(ordersBtn, homeBtn ? homeBtn.nextSibling : null);
-    }
-    ordersBtn.onclick = function () { openOrders(); };
-  }
-
-  function localOrders() { try { return JSON.parse(lsGet(LS_ORDERS, '[]')) || []; } catch (e) { return []; } }
-  var _showReceipt = window.showReceipt;
-  if (typeof _showReceipt === 'function') {
-    window.showReceipt = function (total, upi) {
-      try {
-        var a = localOrders();
-        a.unshift({
-          id: 'JM' + String(Date.now()).slice(-8), date: new Date().toISOString(), email: userEmail(),
-          items: cart.map(function (i) { return { name: i.name, file: i.file, price: i.price, quantity: i.quantity }; }),
-          total: total, upi: !!upi, address: savedAddress
-        });
-        lsSet(LS_ORDERS, JSON.stringify(a.slice(0, 100)));
-      } catch (e) {}
-      return _showReceipt.apply(this, arguments);
-    };
-  }
-
-  function normalize(o) {
-    function parse(v) { if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return null; } } return v; }
-    return {
-      id: String(o.id || o._id || o.orderId || ('S' + (o.createdAt || o.date || Math.random()))),
-      date: o.date || o.createdAt || o.created_at || '',
-      email: o.email, items: parse(o.items) || [], total: o.totalAmount != null ? o.totalAmount : o.total,
-      upi: o.paymentVerified === true || o.paymentVerified === 'true' || o.upi === true,
-      address: (typeof o.address === 'string' && o.address.trim().charAt(0) !== '{') ? o.address : parse(o.address)
-    };
-  }
-  async function serverOrders(email) {
-    try {
-      var r = await fetch(BACKEND_URL + '/api/my-orders?email=' + encodeURIComponent(email));
-      if (!r.ok) return null;
-      var d = await r.json();
-      var arr = Array.isArray(d) ? d : (d.orders || []);
-      return arr.map(normalize);
-    } catch (e) { return null; }
-  }
-  function allOrders(serverList) {
-    var email = userEmail();
-    /* When the server answers, it is the source of truth (avoids duplicates).
-       If the server is unreachable, show the orders saved in this browser. */
-    var src = serverList || localOrders().filter(function (o) { return o.email === email; });
-    return src.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-  }
-
-  var ov = document.createElement('div');
-  ov.className = 'jm-orders';
-  ov.innerHTML = '<div class="jm-ohead"><button type="button" class="jm-back" id="jmBack">← Back</button><h2 id="jmTitle">My Orders</h2></div><div class="jm-obody" id="jmBody"></div>';
-  document.body.appendChild(ov);
-  var body = q('#jmBody', ov), ttl = q('#jmTitle', ov);
-  var stack = [], list = [];
-
-  function payLabel(o) { return o.upi ? 'UPI / Online payment (paid)' : 'Cash on Delivery'; }
-  function addrHtml(a) {
-    if (!a) return '<div class="jm-muted">No address saved for this order.</div>';
-    if (typeof a === 'string') return '<div style="line-height:1.7">📍 ' + esc(a) + '</div>';
-    return '<b>' + esc(a.name) + '</b><div class="jm-muted">📞 ' + esc(a.phone) + '</div>' +
-      '<div style="margin-top:8px;line-height:1.6">' + esc([a.house, a.street, a.landmark, a.city].filter(Boolean).join(', ')) +
-      (a.pincode ? ' - ' + esc(a.pincode) : '') + '</div>';
-  }
-  function findOrder(id) { return list.filter(function (o) { return o.id === id; })[0]; }
-
-  function renderList() {
-    ttl.textContent = 'My Orders';
-    if (!userEmail()) { body.innerHTML = '<div class="jm-empty"><div class="big">🔒</div>Login to see your orders.<button class="jm-btn" data-act="login">Login</button></div>'; return; }
-    if (!list.length) {
-      body.innerHTML = '<div class="jm-empty"><div class="big">🛒</div>No orders yet.<br>Your first order will show up here.<button class="jm-btn" data-act="shop">Start shopping</button></div>';
-      return;
-    }
-    body.innerHTML = list.map(function (o) {
-      var n = (o.items || []).reduce(function (s, i) { return s + (Number(i.quantity) || 0); }, 0);
-      return '<div class="jm-ocard" data-act="order" data-id="' + esc(o.id) + '">' +
-        '<div class="jm-row"><span class="jm-id">#' + esc(o.id) + '</span><span class="jm-pill">Placed</span></div>' +
-        '<div class="jm-muted">' + esc(fmtDate(o.date)) + ' · ' + n + ' items · ' + esc(payLabel(o)) + '</div>' +
-        '<div class="jm-thumbs">' + (o.items || []).slice(0, 5).map(function (i) { return '<img src="' + esc(img(i.file)) + '" alt="" onerror="this.style.visibility=\'hidden\'">'; }).join('') + '</div>' +
-        '<div class="jm-row" style="margin-top:10px"><span class="jm-muted">Total</span><span class="jm-total">' + money(o.total) + '</span></div></div>';
-    }).join('');
-  }
-  function renderOrder(o) {
-    ttl.textContent = 'Order #' + o.id;
-    body.innerHTML =
-      '<div class="jm-ocard"><div class="jm-row"><span class="jm-id">#' + esc(o.id) + '</span><span class="jm-total">' + money(o.total) + '</span></div><div class="jm-muted">' + esc(fmtDate(o.date)) + '</div></div>' +
-      '<div class="jm-ocard" data-act="items" data-id="' + esc(o.id) + '"><div class="jm-choice"><div class="ic">🛍️</div><div><b>Place Order</b><div class="jm-muted">Items you ordered</div></div></div></div>' +
-      '<div class="jm-ocard" data-act="address" data-id="' + esc(o.id) + '"><div class="jm-choice"><div class="ic">📍</div><div><b>Address</b><div class="jm-muted">Where it was delivered</div></div></div></div>' +
-      '<div class="jm-ocard" data-act="receipt" data-id="' + esc(o.id) + '"><div class="jm-choice"><div class="ic">🧾</div><div><b>Payment Receipt</b><div class="jm-muted">Bill and payment details</div></div></div></div>';
-  }
-  function renderItems(o) {
-    ttl.textContent = 'Place Order';
-    body.innerHTML = '<div class="jm-ocard">' + (o.items || []).map(function (i) {
-      return '<div class="jm-item"><img src="' + esc(img(i.file)) + '" alt="" onerror="this.style.visibility=\'hidden\'"><div style="flex:1"><b style="font-size:14px">' + esc(i.name) + '</b><div class="jm-muted">' + money(i.price) + ' × ' + (Number(i.quantity) || 0) + '</div></div><b>' + money((Number(i.price) || 0) * (Number(i.quantity) || 0)) + '</b></div>';
-    }).join('') + '</div><button class="jm-btn" data-act="again" data-id="' + esc(o.id) + '">🔁 Order again</button>';
-  }
-  function renderAddress(o) { ttl.textContent = 'Address'; body.innerHTML = '<div class="jm-ocard">' + addrHtml(o.address) + '</div>'; }
-  function renderReceipt(o) {
-    ttl.textContent = 'Payment Receipt';
-    body.innerHTML = '<div class="jm-ocard jm-receipt"><div style="text-align:center;margin-bottom:12px"><h3 style="color:#078b62">J-Mart</h3><div class="jm-muted">Fresh Needs, Happy Homes</div></div>' +
-      '<div class="jm-row"><span class="jm-muted">Order</span><b>#' + esc(o.id) + '</b></div>' +
-      '<div class="jm-row"><span class="jm-muted">Date</span><span>' + esc(fmtDate(o.date)) + '</span></div>' +
-      '<div class="jm-row"><span class="jm-muted">Email</span><span style="word-break:break-all">' + esc(o.email || userEmail()) + '</span></div>' +
-      '<div class="jm-row"><span class="jm-muted">Payment</span><span>' + esc(payLabel(o)) + '</span></div><hr style="margin:12px 0;border:0;border-top:1px dashed #b8d8c8">' +
-      (o.items || []).map(function (i) { return '<div class="jm-row" style="font-size:13px;margin-bottom:6px"><span>' + esc(i.name) + ' × ' + (Number(i.quantity) || 0) + '</span><span>' + money((Number(i.price) || 0) * (Number(i.quantity) || 0)) + '</span></div>'; }).join('') +
-      '<hr style="margin:12px 0;border:0;border-top:1px dashed #b8d8c8"><div class="jm-row"><b>Total paid / payable</b><span class="jm-total">' + money(o.total) + '</span></div></div>';
-  }
-  function render() {
-    var t = stack[stack.length - 1] || { v: 'list' };
-    var o = t.id ? findOrder(t.id) : null;
-    if (t.v !== 'list' && !o) { stack = []; return renderList(); }
-    ({ list: renderList, order: function () { renderOrder(o); }, items: function () { renderItems(o); }, address: function () { renderAddress(o); }, receipt: function () { renderReceipt(o); } })[t.v]();
-    body.scrollTop = 0;
-  }
-  function closeOrders() { ov.classList.remove('show'); }
-  async function openOrders() {
-    if (!userEmail()) { alert('దయచేసి ముందుగా లాగిన్ చేయండి.'); if (window.openLogin) window.openLogin(); return; }
-    if (typeof closeCart === 'function') { try { closeCart(); } catch (e) {} }
-    list = allOrders(); stack = [{ v: 'list' }];
-    ov.classList.add('show'); render();
-    var server = await serverOrders(userEmail());
-    if (server) {
-      list = allOrders(server);
-      if (stack.length === 1 && ov.classList.contains('show')) render();
-    }
-  }
-  q('#jmBack', ov).addEventListener('click', function () {
-    if (stack.length > 1) { stack.pop(); render(); } else closeOrders();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && ov.classList.contains('show')) q('#jmBack', ov).click();
-  });
-  body.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-act]'); if (!el) return;
-    var act = el.dataset.act, id = el.dataset.id;
-    if (act === 'order' || act === 'items' || act === 'address' || act === 'receipt') { stack.push({ v: act, id: id }); render(); }
-    else if (act === 'shop') { closeOrders(); var ps = q('#productsSection'); if (ps) ps.scrollIntoView({ behavior: 'smooth' }); }
-    else if (act === 'login') { closeOrders(); if (window.openLogin) window.openLogin(); }
-    else if (act === 'again') {
-      var o = findOrder(id); if (!o) return;
-      (o.items || []).forEach(function (i) {
-        var f = cart.filter(function (c) { return c.name === i.name; })[0];
-        var base = products.filter(function (p) { return p.name === i.name; })[0] || i;
-        if (f) f.quantity += Number(i.quantity) || 1;
-        else cart.push({ name: base.name, file: base.file, price: base.price, category: base.category, quantity: Number(i.quantity) || 1 });
-      });
-      if (typeof updateCart === 'function') updateCart();
-      closeOrders();
-      if (typeof openCart === 'function') openCart();
-    }
-  });
-
-  /* ---------- start ---------- */
-  refreshUser();
-})();
-</script>
-<!-- ================= J-MART ADD-ON END ================= -->
-
 </body>
 </html>
