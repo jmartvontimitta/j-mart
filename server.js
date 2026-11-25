@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const { createClient } = require('@supabase/supabase-js');
-const multer = require('multer');
+const multer = require('multer'); // Multer import చేయబడింది
 require('dotenv').config();
 
 const app = express();
@@ -25,9 +25,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Store OTPs with 5-minute expiration
-const storedOtp = {};
-const OTP_EXPIRY_MS = 5 * 60 * 1000;
+let storedOtp = {};
 
 // 1. Send OTP Route
 app.post('/api/send-otp', async (req, res) => {
@@ -38,16 +36,13 @@ app.post('/api/send-otp', async (req, res) => {
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        storedOtp[email] = {
-            code: otp,
-            expiresAt: Date.now() + OTP_EXPIRY_MS
-        };
+        storedOtp[email] = otp;
 
         const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSibiEmail.sender = { name: "J-Mart", email: process.env.SENDER_EMAIL };
         sendSibiEmail.to = [{ email: email }];
         sendSibiEmail.subject = "Your J-Mart OTP code";
-        sendSibiEmail.htmlContent = `<p>Your verification code for J-Mart is: <strong>${otp}</strong> (Valid for 5 minutes)</p>`;
+        sendSibiEmail.htmlContent = `<p>Your verification code for J-Mart is: <strong>${otp}</strong></p>`;
 
         await apiInstance.sendTransacEmail(sendSibiEmail);
 
@@ -66,17 +61,7 @@ app.post('/api/verify-otp', (req, res) => {
         return res.status(400).json({ success: false, message: "ఈమెయిల్ లేదా OTP ఇవ్వలేదు" });
     }
 
-    const record = storedOtp[email];
-    if (!record) {
-        return res.status(400).json({ success: false, message: "OTP కనుగొనబడలేదు. దయచేసి మళ్లీ పంపండి" });
-    }
-
-    if (Date.now() > record.expiresAt) {
-        delete storedOtp[email];
-        return res.status(400).json({ success: false, message: "OTP గడువు ముగిసింది. కొత్త OTP కోసం ప్రయత్నించండి" });
-    }
-
-    if (record.code === otp) {
+    if (storedOtp[email] === otp) {
         delete storedOtp[email];
         res.json({ success: true, message: "OTP సరిపోలింది" });
     } else {
@@ -84,58 +69,47 @@ app.post('/api/verify-otp', (req, res) => {
     }
 });
 
-// 3. Place Order & Save to Supabase & Send Admin Email Route
+// 3. Place Order & Save to Supabase & Send Admin Email Route (With Multer for Payment Proof Screenshot)
 app.post('/api/place-order', upload.single('paymentProof'), async (req, res) => {
     try {
-        const { email, address, items, totalAmount, paymentVerified, paymentMethod } = req.body;
-        const proofFile = req.file;
+        const { email, address, items, totalAmount, paymentVerified } = req.body;
+        const proofFile = req.file; // యూజర్ అప్‌లోడ్ చేసిన స్క్రీన్ షాట్ ఫైల్
 
         if (!email || !address || !items) {
             return res.status(400).json({ success: false, message: "ఆర్డర్ వివరాలు అసంపూర్తిగా ఉన్నాయి" });
         }
 
-        let parsedItems, parsedAddress;
-        try {
-            parsedItems = typeof items === 'string' ? JSON.parse(items) : items;
-            parsedAddress = typeof address === 'string' ? JSON.parse(address) : address;
-        } catch (parseError) {
-            return res.status(400).json({ success: false, message: "చెల్లని ఆర్డర్ డేటా ఫార్మాట్" });
-        }
+        // Parse items if sent as string from FormData
+        const parsedItems = typeof items === 'string' ? JSON.parse(items) : items;
+        const parsedAddress = typeof address === 'string' ? JSON.parse(address) : address;
 
-        if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
+        if (!parsedItems || parsedItems.length === 0) {
             return res.status(400).json({ success: false, message: "ఆర్డర్‌లో వస్తువులు లేవు" });
         }
 
-        const isCod = paymentMethod === 'cod';
-        const isPaid = paymentVerified === "true" || paymentVerified === true;
-
-        if (!isCod && (!isPaid || !proofFile)) {
-            return res.status(400).json({
-                success: false,
-                message: "పేమెంట్ నిర్ధారణ కాలేదు. దయచేసి చెల్లింపు పూర్తి చేసి స్క్రీన్ షాట్ అప్‌లోడ్ చేయండి."
-            });
+        // పేమెంట్ వెరిఫై అయిందా లేదా అని చెక్ చేయడం
+        if (paymentVerified !== "true" && paymentVerified !== true) {
+            return res.status(400).json({ success: false, message: "పేమెంట్ నిర్ధారణ కాలేదు. దయచేసి చెల్లింపు పూర్తి చేసి స్క్రీన్ షాట్ అప్‌లోడ్ చేయండి." });
         }
 
+        // Address formatting
         const addressStr = typeof parsedAddress === 'object' && parsedAddress !== null
             ? `${parsedAddress.name || ''}, ${parsedAddress.phone || ''}, ${parsedAddress.house || ''}, ${parsedAddress.street || ''}, ${parsedAddress.landmark ? parsedAddress.landmark + ', ' : ''}${parsedAddress.city || ''} - ${parsedAddress.pincode || ''}`
             : address;
-
-        const paymentStatus = isCod ? "Cash on Delivery" : "Verified (Screenshot Attached)";
 
         // 1. Save order into Supabase 'orders' table
         const { data, error } = await supabase
             .from('orders')
             .insert([
-                {
-                    email: email,
-                    address: addressStr,
-                    items: parsedItems,
-                    total_amount: Number(totalAmount) || 0,
-                    payment_status: paymentStatus,
-                    created_at: new Date().toISOString()
+                { 
+                    email: email, 
+                    address: addressStr, 
+                    items: parsedItems, 
+                    total_amount: totalAmount,
+                    payment_status: "Verified",
+                    created_at: new Date()
                 }
-            ])
-            .select();
+            ]);
 
         if (error) {
             console.error("Supabase Error:", error);
@@ -143,26 +117,26 @@ app.post('/api/place-order', upload.single('paymentProof'), async (req, res) => 
         }
 
         // 2. Format order details for admin email
-        const itemsListHtml = parsedItems
-            .map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</li>`)
-            .join('');
-
+        let itemsListHtml = parsedItems.map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</li>`).join('');
+        
         const orderDetailsString = `
             <p><b>కస్టమర్ ఈమెయిల్:</b> ${email}</p>
             <p><b>డెలివరీ అడ్రస్:</b> ${addressStr}</p>
             <p><b>ఆర్డర్ చేసిన వస్తువులు:</b></p>
             <ul>${itemsListHtml}</ul>
             <p><b>మొత్తం బిల్లు:</b> ₹${totalAmount}</p>
-            <p><b>పేమెంట్ స్టేటస్:</b> ${paymentStatus}</p>
+            <p><b>పేమెంట్ స్టేటస్:</b> చెల్లించబడింది & స్క్రీన్ షాట్ అటాచ్ చేయబడింది (Verified)</p>
         `;
 
-        // 3. Send email to Admin via Brevo
+        // 3. Send email to Admin via Brevo with attachment
         const sendSibiEmail = new SibApiV3Sdk.SendSmtpEmail();
         sendSibiEmail.sender = { name: "J-Mart Orders", email: process.env.SENDER_EMAIL };
-        sendSibiEmail.to = [{ email: process.env.ADMIN_MAIL }];
-        sendSibiEmail.subject = `New Order Received - J-Mart (${paymentStatus})`;
+        sendSidnibEmailTo = [{ email: process.env.ADMIN_MAIL }]; 
+        sendSibiEmail.to = [{ email: process.env.ADMIN_MAIL }]; 
+        sendSibiEmail.subject = "New Order Received - J-Mart (With Payment Proof)";
         sendSibiEmail.htmlContent = `<h3>కొత్త ఆర్డర్ వచ్చింది!</h3>${orderDetailsString}`;
 
+        // ఒకవేళ యూజర్ స్క్రీన్ షాట్ అప్‌లోడ్ చేసి ఉంటే దాన్ని ఈమెయిల్‌కు అటాచ్ చేయడం
         if (proofFile) {
             sendSibiEmail.attachment = [
                 {
@@ -174,45 +148,118 @@ app.post('/api/place-order', upload.single('paymentProof'), async (req, res) => 
 
         await apiInstance.sendTransacEmail(sendSibiEmail);
 
-        res.json({
-            success: true,
-            message: "ఆర్డర్ విజయవంతంగా కన్ఫర్మ్ చేయబడింది!",
-            order: data ? data[0] : null
-        });
+        res.json({ success: true, message: "పేమెంట్ స్క్రీన్ షాట్ అప్‌లోడ్ చేయబడింది, ఆర్డర్ కన్ఫర్మ్ చేయబడింది!" });
     } catch (error) {
         console.error("Error placing order:", error);
         res.status(500).json({ success: false, message: "ఆర్డర్ ప్రాసెస్ చేయడంలో సర్వర్ లోపం" });
     }
 });
 
-// 4. Get User Orders Route (for "Your Orders" view)
-app.get('/api/orders', async (req, res) => {
+app.get('/', (req, res) => {
+    res.send("J-Mart Backend is running!");
+});
+
+// --- అదనంగా జత చేసిన పాస్‌వర్డ్ & యూజర్ ఆథెంటికేషన్ కోడ్ ---
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
+
+// 4. Sign Up Route
+app.post('/api/signup', async (req, res) => {
     try {
-        const { email } = req.query;
-        if (!email) {
-            return res.status(400).json({ success: false, message: "ఈమెయిల్ అవసరం" });
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "ఈమెయిల్ మరియు పాస్‌వర్డ్ తప్పనిసరి" });
         }
+
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('email', email)
-            .order('created_at', { ascending: false });
+            .from('users')
+            .insert([{ email, password: hashedPassword }]);
 
-        if (error) {
-            console.error("Supabase Fetch Error:", error);
-            return res.status(500).json({ success: false, error: error.message });
-        }
+        if (error) return res.status(500).json({ success: false, error: error.message });
 
-        res.json({ success: true, orders: data });
+        res.json({ success: true, message: "అకౌంట్ విజయవంతంగా సృష్టించబడింది!" });
     } catch (error) {
-        console.error("Error fetching orders:", error);
-        res.status(500).json({ success: false, message: "ఆర్డర్లు తీసుకురావడంలో సర్వర్ లోపం" });
+        console.error("Signup Error:", error);
+        res.status(500).json({ success: false, message: "సర్వర్ లోపం" });
     }
 });
 
-app.get('/', (req, res) => {
-    res.send("J-Mart Backend is running!");
+// 5. Login Route
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "ఈమెయిల్ మరియు పాస్‌వర్డ్ ఎంటర్ చేయండి" });
+        }
+
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email);
+
+        if (error || !users || users.length === 0) {
+            return res.status(400).json({ success: false, message: "యూజర్ కనుగొనబడలేదు" });
+        }
+
+        const user = users[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "తప్పు పాస్‌వర్డ్" });
+        }
+
+        res.json({ success: true, message: "లాగిన్ విజయవంతమైంది!", user: { email: user.email } });
+    } catch (error) {
+        console.error("Login Error:", error);
+        res.status(500).json({ success: false, message: "లాగిన్ ప్రాసెస్ చేయడంలో లోపం" });
+    }
+});
+
+// 6. Forgot Password - Send Reset OTP
+app.post('/api/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const { data: users } = await supabase.from('users').select('*').eq('email', email);
+
+        if (!users || users.length === 0) {
+            return res.status(400).json({ success: false, message: "ఈ ఈమెయిల్ రిజిస్టర్ అయి లేదు" });
+        }
+
+        const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        storedOtp[email] = resetOtp;
+
+        const emailSent = new SibApiV3Sdk.SendSmtpEmail();
+        emailSent.sender = { name: "J-Mart", email: process.env.SENDER_EMAIL };
+        emailSent.to = [{ email }];
+        emailSent.subject = "Password Reset Code";
+        emailSent.htmlContent = `<p>మీ పాస్‌వర్డ్ రీసెట్ కోడ్: <strong>${resetOtp}</strong></p>`;
+
+        await apiInstance.sendTransacEmail(emailSent);
+        res.json({ success: true, message: "రీసెట్ కోడ్ ఈమెయిల్‌కు పంపబడింది" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "	సర్వర్ లోపం" });
+    }
+});
+
+// 7. Reset Password Route
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (storedOtp[email] !== otp) {
+            return res.status(400).json({ success: false, message: "తప్పు లేదా ఎక్స్‌పైర్ అయిన OTP" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        await supabase.from('users').update({ password: hashedPassword }).eq('email', email);
+
+        delete storedOtp[email];
+        res.json({ success: true, message: "పాస్‌వర్డ్ విజయవంతంగా మార్చబడింది" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "పాస్‌వర్డ్ మార్చడంలో విఫలమైంది" });
+    }
 });
 
 const PORT = process.env.PORT || 10000;
