@@ -509,6 +509,7 @@ header { top: var(--jm-safe); }
   .brand h2 { font-size: 20px; }
 }
 .product { cursor: pointer; }
+#addressDisplayBox, #addressFormEdit { display: none !important; }
 
 /* splash */
 #jmSplash { position: fixed; inset: 0; z-index: 999; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; background: radial-gradient(circle at 30% 20%, #4cb86a, #078b62 55%, #064e38); transition: opacity .6s ease; }
@@ -1370,37 +1371,20 @@ async function handleVerifyOTP() {
 const JMART_STATE_KEY = "jmart_checkout_state_v2";
 let loggedInUserName = localStorage.getItem("jmart_user_name") || "";
 let checkoutStep = Number(localStorage.getItem("jmart_checkout_step") || "1");
-let jmOrders = [];
-let jmStep = 1, jmDraft = {}, jmEditIdx = -1;
-let jmP = null, jmV = 1;
-let jmA = { view: "login", email: "", name: "" };
-
-const JM_UNITS = { "Beverages": "ml", "Personal Care": "ml", "Household Care": "ml", "Tea & Coffee": "g", "Rice & Grains": "g", "Sugar & Salt": "g", "Biscuits & Snacks": "g", "Fresh Produce": "g" };
-const JM_STEPS = [[100, 0.5], [200, 1], [300, 1.5]];
-const JM_SIZES_OVERRIDE = {};
-const JM_PRICE_OVERRIDES = {};
-const JM_DETAILS = {};
-const JM_EXTRA_IMAGES = {};
 
 function safeText(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[ch]));
 }
-
 function persistJmartState() {
   try {
     localStorage.setItem(JMART_STATE_KEY, JSON.stringify({
-      email: loggedInUserEmail,
-      name: loggedInUserName,
-      address: savedAddress,
-      cart,
-      step: checkoutStep,
-      savedAt: Date.now()
+      email: loggedInUserEmail, name: loggedInUserName, address: savedAddress,
+      cart, step: checkoutStep, savedAt: Date.now()
     }));
   } catch (e) { console.warn("Could not save checkout state", e); }
 }
-
 function restoreJmartState() {
   try {
     const s = JSON.parse(localStorage.getItem(JMART_STATE_KEY) || "null");
@@ -1410,8 +1394,10 @@ function restoreJmartState() {
     checkoutStep = Math.min(3, Math.max(1, Number(s.step) || 1));
   } catch (e) { console.warn("Saved checkout data could not be read", e); }
 }
-
-function checkLoginState() {
+const originalUpdateCart = updateCart;
+updateCart = function() { originalUpdateCart(); persistJmartState(); };
+const originalCheckLoginState = checkLoginState;
+checkLoginState = function() {
   if (loggedInUserEmail) {
     $("loginNavText").textContent = loggedInUserName || loggedInUserEmail;
     $("loginNavBtn").title = loggedInUserEmail + (loggedInUserName ? " — " + loggedInUserName : "");
@@ -1419,107 +1405,7 @@ function checkLoginState() {
     $("loginNavText").textContent = "Login";
     $("loginNavBtn").title = "Login";
   }
-}
-
-const jmCardQty = name => cart.filter(i => i.name === name || i.name.indexOf(name + " (") === 0).reduce((s, i) => s + i.quantity, 0);
-
-function jmSyncCards() {
-  const grid = $("productGrid");
-  if (!grid) return;
-  grid.querySelectorAll(".product").forEach(card => {
-    const h = card.querySelector("h3"); if (!h) return;
-    const q = jmCardQty(h.textContent.trim());
-    const ctl = card.querySelector(".add-button, .jm-cq"); if (!ctl) return;
-    const idx = products.findIndex(x => x.name === h.textContent.trim());
-    if (q > 0) {
-      const html = `<div class="jm-cq"><button type="button" onclick="jmCardQ(this,-1)" aria-label="Decrease">−</button><span>✓ ${q}</span><button type="button" onclick="jmCardQ(this,1)" aria-label="Increase">+</button></div>`;
-      if (ctl.outerHTML !== html) ctl.outerHTML = html;
-    } else if (ctl.classList.contains("jm-cq")) {
-      ctl.outerHTML = `<button class="add-button" onclick="addToCart(${idx})">Add to Cart</button>`;
-    }
-  });
-}
-
-function jmCardQ(el, d) {
-  const name = el.closest(".product").querySelector("h3").textContent.trim();
-  if (d > 0) return addToCart(products.findIndex(x => x.name === name));
-  let i = cart.findIndex(x => x.name === name);
-  if (i < 0) for (let k = cart.length - 1; k >= 0; k--) if (cart[k].name.indexOf(name + " (") === 0) { i = k; break; }
-  if (i >= 0) changeQuantity(i, -1);
-}
-
-function renderProducts() {
-  const query = $("searchInput").value.trim().toLowerCase();
-  const sort = $("sortSelect").value;
-
-  let list = products.filter(p =>
-    (selectedCategory === "All Products" || p.category === selectedCategory) &&
-    (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query))
-  );
-
-  if (sort === "low") list.sort((a, b) => a.price - b.price);
-  if (sort === "high") list.sort((a, b) => b.price - a.price);
-  if (sort === "az") list.sort((a, b) => a.name.localeCompare(b.name));
-
-  $("sectionTitle").textContent = selectedCategory;
-  $("itemCount").textContent = `(${list.length} items)`;
-
-  if (!list.length) {
-    $("productGrid").innerHTML = '<p class="empty">No products found. Try another search.</p>';
-    return;
-  }
-
-  $("productGrid").innerHTML = list.map(p => {
-    const i = products.indexOf(p);
-    return `<article class="product">
-      <img src="${imageURL(p.file)}" alt="${safeText(p.name)}" loading="lazy"
-        onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
-      <h3>${safeText(p.name)}</h3>
-      <p class="price">₹${p.price}</p>
-      <button class="add-button" onclick="addToCart(${i})">
-        Add to Cart
-      </button>
-    </article>`;
-  }).join("");
-
-  jmSyncCards();
-}
-
-function updateCart() {
-  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-  $("cartCount").textContent = count;
-
-  $("cartItems").innerHTML = cart.length
-    ? cart.map((item, index) => `
-      <div class="cart-row">
-        <img src="${imageURL(item.file)}" alt="${safeText(item.name)}"
-          onerror="this.style.visibility='hidden'">
-        <div>
-          <div class="cart-product-name">${safeText(item.name)}</div>
-          <div class="cart-product-price">
-            ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}
-          </div>
-          <div class="quantity-controls">
-            <button onclick="changeQuantity(${index},-1)" aria-label="Decrease quantity">−</button>
-            <span>${item.quantity}</span>
-            <button onclick="changeQuantity(${index},1)" aria-label="Increase quantity">+</button>
-          </div>
-        </div>
-        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${safeText(item.name)}">🗑</button>
-      </div>
-    `).join("")
-    : `<div class="empty-cart">
-        <div style="font-size:36px">🛒</div>
-        <p>Your cart is empty.</p>
-        <p style="font-size:12px; color:#999; margin-top:5px;">Add fresh groceries & essentials to start shopping!</p>
-      </div>`;
-
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
-  if ($("jmPCount")) $("jmPCount").textContent = count;
-  jmSyncCards();
-  persistJmartState();
-}
+};
 
 function updateCheckoutStepUI() {
   const container = $("checkoutMainContainer");
@@ -1530,138 +1416,46 @@ function updateCheckoutStepUI() {
     bar.className = "checkout-steps";
     container.querySelector(".checkout-header-bar").after(bar);
   }
-  bar.innerHTML = [1, 2, 3].map((n, i) =>
-    `<div class="checkout-step ${checkoutStep === n ? "active" : ""}">${n}. ${["Address", "Payment", "Confirm"][i]}</div>`
+  bar.innerHTML = [1,2,3].map((n,i) =>
+    `<div class="checkout-step ${checkoutStep===n?"active":""}">${n}. ${["Address","Payment","Confirm"][i]}</div>`
   ).join("");
   $("addressSectionView").style.display = checkoutStep === 1 ? "block" : "none";
   $("paymentSectionView").style.display = checkoutStep === 2 ? "block" : "none";
   $("upiScannerSection").style.display = checkoutStep === 2 && $("upiScannerSection").dataset.active === "yes" ? "block" : "none";
   $("receiptSection").style.display = checkoutStep === 3 ? "block" : "none";
 }
-
 function goCheckoutStep(step) {
-  checkoutStep = Math.min(3, Math.max(1, Number(step) || 1));
+  checkoutStep = Math.min(3, Math.max(1, step));
   localStorage.setItem("jmart_checkout_step", String(checkoutStep));
   persistJmartState();
   updateCheckoutStepUI();
-  $("fullCheckoutOverlay").scrollTo({ top: 0, behavior: "smooth" });
+  $("fullCheckoutOverlay").scrollTo({top:0,behavior:"smooth"});
 }
-
-const jmFmt = a => `${a.house}, ${a.street}, ${a.landmark ? a.landmark + ", " : ""}${a.city} - ${a.pincode}`;
-const jmKey = () => "jmart_address_book_v1:" + (loggedInUserEmail || "guest");
-const jmLoad = () => {
-  try {
-    const b = JSON.parse(localStorage.getItem(jmKey()) || "null");
-    if (b && Array.isArray(b.list)) return b;
-  } catch (e) {}
-  return { list: [], sel: 0 };
-};
-const jmSave = b => { try { localStorage.setItem(jmKey(), JSON.stringify(b)); } catch (e) {} };
-const jmF = (k, label, ph, extra = "") =>
-  `<div class="form-group"><label>${label}</label><input type="text" ${extra} value="${safeText(jmDraft[k] || "")}" placeholder="${ph}" oninput="jmDraft.${k}=this.value"></div>`;
-
 function renderSavedAddress() {
-  const b = jmLoad();
-  if (!b.list.length && savedAddress) {
-    b.list = [savedAddress];
-    b.sel = 0;
-    jmSave(b);
-  }
-  if (b.list.length) {
-    b.sel = Math.min(Math.max(0, b.sel || 0), b.list.length - 1);
-    savedAddress = b.list[b.sel];
-    persistJmartState();
-  }
-
-  const box = $("jmAddrList");
-  if (!savedAddress || !b.list.length) {
+  if (!savedAddress) {
     $("addressDisplayBox").style.display = "none";
-    $("addressFormEdit").style.display = "none";
-    if (box) {
-      box.innerHTML = '<button type="button" class="place-order" onclick="jmWizard(-1)">+ Add Delivery Address</button>';
-    }
+    $("addressFormEdit").style.display = "block";
     return;
   }
-
   $("addressDisplayBox").style.display = "block";
   $("addressFormEdit").style.display = "none";
-  $("addrNameDisplay").innerHTML = `Deliver to: <b>${safeText(savedAddress.name)}</b> (${safeText(savedAddress.phone)})`;
-  $("addrTextDisplay").textContent = jmFmt(savedAddress);
-
-  if (box) {
-    box.innerHTML = b.list.map((a, i) => `
-      <label class="jm-acard ${i === b.sel ? "sel" : ""}">
-        <input type="radio" name="jmAddrSel" ${i === b.sel ? "checked" : ""} onchange="jmPick(${i})">
-        <div><b>${safeText(a.name)} · ${safeText(a.phone)}</b><br>${safeText(jmFmt(a))}</div>
-      </label>
-    `).join("") + `
-      <div class="jm-row">
-        <button type="button" class="place-order jm-ghost" onclick="jmWizard(${b.sel})">✏️ Change</button>
-        <button type="button" class="place-order jm-ghost" onclick="jmWizard(-1)">+ Add New</button>
-      </div>
-      <button type="button" class="place-order jm-blue" onclick="nextToPayment()">Same address — Continue to Payment →</button>
-    `;
-  }
+  $("addrNameDisplay").textContent = `Deliver to: ${savedAddress.name} (${savedAddress.phone})`;
+  $("addrTextDisplay").textContent = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ", " : ""}${savedAddress.city} - ${savedAddress.pincode}`;
 }
-
-function showAddressForm() { jmWizard(jmLoad().sel); }
-function jmPick(i) {
-  const b = jmLoad();
-  b.sel = i;
-  jmSave(b);
-  savedAddress = b.list[i];
-  persistJmartState();
+const oldOpenFullCheckout = openFullCheckout;
+openFullCheckout = function() {
+  restoreJmartState();
+  $("fullCheckoutOverlay").classList.add("show");
+  renderCheckoutItems();
   renderSavedAddress();
-}
-
-function jmWizard(idx) {
-  const b = jmLoad();
-  jmEditIdx = idx;
-  jmDraft = idx >= 0 && b.list[idx] ? Object.assign({}, b.list[idx]) : {};
-  jmStep = 1;
-  $("jmAddrOverlay").classList.add("show");
-  jmRenderAddr();
-}
-
-function jmCloseAddr() { $("jmAddrOverlay").classList.remove("show"); renderSavedAddress(); }
-function jmBack() { if (jmStep > 1) { jmStep--; jmRenderAddr(); } else jmCloseAddr(); }
-
-function jmRenderAddr() {
-  $("jmAddrTitle").textContent = jmEditIdx >= 0 ? "Change Address" : "Add New Address";
-  const bar = `<div class="checkout-steps">${["Contact", "Location", "Town"].map((s, i) => `<div class="checkout-step ${jmStep === i + 1 ? "active" : ""}">${i + 1}. ${s}</div>`).join("")}</div>`;
-  let f = "";
-  if (jmStep === 1) f = jmF("name", "Full Name", "Enter full name") + jmF("phone", "Mobile Number", "10-digit mobile number", 'maxlength="10" inputmode="numeric"');
-  if (jmStep === 2) f = jmF("house", "Flat, House no., Building", "e.g. 1/40") + jmF("street", "Area, Street, Village", "e.g. Vontimitta bus stand") + jmF("landmark", "Landmark (Optional)", "e.g. Near Ramalayam");
-  if (jmStep === 3) f = jmF("city", "City / Town", "e.g. Kadapa") + jmF("pincode", "Pincode", "e.g. 516213", 'maxlength="6" inputmode="numeric"');
-  $("jmAddrBody").innerHTML = `${bar}<div class="jm-sec">${f}</div>
-    <div class="jm-row"><button class="place-order jm-ghost" onclick="jmBack()">← Back</button><button class="place-order" onclick="jmNext()">${jmStep === 3 ? "Save Address" : "Next →"}</button></div>`;
-}
-
-function jmNext() {
-  const v = k => (jmDraft[k] || "").trim();
-  if (jmStep === 1) {
-    if (!v("name")) return alert("పేరు ఇవ్వండి.");
-    if (!/^[6-9]\d{9}$/.test(v("phone"))) return alert("దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి.");
-  }
-  if (jmStep === 2 && (!v("house") || !v("street"))) return alert("ఇల్లు మరియు వీధి వివరాలు ఇవ్వండి.");
-  if (jmStep === 3) {
-    if (!v("city") || !/^\d{6}$/.test(v("pincode"))) return alert("నగరం మరియు సరైన 6 అంకెల పిన్‌కోడ్ ఇవ్వండి.");
-    const a = { name: v("name"), phone: v("phone"), house: v("house"), street: v("street"), landmark: v("landmark"), city: v("city"), pincode: v("pincode") };
-    const b = jmLoad();
-    if (jmEditIdx >= 0 && b.list[jmEditIdx]) { b.list[jmEditIdx] = a; b.sel = jmEditIdx; }
-    else { b.list.push(a); b.sel = b.list.length - 1; }
-    jmSave(b);
-    savedAddress = a;
-    persistJmartState();
-    return jmCloseAddr();
-  }
-  jmStep++;
-  jmRenderAddr();
-}
-
-function saveNewAddress() {
-  const fields = ["inputName", "inputPhone", "inputHouse", "inputStreet", "inputLandmark", "inputCity", "inputPincode"];
-  const [name, phone, house, street, landmark, city, pincode] = fields.map(id => $(id).value.trim());
+  checkoutStep = 1;
+  $("upiScannerSection").dataset.active = "no";
+  goCheckoutStep(1);
+};
+const oldSaveNewAddress = saveNewAddress;
+saveNewAddress = function() {
+  const fields = ["inputName","inputPhone","inputHouse","inputStreet","inputLandmark","inputCity","inputPincode"];
+  const [name,phone,house,street,landmark,city,pincode] = fields.map(id => $(id).value.trim());
   if (!name || !phone || !house || !street || !city || !/^\d{6}$/.test(pincode)) {
     alert("పేరు, ఫోన్, ఇల్లు, వీధి, నగరం మరియు సరైన 6 అంకెల పిన్‌కోడ్ ఇవ్వండి.");
     return;
@@ -1670,49 +1464,57 @@ function saveNewAddress() {
     alert("దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి.");
     return;
   }
-  const a = { name, phone, house, street, landmark, city, pincode };
-  const b = jmLoad();
-  b.list.push(a);
-  b.sel = b.list.length - 1;
-  jmSave(b);
-  savedAddress = a;
+  savedAddress = {name,phone,house,street,landmark,city,pincode};
   persistJmartState();
   renderSavedAddress();
-}
-
-function openFullCheckout() {
-  restoreJmartState();
-  $("fullCheckoutOverlay").classList.add("show");
-  renderCheckoutItems();
-  renderSavedAddress();
-  $("upiScannerSection").dataset.active = "no";
-  goCheckoutStep(1);
-}
-
+  alert("Address saved.");
+};
 function nextToPayment() {
-  if (!savedAddress) {
-    alert("ముందుగా Delivery Address సేవ్ చేయండి.");
-    jmWizard(-1);
-    return;
-  }
+  if (!savedAddress) { alert("ముందుగా Delivery Address సేవ్ చేయండి."); return; }
   renderCheckoutItems();
-  $("upiScannerSection").dataset.active = "no";
   goCheckoutStep(2);
 }
-
 function backToAddress() {
-  if (timerInterval) clearInterval(timerInterval);
   $("upiScannerSection").dataset.active = "no";
   goCheckoutStep(1);
 }
-
-function proceedToPaymentOrOrder() {
-  const method = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
-  if (!savedAddress) {
-    alert("దయచేసి ముందుగా అడ్రస్ సేవ్ చేయండి.");
-    goCheckoutStep(1);
-    return;
+function openOrders() {
+  if (!loggedInUserEmail) { alert("Your Orders చూడటానికి ముందుగా Login చేయండి."); openLogin(); return; }
+  $("ordersOverlay").classList.add("show");
+  loadMyOrders();
+}
+function closeOrders() { $("ordersOverlay").classList.remove("show"); }
+async function loadMyOrders() {
+  $("ordersEmail").textContent = loggedInUserEmail;
+  $("ordersContent").innerHTML = "<p>Loading orders...</p>";
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/orders`, {headers:{Authorization:"Bearer " + localStorage.getItem("jmart_session_token")}});
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || "Could not load orders");
+    if (!data.orders.length) {
+      $("ordersContent").innerHTML = '<p class="empty-cart">No orders found for this email yet.</p>';
+      return;
+    }
+    $("ordersContent").innerHTML = data.orders.map(o => {
+      const items = Array.isArray(o.items) ? o.items : [];
+      const date = o.created_at ? new Date(o.created_at).toLocaleString() : "Date unavailable";
+      return `<article class="order-card">
+        <div class="order-meta"><b>Order #${safeText(o.order_number || o.id || "—")}</b><span>${safeText(date)}</span></div>
+        <div class="order-meta"><span>Total: <b>₹${safeText(o.total_amount)}</b></span><span class="order-status">${safeText(o.order_status || o.payment_status || "Received")}</span></div>
+        <div class="order-items">${items.map(i => `${safeText(i.name)} × ${safeText(i.quantity)} — ₹${safeText(Number(i.price)*Number(i.quantity))}`).join("<br>")}</div>
+        <p style="font-size:12px;color:#667;margin-top:8px">Payment: ${safeText(o.payment_method || "Not specified")}</p>
+        <p style="font-size:12px;color:#667">Delivery: ${safeText(o.address || "")}</p>
+      </article>`;
+    }).join("");
+  } catch (e) {
+    $("ordersContent").innerHTML = `<p style="color:#b22">Orders could not be loaded: ${safeText(e.message)}</p>`;
   }
+}
+
+/* Replace old checkout progression with three clear steps. */
+proceedToPaymentOrOrder = function() {
+  const method = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
+  if (!savedAddress) { alert("దయచేసి ముందుగా అడ్రస్ సేవ్ చేయండి."); goCheckoutStep(1); return; }
   if (method === "cod") {
     submitOrderToBackend(false, null, "cod");
     return;
@@ -1720,376 +1522,147 @@ function proceedToPaymentOrOrder() {
   $("upiScannerSection").dataset.active = "yes";
   $("upiScannerSection").style.display = "block";
   $("paymentSectionView").style.display = "none";
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cart.reduce((sum,item) => sum + item.price * item.quantity, 0);
   const upiLink = `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI)}&pn=J-Mart&am=${total}&cu=INR`;
   $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
   startUpiTimer(300);
-}
-
-function finalizeVerifiedOrder() {
+};
+finalizeVerifiedOrder = function() {
   const proof = $("paymentProofInput").files[0];
   if (!proof) { alert("UPI payment screenshot upload చేయండి."); return; }
   if (proof.size > 5 * 1024 * 1024) { alert("Screenshot 5 MB కంటే చిన్నదిగా ఉండాలి."); return; }
   if (timerInterval) clearInterval(timerInterval);
   submitOrderToBackend(false, proof, "upi_pending_review");
-}
-
-async function submitOrderToBackend(_clientClaimedVerified, proofFile, paymentMethod = "cod") {
+};
+submitOrderToBackend = async function(_clientClaimedVerified, proofFile, paymentMethod="cod") {
   if (!loggedInUserEmail || !cart.length || !savedAddress) {
-    alert("Login, cart మరియు delivery address వివరాలు తనిఖీ చేయండి.");
-    return;
+    alert("Login, cart మరియు delivery address వివరాలు తనిఖీ చేయండి."); return;
   }
-  const orderedItems = cart.map(({ name, file, price, quantity }) => ({ name, file, price, quantity }));
-  const total = orderedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = cart.reduce((sum,item) => sum + item.price * item.quantity, 0);
   const formData = new FormData();
   formData.append("email", loggedInUserEmail);
   formData.append("customerName", loggedInUserName);
   formData.append("address", JSON.stringify(savedAddress));
-  formData.append("items", JSON.stringify(orderedItems));
+  formData.append("items", JSON.stringify(cart.map(({name,file,price,quantity}) => ({name,file,price,quantity}))));
   formData.append("totalAmount", String(total));
   formData.append("paymentMethod", paymentMethod);
   if (proofFile) formData.append("paymentProof", proofFile);
-
   try {
-    const token = localStorage.getItem("jmart_session_token");
-    const headers = token ? { Authorization: "Bearer " + token } : {};
-    const response = await fetch(`${BACKEND_URL}/api/place-order`, {
-      method: "POST",
-      headers,
-      body: formData
-    });
+    const response = await fetch(`${BACKEND_URL}/api/place-order`, {method:"POST",headers:{Authorization:"Bearer " + localStorage.getItem("jmart_session_token")},body:formData});
     const result = await response.json();
     if (!response.ok || !result.success) throw new Error(result.message || "Order failed");
-
     $("receiptDetails").innerHTML = `
       <p><b>Order ID:</b> ${safeText(result.order?.order_number || result.order?.id || "Created")}</p>
       <p><b>Email:</b> ${safeText(loggedInUserEmail)}</p>
-      <p><b>Delivery:</b> ${safeText(jmFmt(savedAddress))}</p>
+      <p><b>Delivery:</b> ${safeText(savedAddress.house)}, ${safeText(savedAddress.street)}, ${safeText(savedAddress.city)} - ${safeText(savedAddress.pincode)}</p>
       <p><b>Total:</b> ₹${total}</p>
-      <p><b>Payment:</b> ${paymentMethod === "cod" ? "Cash on Delivery" : "UPI — awaiting admin verification"}</p>`;
-    $("receiptItemsList").innerHTML = orderedItems.map(item => `
-      <div style="display:flex;gap:10px;align-items:center;padding:7px;border-bottom:1px solid #eee">
-        <img src="${imageURL(item.file)}" style="width:42px;height:42px;object-fit:contain">
-        <span>${safeText(item.name)} × ${item.quantity} — ₹${item.price * item.quantity}</span>
-      </div>`).join("");
-
-    $("upiScannerSection").dataset.active = "no";
+      <p><b>Payment:</b> ${paymentMethod==="cod"?"Cash on Delivery":"UPI — awaiting admin verification"}</p>`;
+    $("receiptItemsList").innerHTML = cart.map(item => `<div style="display:flex;gap:10px;align-items:center;padding:7px;border-bottom:1px solid #eee"><img src="${imageURL(item.file)}" style="width:42px;height:42px;object-fit:contain"><span>${safeText(item.name)} × ${item.quantity} — ₹${item.price*item.quantity}</span></div>`).join("");
+    checkoutStep = 3;
+    goCheckoutStep(3);
     cart = [];
     updateCart();
     localStorage.removeItem(JMART_STATE_KEY);
-    goCheckoutStep(3);
     await loadMyOrders();
   } catch (e) {
     console.error(e);
     alert("Order error: " + e.message);
   }
-}
-
-/* Product details page */
-const jmVariants = p => {
-  if (JM_SIZES_OVERRIDE[p.name]) return JM_SIZES_OVERRIDE[p.name];
-  const u = JM_UNITS[p.category] || "g", ov = JM_PRICE_OVERRIDES[p.name] || {};
-  return JM_STEPS.map(([s, m]) => {
-    const label = s + " " + u;
-    return { label, price: ov[label] != null ? ov[label] : Math.round(p.price * m) };
-  });
-};
-const jmKeyName = () => `${jmP.name} (${jmVariants(jmP)[jmV].label})`;
-const jmCartIdx = () => cart.findIndex(i => i.name === jmKeyName());
-
-function jmOpenProd(p) {
-  jmP = p;
-  jmV = Math.min(1, jmVariants(p).length - 1);
-  const imgs = [p.file].concat(JM_EXTRA_IMAGES[p.name] || []);
-  $("jmPGal").innerHTML = `<div class="jm-gal" onscroll="jmDots(this)">${imgs.map(f => `<img src="${imageURL(f)}" alt="${safeText(p.name)}" onerror="this.onerror=null;this.src='https://placehold.co/400x300/f2f7f4/078b62?text=J-Mart'">`).join("")}</div>` +
-    (imgs.length > 1 ? `<div class="jm-dots">${imgs.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>` : '<div style="height:8px"></div>');
-  $("jmProdOverlay").classList.add("show");
-  $("jmProdOverlay").scrollTop = 0;
-  jmRenderProd();
-}
-
-function jmDots(g) {
-  const i = Math.round(g.scrollLeft / g.clientWidth), d = g.parentNode.querySelectorAll(".jm-dots i");
-  d.forEach((x, n) => x.classList.toggle("on", n === i));
-}
-
-function jmSize(i) { jmV = i; jmRenderProd(); }
-
-function jmRenderProd() {
-  const p = jmP, vs = jmVariants(p), v = vs[jmV];
-  $("jmPTop").textContent = p.name;
-  const text = JM_DETAILS[p.name] || `${p.name} (${v.label}) — మంచి నాణ్యత గల ${p.category} ప్రొడక్ట్. మీ ఇంటి రోజువారీ అవసరాల కోసం జాగ్రత్తగా ప్యాక్ చేసి J-Mart నుంచి అందిస్తాము.`;
-  $("jmPInfo").innerHTML = `
-    <div class="jm-sec"><div class="jm-ptitle">${safeText(p.name)} – ${safeText(v.label)}</div><div class="jm-pprice">₹${v.price}</div></div>
-    <div class="jm-sec"><h3>Select Size</h3><div class="jm-chips">${vs.map((x, i) => `<button type="button" class="jm-chip ${i === jmV ? "on" : ""}" onclick="jmSize(${i})">${safeText(x.label)}<small>₹${x.price}</small></button>`).join("")}</div></div>
-    <div class="jm-sec"><h3>Product Details</h3><p class="jm-desc">${safeText(text)}</p>
-      <div class="jm-line"><span>Product</span><span>${safeText(p.name)}</span></div>
-      <div class="jm-line"><span>Size</span><span>${safeText(v.label)}</span></div>
-      <div class="jm-line"><span>Category</span><span>${safeText(p.category)}</span></div>
-      <div class="jm-line"><span>Price</span><span>₹${v.price}</span></div></div>`;
-  jmRenderBar();
-}
-
-function jmRenderBar() {
-  const q = jmCartIdx() >= 0 ? cart[jmCartIdx()].quantity : 0;
-  $("jmPBar").innerHTML = q
-    ? `<div class="jm-qty"><button onclick="jmQ(-1)" aria-label="Decrease">−</button><span>✓ Added · ${q}</span><button onclick="jmQ(1)" aria-label="Increase">+</button></div>`
-    : '<button class="place-order" onclick="jmQ(1)">Add to Cart</button>';
-  $("jmPCount").textContent = cart.reduce((s, i) => s + i.quantity, 0);
-}
-
-function jmQ(d) {
-  const i = jmCartIdx(), v = jmVariants(jmP)[jmV];
-  if (i < 0) { if (d > 0) cart.push({ name: jmKeyName(), file: jmP.file, price: v.price, category: jmP.category, quantity: 1 }); }
-  else { cart[i].quantity += d; if (cart[i].quantity <= 0) cart.splice(i, 1); }
-  updateCart();
-  jmRenderBar();
-}
-
-function jmCloseProd() { $("jmProdOverlay").classList.remove("show"); }
-
-/* Your Orders */
-const jmMoney = n => "₹" + (Number(n) || 0);
-const jmImg = i => {
-  const p = (typeof products !== "undefined") && products.find(x => x.name === i.name);
-  const f = i.file || (p && p.file);
-  return f ? `<img src="${imageURL(f)}" alt="" onerror="this.style.visibility='hidden'">` : "<span>🛒</span>";
-};
-const jmDate = d => { try { return new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } };
-const jmItems = o => Array.isArray(o.items) ? o.items : (() => { try { return JSON.parse(o.items) || []; } catch (e) { return []; } })();
-const jmAddr = a => {
-  if (!a) return null;
-  if (typeof a === "object") return a;
-  try { const p = JSON.parse(a); if (p && typeof p === "object") return p; } catch (e) {}
-  return String(a);
-};
-const jmStatusIdx = o => {
-  const s = String(o.order_status || "").toLowerCase();
-  if (/cancel/.test(s)) return -1;
-  if (/out|ship|dispatch/.test(s)) return 2;
-  if (/deliver/.test(s)) return 3;
-  if (/pack|confirm|verif|process|accept/.test(s)) return 1;
-  return 0;
 };
 
-function openOrders() {
-  if (!loggedInUserEmail) { alert("Your Orders చూడటానికి ముందుగా Login చేయండి."); openLogin(); return; }
-  $("ordersOverlay").classList.add("show");
-  loadMyOrders();
-}
-
-function closeOrders() { $("ordersOverlay").classList.remove("show"); }
-
-async function loadMyOrders() {
-  $("ordersEmail").textContent = loggedInUserEmail || "";
-  $("ordersContent").innerHTML = "<p>Loading orders...</p>";
-  try {
-    const token = localStorage.getItem("jmart_session_token");
-    const headers = token ? { Authorization: "Bearer " + token } : {};
-    const res = await fetch(`${BACKEND_URL}/api/orders`, { headers });
-    const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || "Could not load orders");
-    jmOrders = data.orders || [];
-    if (!jmOrders.length) {
-      $("ordersContent").innerHTML = '<p class="empty-cart">No orders found for this email yet.</p>';
-      return;
-    }
-    $("ordersContent").innerHTML = jmOrders.map((o, n) => {
-      const items = jmItems(o);
-      const first = items[0] ? safeText(items[0].name) : "Order";
-      const more = items.length > 1 ? ` + ${items.length - 1} more` : "";
-      return `<div class="jm-ocard" onclick="jmShowOrder(${n})">
-        <div class="jm-thumbs">${items.slice(0, 2).map(jmImg).join("")}</div>
-        <div class="jm-oinfo"><b>${first}${more}</b><small>${safeText(o.order_status || o.payment_status || "Received")} · ${jmMoney(o.total_amount)}</small><small>${safeText(jmDate(o.created_at))}</small></div>
-        <span class="jm-chev">›</span></div>`;
-    }).join("");
-  } catch (e) {
-    $("ordersContent").innerHTML = `<p style="color:#b22">Orders could not be loaded: ${safeText(e.message)}</p>`;
+/* OTP flow now collects the customer's display name as well. */
+handleSendOTP = async function() {
+  const name = $("customerNameInput").value.trim();
+  const email = $("emailInput").value.trim().toLowerCase();
+  if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert("మీ పూర్తి పేరు మరియు సరైన Email ఇవ్వండి."); return;
   }
-}
-
-function jmShowOrder(n) {
-  const o = jmOrders[n]; if (!o) return;
-  const items = jmItems(o), idx = jmStatusIdx(o);
-  const steps = ["Order Placed", "Packed", "Out for Delivery", "Delivered"];
-  const track = idx < 0
-    ? '<div class="jm-cancel">This order was cancelled</div>'
-    : `<div class="jm-track">${steps.map((s, i) => `<div class="jm-tstep ${i <= idx ? "done" : ""} ${i === idx ? "cur" : ""}"><span class="jm-dot"></span><span>${s}</span></div>`).join("")}</div>`;
-  const a = jmAddr(o.address);
-  const addrHtml = !a ? "—" : (typeof a === "string" ? safeText(a)
-    : `<b>${safeText(a.name || "")}</b> ${safeText(a.phone || "")}<br>${safeText(jmFmt({ house: a.house || "", street: a.street || "", landmark: a.landmark || "", city: a.city || "", pincode: a.pincode || "" }))}`);
-  const pm = String(o.payment_method || "").toLowerCase();
-  const payName = pm === "cod" ? "Cash on Delivery" : pm.indexOf("upi") === 0 ? "UPI / Online" : (o.payment_method || "Not specified");
-  const qty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
-  $("jmOrderBody").innerHTML = `
-    <div class="jm-sec"><div class="jm-line"><span>Order ID</span><b>#${safeText(o.order_number || o.id || "—")}</b></div><div class="jm-line"><span>Placed on</span><span>${safeText(jmDate(o.created_at))}</span></div></div>
-    <div class="jm-sec"><h3>Order Status</h3>${track}</div>
-    <div class="jm-sec"><h3>Items (${qty})</h3>${items.map(i => `<div class="jm-item">${jmImg(i)}<div><b>${safeText(i.name)}</b><small>Qty ${safeText(i.quantity)} × ${jmMoney(i.price)}</small></div><b>${jmMoney(Number(i.price) * Number(i.quantity))}</b></div>`).join("")}</div>
-    <div class="jm-sec"><h3>Delivery Address</h3><div style="font-size:14px;line-height:1.6">${addrHtml}</div></div>
-    <div class="jm-sec"><h3>Payment</h3><div class="jm-line"><span>Method</span><span>${safeText(payName)}</span></div>${o.payment_status ? `<div class="jm-line"><span>Status</span><span>${safeText(o.payment_status)}</span></div>` : ""}</div>
-    <div class="jm-sec"><h3>Price Details</h3><div class="jm-line"><span>Items (${qty})</span><span>${jmMoney(o.total_amount)}</span></div><div class="jm-line t"><span>Total Amount</span><span>${jmMoney(o.total_amount)}</span></div></div>`;
-  $("jmOrderOverlay").classList.add("show");
-  $("jmOrderOverlay").scrollTop = 0;
-}
-
-function jmCloseOrder() { $("jmOrderOverlay").classList.remove("show"); }
-
-/* Login / Sign Up / Forgot Password */
-function openLogin() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email, name})
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || "OTP could not be sent");
+    window.tempEmail = email;
+    window.tempCustomerName = name;
+    $("emailStep").style.display = "none";
+    $("otpStep").style.display = "block";
+    $("modalTitle").textContent = "Verify your email";
+    alert("OTP మీ Email కు పంపబడింది.");
+  } catch(e) { alert(e.message); }
+};
+handleVerifyOTP = async function() {
+  const otp = $("otpInput").value.trim();
+  if (!/^\d{6}$/.test(otp)) { alert("6-digit OTP ఇవ్వండి."); return; }
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:window.tempEmail,otp})
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || "OTP verification failed");
+    loggedInUserEmail = window.tempEmail;
+    loggedInUserName = window.tempCustomerName;
+    localStorage.setItem("jmart_user_email", loggedInUserEmail);
+    localStorage.setItem("jmart_user_name", loggedInUserName);
+    localStorage.setItem("jmart_session_token", data.token);
+    restoreJmartState();
+    checkLoginState();
+    closeLogin();
+    alert("Login successful!");
+  } catch(e) { alert(e.message); }
+};
+const oldCloseLogin = closeLogin;
+closeLogin = function() {
+  $("loginModal").classList.remove("show");
+  $("emailStep").style.display = "block";
+  $("otpStep").style.display = "none";
+  $("emailInput").value = "";
+  $("otpInput").value = "";
+  $("customerNameInput").value = "";
+  $("modalTitle").textContent = "Login with OTP";
+};
+const oldOpenLogin = openLogin;
+openLogin = function() {
   if (loggedInUserEmail) {
     if (confirm(`Logged in as ${loggedInUserName || loggedInUserEmail}.\nLogout?`)) {
-      loggedInUserEmail = null;
-      loggedInUserName = "";
+      loggedInUserEmail = null; loggedInUserName = "";
       localStorage.removeItem("jmart_user_email");
       localStorage.removeItem("jmart_user_name");
       localStorage.removeItem("jmart_session_token");
       localStorage.removeItem(JMART_STATE_KEY);
-      savedAddress = null;
-      cart = [];
-      updateCart();
-      checkLoginState();
+      savedAddress = null; cart = [];
+      updateCart(); checkLoginState();
       alert("Logged out.");
     }
     return;
   }
-  jmA = { view: "login", email: "", name: "" };
-  $("jmAuth").classList.add("show");
-  jmAuthDraw();
-}
+  $("loginModal").classList.add("show");
+};
 
-function jmAuthClose() { $("jmAuth").classList.remove("show"); }
-function jmAuthGo(v) { jmA.view = v; jmAuthDraw(); }
-const jmI = (id, icon, type, ph, extra = "") => `<div class="jm-field"><span class="ic">${icon}</span><input id="${id}" type="${type}" placeholder="${ph}" ${extra}></div>`;
-const jmPw = (id, ph) => `<div class="jm-field"><span class="ic">🔒</span><input id="${id}" type="password" placeholder="${ph}" autocomplete="off"><button type="button" class="jm-eye" onclick="jmEye('${id}')" aria-label="Show password">👁</button></div>`;
-function jmEye(id) { const e = $(id); e.type = e.type === "password" ? "text" : "password"; }
-function jmErr(msg) {
-  const e = $("jmAuthErr"); e.textContent = msg; e.classList.add("show");
-  const c = $("jmAuthCard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
-}
-
-function jmAuthDraw() {
-  const v = jmA.view, c = $("jmAuthCard");
-  const tabs = `<div class="jm-tabs"><button class="${v === "login" ? "on" : ""}" onclick="jmAuthGo('login')">Login</button><button class="${v.indexOf("signup") === 0 ? "on" : ""}" onclick="jmAuthGo('signup1')">Sign Up</button></div>`;
-  const err = '<div class="jm-err" id="jmAuthErr"></div>';
-  if (v === "login") c.innerHTML = `${tabs}<h2>Welcome back 👋</h2><p class="sub">మీ ఈమెయిల్, పాస్‌వర్డ్‌తో లాగిన్ అవ్వండి.</p>${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${jmPw("jmPass", "Password")}${err}<button class="jm-go" id="jmGo" onclick="jmLogin()">Login →</button><button class="jm-link" onclick="jmAuthGo('forgot1')">Forgot password?</button>`;
-  if (v === "signup1") c.innerHTML = `${tabs}<h2>Create account ✨</h2><p class="sub">మీ పేరు, ఈమెయిల్ ఇవ్వండి. ఆ ఈమెయిల్‌కి OTP వస్తుంది.</p>${jmI("jmName", "👤", "text", "Full name")}${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${err}<button class="jm-go" id="jmGo" onclick="jmSendOtp(true)">Send OTP →</button>`;
-  if (v === "forgot1") c.innerHTML = `<h2>Forgot password 🔑</h2><p class="sub">మీ ఈమెయిల్ ఇవ్వండి, OTP పంపుతాం. తర్వాత కొత్త పాస్‌వర్డ్ పెట్టుకోవచ్చు.</p>${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${err}<button class="jm-go" id="jmGo" onclick="jmSendOtp(false)">Send OTP →</button><button class="jm-link" onclick="jmAuthGo('login')">← Back to Login</button>`;
-  if (v === "signup2" || v === "forgot2") {
-    const su = v === "signup2";
-    c.innerHTML = `<h2>${su ? "Verify &amp; set password" : "Reset password"} 🔐</h2><p class="sub">${safeText(jmA.email)} కి OTP పంపాం.</p>${jmI("jmOtp", "🔢", "text", "6-digit OTP", 'maxlength="6" inputmode="numeric" class="jm-otp"')}${jmPw("jmPass", "Create new password")}${jmPw("jmPass2", "Confirm password")}${err}<button class="jm-go" id="jmGo" onclick="jmSetPassword()">${su ? "Create Account" : "Save New Password"} →</button><button class="jm-link" onclick="jmAuthGo('${su ? "signup1" : "forgot1"}')">← Change email</button>`;
-  }
-  const f = c.querySelector("input"); if (f) setTimeout(() => f.focus(), 50);
-}
-
-async function jmPost(path, body, token) {
-  const h = { "Content-Type": "application/json" };
-  if (token) h.Authorization = "Bearer " + token;
-  let res, data = {};
-  try { res = await fetch(BACKEND_URL + path, { method: "POST", headers: h, body: JSON.stringify(body) }); }
-  catch (e) { throw new Error("సర్వర్‌ను చేరుకోలేకపోయాం. ఇంటర్నెట్ చూడండి."); }
-  try { data = await res.json(); } catch (e) {}
-  if (res.status === 404) throw new Error("ఈ సదుపాయం సర్వర్‌లో ఇంకా సెటప్ కాలేదు (" + path + ").");
-  if (!res.ok || data.success === false) throw new Error(data.message || "విఫలమైంది, మళ్ళీ ప్రయత్నించండి.");
-  return data;
-}
-
-function jmBusy(on) { const b = $("jmGo"); if (b) b.disabled = on; }
-
-function jmFinish(email, name, token) {
-  loggedInUserEmail = email;
-  loggedInUserName = name || loggedInUserName || "";
-  localStorage.setItem("jmart_user_email", email);
-  localStorage.setItem("jmart_user_name", loggedInUserName);
-  if (token) localStorage.setItem("jmart_session_token", token);
-  restoreJmartState();
-  checkLoginState();
-  renderSavedAddress();
-  jmAuthClose();
-}
-
-async function jmLogin() {
-  const email = $("jmEmail").value.trim(), password = $("jmPass").value;
-  if (!/^\S+@\S+\.\S+$/.test(email) || !password) return jmErr("సరైన ఈమెయిల్, పాస్‌వర్డ్ ఇవ్వండి.");
-  jmBusy(true);
-  try {
-    const d = await jmPost("/api/login", { email, password });
-    jmFinish(email, d.name || (d.user && d.user.name) || "", d.token);
-  } catch (e) {
-    jmBusy(false);
-    $("jmPass").value = "";
-    jmErr(e.message);
-  }
-}
-
-async function jmSendOtp(signup) {
-  const email = $("jmEmail").value.trim(), name = signup ? $("jmName").value.trim() : "";
-  if (signup && name.length < 2) return jmErr("మీ పూర్తి పేరు ఇవ్వండి.");
-  if (!/^\S+@\S+\.\S+$/.test(email)) return jmErr("సరైన ఈమెయిల్ ఇవ్వండి.");
-  jmBusy(true);
-  try {
-    await jmPost("/api/send-otp", signup ? { email, name } : { email });
-    jmA.email = email; jmA.name = name;
-    jmAuthGo(signup ? "signup2" : "forgot2");
-  } catch (e) { jmBusy(false); jmErr(e.message); }
-}
-
-async function jmSetPassword() {
-  const otp = $("jmOtp").value.trim(), p1 = $("jmPass").value, p2 = $("jmPass2").value;
-  if (!/^\d{6}$/.test(otp)) return jmErr("6 అంకెల OTP ఇవ్వండి.");
-  if (p1.length < 6) return jmErr("పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి.");
-  if (p1 !== p2) return jmErr("రెండు పాస్‌వర్డ్‌లు ఒకేలా లేవు.");
-  jmBusy(true);
-  let d;
-  try { d = await jmPost("/api/verify-otp", { email: jmA.email, otp }); }
-  catch (e) { jmBusy(false); $("jmOtp").value = ""; return jmErr(e.message); }
-  try {
-    await jmPost("/api/set-password", { password: p1 }, d.token);
-    jmFinish(jmA.email, jmA.name || d.name || "", d.token);
-  } catch (e) { jmBusy(false); jmErr("OTP సరైనదే, కానీ పాస్‌వర్డ్ సేవ్ కాలేదు: " + e.message); }
-}
-
+/* Make address and payment steps explicit; keep previous values on refresh. */
 document.addEventListener("DOMContentLoaded", () => {
   restoreJmartState();
   checkLoginState();
   updateCart();
-  const vp = document.querySelector('meta[name="viewport"]');
-  if (vp && !/viewport-fit/.test(vp.content)) vp.content += ", viewport-fit=cover";
-  const hdr = document.querySelector("header");
-  document.body.insertAdjacentHTML("afterbegin", '<div class="jm-cover"></div>');
-  hdr.insertAdjacentHTML("beforebegin", '<div class="jm-band">FRESH NEEDS, HAPPY HOMES</div>');
-  $("addressDisplayBox").insertAdjacentHTML("afterend", '<div id="jmAddrList"></div>');
-  renderSavedAddress();
-
-  $("productGrid").addEventListener("click", e => {
-    if (e.target.closest(".add-button, .jm-cq")) return;
-    const card = e.target.closest(".product");
-    if (!card) return;
-    const p = products.find(x => x.name === card.querySelector("h3").textContent.trim());
-    if (p) jmOpenProd(p);
-  });
-
   const addressButton = $("addressFormEdit").querySelector("button.place-order");
   addressButton.textContent = "Save Address & Continue";
-  addressButton.onclick = () => { saveNewAddress(); if (savedAddress) nextToPayment(); };
-
+  addressButton.onclick = () => { saveNewAddress(); if (savedAddress) goCheckoutStep(2); };
   const payButton = $("paymentSectionView").querySelector("button.place-order");
-  payButton.textContent = "Continue to Payment";
+  payButton.textContent = "Back to Address";
   payButton.insertAdjacentHTML("beforebegin", '<button type="button" class="change-addr-btn" style="width:100%;margin-bottom:10px;padding:12px" onclick="backToAddress()">← Back to Address</button>');
-  payButton.onclick = () => proceedToPaymentOrOrder();
-
+  payButton.textContent = "Continue to Payment";
+  payButton.onclick = () => {
+    const method = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
+    if (method === "cod") proceedToPaymentOrOrder();
+    else proceedToPaymentOrOrder();
+  };
   $("receiptSection").insertAdjacentHTML("beforeend", '<button type="button" class="change-addr-btn" style="width:100%;margin-top:8px;padding:12px" onclick="closeFullCheckout();openOrders()">View All Orders</button>');
-  if (loggedInUserEmail) loadMyOrders().catch(() => {});
+  if (loggedInUserEmail) loadMyOrders().catch(()=>{});
 });
-
-(function () {
-  const s = $("jmSplash");
-  if (!s) return;
-  const hide = () => { s.classList.add("out"); setTimeout(() => s.remove(), 700); };
-  setTimeout(hide, 2400);
-  s.addEventListener("click", hide);
-})();
-
 window.addEventListener("beforeunload", persistJmartState);
+
 </script>
 
 <!-- ===== J-Mart additions v4 ===== -->
@@ -2114,11 +1687,379 @@ window.addEventListener("beforeunload", persistJmartState);
   </div>
   <div class="jm-bar"><div class="jm-bar-in" id="jmPBar"></div></div>
 </div>
+<script>
+/* ---------- Splash: stylish J-Mart intro on open ---------- */
+(function () {
+  const s = $("jmSplash");
+  const hide = () => { s.classList.add("out"); setTimeout(() => s.remove(), 700); };
+  setTimeout(hide, 2400);
+  s.addEventListener("click", hide);
+})();
+
+/* ---------- Header: top gap + green band ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (vp && !/viewport-fit/.test(vp.content)) vp.content += ", viewport-fit=cover";
+  const hdr = document.querySelector("header");
+  document.body.insertAdjacentHTML("afterbegin", '<div class="jm-cover"></div>');
+  hdr.insertAdjacentHTML("beforebegin", '<div class="jm-band">FRESH NEEDS, HAPPY HOMES</div>');
+  /* address block that appears after Place Order */
+  $("addressDisplayBox").insertAdjacentHTML("afterend", '<div id="jmAddrList"></div>');
+  renderSavedAddress();
+  /* tap a product card to open its details page */
+  $("productGrid").addEventListener("click", e => {
+    if (e.target.closest(".add-button, .jm-cq")) return;
+    const card = e.target.closest(".product");
+    if (!card) return;
+    const p = products.find(x => x.name === card.querySelector("h3").textContent.trim());
+    if (p) jmOpenProd(p);
+  });
+});
+
+/* ---------- Address: shown after Place Order. Same / Change / Add New, saved permanently on this phone ---------- */
+let jmStep = 1, jmDraft = {}, jmEditIdx = -1;
+const jmFmt = a => `${a.house}, ${a.street}, ${a.landmark ? a.landmark + ", " : ""}${a.city} - ${a.pincode}`;
+const jmKey = () => "jmart_address_book_v1:" + (loggedInUserEmail || "guest");
+const jmLoad = () => { try { const b = JSON.parse(localStorage.getItem(jmKey()) || "null"); if (b && Array.isArray(b.list)) return b; } catch (e) {} return { list: [], sel: 0 }; };
+const jmSave = b => { try { localStorage.setItem(jmKey(), JSON.stringify(b)); } catch (e) {} };
+const jmF = (k, label, ph, extra = "") =>
+  `<div class="form-group"><label>${label}</label><input type="text" ${extra} value="${safeText(jmDraft[k] || "")}" placeholder="${ph}" oninput="jmDraft.${k}=this.value"></div>`;
+
+const jmOldRender = renderSavedAddress;
+renderSavedAddress = function () {
+  jmOldRender();
+  const b = jmLoad();
+  if (!b.list.length && savedAddress) { b.list = [savedAddress]; b.sel = 0; jmSave(b); }
+  if (b.list.length) { b.sel = Math.min(b.sel || 0, b.list.length - 1); savedAddress = b.list[b.sel]; persistJmartState(); }
+  const box = $("jmAddrList");
+  if (!box) return;
+  if (!b.list.length) { box.innerHTML = '<button type="button" class="place-order" onclick="jmWizard(-1)">+ Add Delivery Address</button>'; return; }
+  box.innerHTML = b.list.map((a, i) => `<label class="jm-acard ${i === b.sel ? "sel" : ""}"><input type="radio" name="jmAddrSel" ${i === b.sel ? "checked" : ""} onchange="jmPick(${i})"><div><b>${safeText(a.name)} · ${safeText(a.phone)}</b><br>${safeText(jmFmt(a))}</div></label>`).join("") +
+    `<div class="jm-row"><button type="button" class="place-order jm-ghost" onclick="jmWizard(${b.sel})">✏️ Change</button><button type="button" class="place-order jm-ghost" onclick="jmWizard(-1)">+ Add New</button></div>
+     <button type="button" class="place-order jm-blue" onclick="nextToPayment()">Same address — Continue to Payment →</button>`;
+};
+showAddressForm = function () { jmWizard(jmLoad().sel); };
+function jmPick(i) { const b = jmLoad(); b.sel = i; jmSave(b); savedAddress = b.list[i]; persistJmartState(); renderSavedAddress(); }
+function jmWizard(idx) {
+  const b = jmLoad();
+  jmEditIdx = idx;
+  jmDraft = idx >= 0 && b.list[idx] ? Object.assign({}, b.list[idx]) : {};
+  jmStep = 1;
+  $("jmAddrOverlay").classList.add("show");
+  jmRenderAddr();
+}
+function jmCloseAddr() { $("jmAddrOverlay").classList.remove("show"); renderSavedAddress(); }
+function jmBack() { if (jmStep > 1) { jmStep--; jmRenderAddr(); } else jmCloseAddr(); }
+function jmRenderAddr() {
+  $("jmAddrTitle").textContent = jmEditIdx >= 0 ? "Change Address" : "Add New Address";
+  const bar = `<div class="checkout-steps">${["Contact", "Location", "Town"].map((s, i) => `<div class="checkout-step ${jmStep === i + 1 ? "active" : ""}">${i + 1}. ${s}</div>`).join("")}</div>`;
+  let f = "";
+  if (jmStep === 1) f = jmF("name", "Full Name", "Enter full name") + jmF("phone", "Mobile Number", "10-digit mobile number", 'maxlength="10" inputmode="numeric"');
+  if (jmStep === 2) f = jmF("house", "Flat, House no., Building", "e.g. 1/40") + jmF("street", "Area, Street, Village", "e.g. Vontimitta bus stand") + jmF("landmark", "Landmark (Optional)", "e.g. Near Ramalayam");
+  if (jmStep === 3) f = jmF("city", "City / Town", "e.g. Kadapa") + jmF("pincode", "Pincode", "e.g. 516213", 'maxlength="6" inputmode="numeric"');
+  $("jmAddrBody").innerHTML = `${bar}<div class="jm-sec">${f}</div>
+    <div class="jm-row"><button class="place-order jm-ghost" onclick="jmBack()">← Back</button><button class="place-order" onclick="jmNext()">${jmStep === 3 ? "Save Address" : "Next →"}</button></div>`;
+}
+function jmNext() {
+  const v = k => (jmDraft[k] || "").trim();
+  if (jmStep === 1) {
+    if (!v("name")) return alert("పేరు ఇవ్వండి.");
+    if (!/^[6-9]\d{9}$/.test(v("phone"))) return alert("దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి.");
+  }
+  if (jmStep === 2 && (!v("house") || !v("street"))) return alert("ఇల్లు మరియు వీధి వివరాలు ఇవ్వండి.");
+  if (jmStep === 3) {
+    if (!v("city") || !/^\d{6}$/.test(v("pincode"))) return alert("నగరం మరియు సరైన 6 అంకెల పిన్‌కోడ్ ఇవ్వండి.");
+    const a = { name: v("name"), phone: v("phone"), house: v("house"), street: v("street"), landmark: v("landmark"), city: v("city"), pincode: v("pincode") };
+    const b = jmLoad();
+    if (jmEditIdx >= 0 && b.list[jmEditIdx]) { b.list[jmEditIdx] = a; b.sel = jmEditIdx; }
+    else { b.list.push(a); b.sel = b.list.length - 1; }
+    jmSave(b);
+    savedAddress = a;
+    persistJmartState();
+    return jmCloseAddr();
+  }
+  jmStep++;
+  jmRenderAddr();
+}
+
+/* ---------- Product details page ---------- */
+/* EDIT HERE: sizes, prices, details, extra photos */
+const JM_UNITS = { "Beverages": "ml", "Personal Care": "ml", "Household Care": "ml", "Tea & Coffee": "g", "Rice & Grains": "g", "Sugar & Salt": "g", "Biscuits & Snacks": "g", "Fresh Produce": "g" };
+const JM_STEPS = [[100, 0.5], [200, 1], [300, 1.5]];   /* [size, price multiplier]; 200 keeps the normal listed price */
+const JM_SIZES_OVERRIDE = {};   /* e.g. {"Bounty":[{label:"50 g",price:10},{label:"100 g",price:20}]} */
+const JM_PRICE_OVERRIDES = {};  /* e.g. {"Bounty":{"100 g":12}} */
+const JM_DETAILS = {};          /* e.g. {"Bounty":"your own description"} */
+const JM_EXTRA_IMAGES = {};     /* e.g. {"Bounty":["bounty_back.png"]}  (file names in your GitHub repo) */
+let jmP = null, jmV = 1;
+const jmVariants = p => {
+  if (JM_SIZES_OVERRIDE[p.name]) return JM_SIZES_OVERRIDE[p.name];
+  const u = JM_UNITS[p.category] || "g", ov = JM_PRICE_OVERRIDES[p.name] || {};
+  return JM_STEPS.map(([s, m]) => { const label = s + " " + u; return { label, price: ov[label] != null ? ov[label] : Math.round(p.price * m) }; });
+};
+const jmKeyName = () => `${jmP.name} (${jmVariants(jmP)[jmV].label})`;
+const jmCartIdx = () => cart.findIndex(i => i.name === jmKeyName());
+function jmOpenProd(p) {
+  jmP = p;
+  jmV = Math.min(1, jmVariants(p).length - 1);
+  const imgs = [p.file].concat(JM_EXTRA_IMAGES[p.name] || []);
+  $("jmPGal").innerHTML = `<div class="jm-gal" onscroll="jmDots(this)">${imgs.map(f => `<img src="${imageURL(f)}" alt="${safeText(p.name)}" onerror="this.onerror=null;this.src='https://placehold.co/400x300/f2f7f4/078b62?text=J-Mart'">`).join("")}</div>` +
+    (imgs.length > 1 ? `<div class="jm-dots">${imgs.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>` : '<div style="height:8px"></div>');
+  $("jmProdOverlay").classList.add("show");
+  $("jmProdOverlay").scrollTop = 0;
+  jmRenderProd();
+}
+function jmDots(g) {
+  const i = Math.round(g.scrollLeft / g.clientWidth), d = g.parentNode.querySelectorAll(".jm-dots i");
+  d.forEach((x, n) => x.classList.toggle("on", n === i));
+}
+function jmSize(i) { jmV = i; jmRenderProd(); }
+function jmRenderProd() {
+  const p = jmP, vs = jmVariants(p), v = vs[jmV];
+  $("jmPTop").textContent = p.name;
+  const text = JM_DETAILS[p.name] || `${p.name} (${v.label}) — మంచి నాణ్యత గల ${p.category} ప్రొడక్ట్. మీ ఇంటి రోజువారీ అవసరాల కోసం జాగ్రత్తగా ప్యాక్ చేసి J-Mart నుంచి అందిస్తాము.`;
+  $("jmPInfo").innerHTML = `
+    <div class="jm-sec"><div class="jm-ptitle">${safeText(p.name)} – ${safeText(v.label)}</div><div class="jm-pprice">₹${v.price}</div></div>
+    <div class="jm-sec"><h3>Select Size</h3><div class="jm-chips">${vs.map((x, i) => `<button type="button" class="jm-chip ${i === jmV ? "on" : ""}" onclick="jmSize(${i})">${safeText(x.label)}<small>₹${x.price}</small></button>`).join("")}</div></div>
+    <div class="jm-sec"><h3>Product Details</h3><p class="jm-desc">${safeText(text)}</p>
+      <div class="jm-line"><span>Product</span><span>${safeText(p.name)}</span></div>
+      <div class="jm-line"><span>Size</span><span>${safeText(v.label)}</span></div>
+      <div class="jm-line"><span>Category</span><span>${safeText(p.category)}</span></div>
+      <div class="jm-line"><span>Price</span><span>₹${v.price}</span></div></div>`;
+  jmRenderBar();
+}
+function jmRenderBar() {
+  const q = jmCartIdx() >= 0 ? cart[jmCartIdx()].quantity : 0;
+  $("jmPBar").innerHTML = q
+    ? `<div class="jm-qty"><button onclick="jmQ(-1)" aria-label="Decrease">−</button><span>✓ Added · ${q}</span><button onclick="jmQ(1)" aria-label="Increase">+</button></div>`
+    : '<button class="place-order" onclick="jmQ(1)">Add to Cart</button>';
+  $("jmPCount").textContent = cart.reduce((s, i) => s + i.quantity, 0);
+}
+function jmQ(d) {
+  const i = jmCartIdx(), v = jmVariants(jmP)[jmV];
+  if (i < 0) { if (d > 0) cart.push({ name: jmKeyName(), file: jmP.file, price: v.price, category: jmP.category, quantity: 1 }); }
+  else { cart[i].quantity += d; if (cart[i].quantity <= 0) cart.splice(i, 1); }
+  updateCart();
+  jmRenderBar();
+}
+function jmCloseProd() { $("jmProdOverlay").classList.remove("show"); }
+
+/* ---------- Your Orders: tappable list + Flipkart-style details page ---------- */
+let jmOrders = [];
+const jmMoney = n => "₹" + (Number(n) || 0);
+const jmImg = i => {
+  const p = (typeof products !== "undefined") && products.find(x => x.name === i.name);
+  const f = i.file || (p && p.file);
+  return f ? `<img src="${imageURL(f)}" alt="" onerror="this.style.visibility='hidden'">` : "<span>🛒</span>";
+};
+const jmDate = d => { try { return new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; } };
+const jmItems = o => Array.isArray(o.items) ? o.items : (() => { try { return JSON.parse(o.items) || []; } catch (e) { return []; } })();
+const jmAddr = a => {
+  if (!a) return null;
+  if (typeof a === "object") return a;
+  try { const p = JSON.parse(a); if (p && typeof p === "object") return p; } catch (e) {}
+  return String(a);
+};
+const jmStatusIdx = o => {
+  const s = String(o.order_status || "").toLowerCase();
+  if (/cancel/.test(s)) return -1;
+  if (/out|ship|dispatch/.test(s)) return 2;
+  if (/deliver/.test(s)) return 3;
+  if (/pack|confirm|verif|process|accept/.test(s)) return 1;
+  return 0;
+};
+loadMyOrders = async function () {
+  $("ordersEmail").textContent = loggedInUserEmail || "";
+  $("ordersContent").innerHTML = "<p>Loading orders...</p>";
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/orders`, { headers: { Authorization: "Bearer " + localStorage.getItem("jmart_session_token") } });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || "Could not load orders");
+    jmOrders = data.orders || [];
+    if (!jmOrders.length) { $("ordersContent").innerHTML = '<p class="empty-cart">No orders found for this email yet.</p>'; return; }
+    $("ordersContent").innerHTML = jmOrders.map((o, n) => {
+      const items = jmItems(o);
+      const first = items[0] ? safeText(items[0].name) : "Order";
+      const more = items.length > 1 ? ` + ${items.length - 1} more` : "";
+      return `<div class="jm-ocard" onclick="jmShowOrder(${n})">
+        <div class="jm-thumbs">${items.slice(0, 2).map(jmImg).join("")}</div>
+        <div class="jm-oinfo"><b>${first}${more}</b><small>${safeText(o.order_status || o.payment_status || "Received")} · ${jmMoney(o.total_amount)}</small><small>${safeText(jmDate(o.created_at))}</small></div>
+        <span class="jm-chev">›</span></div>`;
+    }).join("");
+  } catch (e) {
+    $("ordersContent").innerHTML = `<p style="color:#b22">Orders could not be loaded: ${safeText(e.message)}</p>`;
+  }
+};
+function jmShowOrder(n) {
+  const o = jmOrders[n]; if (!o) return;
+  const items = jmItems(o), idx = jmStatusIdx(o);
+  const steps = ["Order Placed", "Packed", "Out for Delivery", "Delivered"];
+  const track = idx < 0
+    ? '<div class="jm-cancel">This order was cancelled</div>'
+    : `<div class="jm-track">${steps.map((s, i) => `<div class="jm-tstep ${i <= idx ? "done" : ""} ${i === idx ? "cur" : ""}"><span class="jm-dot"></span><span>${s}</span></div>`).join("")}</div>`;
+  const a = jmAddr(o.address);
+  const addrHtml = !a ? "—" : (typeof a === "string" ? safeText(a)
+    : `<b>${safeText(a.name || "")}</b> ${safeText(a.phone || "")}<br>${safeText(jmFmt({ house: a.house || "", street: a.street || "", landmark: a.landmark || "", city: a.city || "", pincode: a.pincode || "" }))}`);
+  const pm = String(o.payment_method || "").toLowerCase();
+  const payName = pm === "cod" ? "Cash on Delivery" : pm.indexOf("upi") === 0 ? "UPI / Online" : (o.payment_method || "Not specified");
+  const qty = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+  $("jmOrderBody").innerHTML = `
+    <div class="jm-sec"><div class="jm-line"><span>Order ID</span><b>#${safeText(o.order_number || o.id || "—")}</b></div><div class="jm-line"><span>Placed on</span><span>${safeText(jmDate(o.created_at))}</span></div></div>
+    <div class="jm-sec"><h3>Order Status</h3>${track}</div>
+    <div class="jm-sec"><h3>Items (${qty})</h3>${items.map(i => `<div class="jm-item">${jmImg(i)}<div><b>${safeText(i.name)}</b><small>Qty ${safeText(i.quantity)} × ${jmMoney(i.price)}</small></div><b>${jmMoney(Number(i.price) * Number(i.quantity))}</b></div>`).join("")}</div>
+    <div class="jm-sec"><h3>Delivery Address</h3><div style="font-size:14px;line-height:1.6">${addrHtml}</div></div>
+    <div class="jm-sec"><h3>Payment</h3><div class="jm-line"><span>Method</span><span>${safeText(payName)}</span></div>${o.payment_status ? `<div class="jm-line"><span>Status</span><span>${safeText(o.payment_status)}</span></div>` : ""}</div>
+    <div class="jm-sec"><h3>Price Details</h3><div class="jm-line"><span>Items (${qty})</span><span>${jmMoney(o.total_amount)}</span></div><div class="jm-line t"><span>Total Amount</span><span>${jmMoney(o.total_amount)}</span></div></div>`;
+  $("jmOrderOverlay").classList.add("show");
+  $("jmOrderOverlay").scrollTop = 0;
+}
+function jmCloseOrder() { $("jmOrderOverlay").classList.remove("show"); }
+</script>
+
 <!-- ===== J-Mart additions v5: auth ===== -->
 <div class="jm-overlay" id="jmAuth"><div class="jm-auth-in">
   <button class="jm-auth-x" onclick="jmAuthClose()" aria-label="Close">×</button>
   <div class="jm-auth-hero"><div class="c">🛒</div><h1>J-Mart</h1><p>FRESH NEEDS, HAPPY HOMES</p></div>
   <div class="jm-card" id="jmAuthCard"></div>
 </div></div>
+<script>
+/* ---------- Login / Sign Up / Forgot Password ---------- */
+/* Works with your server routes: /api/send-otp, /api/verify-otp, /api/signup, /api/login, /api/forgot-password, /api/reset-password */
+let jmA = { view: "login", email: "", name: "" };
+const jmOldOpenLogin = openLogin;
+openLogin = function () {
+  if (loggedInUserEmail) return jmOldOpenLogin();   /* already logged in: your existing logout prompt */
+  jmA = { view: "login", email: "", name: "" };
+  $("jmAuth").classList.add("show");
+  jmAuthDraw();
+};
+function jmAuthClose() { $("jmAuth").classList.remove("show"); }
+function jmAuthGo(v) { jmA.view = v; jmAuthDraw(); }
+const jmI = (id, icon, type, ph, extra = "") => `<div class="jm-field"><span class="ic">${icon}</span><input id="${id}" type="${type}" placeholder="${ph}" ${extra}></div>`;
+const jmPw = (id, ph) => `<div class="jm-field"><span class="ic">🔒</span><input id="${id}" type="password" placeholder="${ph}" autocomplete="off"><button type="button" class="jm-eye" onclick="jmEye('${id}')" aria-label="Show password">👁</button></div>`;
+function jmEye(id) { const e = $(id); e.type = e.type === "password" ? "text" : "password"; }
+function jmErr(msg) {
+  const e = $("jmAuthErr"); e.textContent = msg; e.classList.add("show");
+  const c = $("jmAuthCard"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");
+}
+function jmAuthDraw() {
+  const v = jmA.view, c = $("jmAuthCard");
+  const tabs = `<div class="jm-tabs"><button class="${v === "login" ? "on" : ""}" onclick="jmAuthGo('login')">Login</button><button class="${v.indexOf("signup") === 0 ? "on" : ""}" onclick="jmAuthGo('signup1')">Sign Up</button></div>`;
+  const err = '<div class="jm-err" id="jmAuthErr"></div>';
+  if (v === "login") c.innerHTML = `${tabs}<h2>Welcome back 👋</h2><p class="sub">మీ ఈమెయిల్, పాస్‌వర్డ్‌తో లాగిన్ అవ్వండి.</p>${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${jmPw("jmPass", "Password")}${err}<button class="jm-go" id="jmGo" onclick="jmLogin()">Login →</button><button class="jm-link" onclick="jmAuthGo('forgot1')">Forgot password?</button>`;
+  if (v === "signup1") c.innerHTML = `${tabs}<h2>Create account ✨</h2><p class="sub">మీ పేరు, ఈమెయిల్ ఇవ్వండి. ఆ ఈమెయిల్‌కి OTP వస్తుంది.</p>${jmI("jmName", "👤", "text", "Full name")}${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${err}<button class="jm-go" id="jmGo" onclick="jmSendOtp(true)">Send OTP →</button>`;
+  if (v === "forgot1") c.innerHTML = `<h2>Forgot password 🔑</h2><p class="sub">మీ ఈమెయిల్ ఇవ్వండి, OTP పంపుతాం. తర్వాత కొత్త పాస్‌వర్డ్ పెట్టుకోవచ్చు.</p>${jmI("jmEmail", "✉️", "email", "Email", 'autocomplete="email"')}${err}<button class="jm-go" id="jmGo" onclick="jmSendOtp(false)">Send OTP →</button><button class="jm-link" onclick="jmAuthGo('login')">← Back to Login</button>`;
+  if (v === "signup2" || v === "forgot2") {
+    const su = v === "signup2";
+    c.innerHTML = `<h2>${su ? "Verify &amp; set password" : "Reset password"} 🔐</h2><p class="sub">${safeText(jmA.email)} కి OTP పంపాం.</p>${jmI("jmOtp", "🔢", "text", "6-digit OTP", 'maxlength="6" inputmode="numeric" class="jm-otp"')}${jmPw("jmPass", "Create new password")}${jmPw("jmPass2", "Confirm password")}${err}<button class="jm-go" id="jmGo" onclick="jmSetPassword()">${su ? "Create Account" : "Save New Password"} →</button><button class="jm-link" onclick="jmAuthGo('${su ? "signup1" : "forgot1"}')">← Change email</button>`;
+  }
+  const f = c.querySelector("input"); if (f) setTimeout(() => f.focus(), 50);
+}
+async function jmPost(path, body) {
+  let res, data = {};
+  try { res = await fetch(BACKEND_URL + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+  catch (e) { throw new Error("సర్వర్‌ను చేరుకోలేకపోయాం. ఇంటర్నెట్ చూడండి."); }
+  try { data = await res.json(); } catch (e) {}
+  if (res.status === 404) throw new Error("ఈ సదుపాయం సర్వర్‌లో లేదు (" + path + ").");
+  if (!res.ok || data.success === false) {
+    const m = data.message || data.error || "";
+    if (/duplicate|already|unique/i.test(m)) throw new Error("ఈ ఈమెయిల్‌తో అకౌంట్ ఇప్పటికే ఉంది. లాగిన్ అవ్వండి.");
+    throw new Error(m || "విఫలమైంది, మళ్ళీ ప్రయత్నించండి.");
+  }
+  return data;
+}
+function jmBusy(on) { const b = $("jmGo"); if (b) b.disabled = on; }
+const jmNames = () => { try { return JSON.parse(localStorage.getItem("jmart_names") || "{}"); } catch (e) { return {}; } };
+function jmFinish(email, name, token) {
+  const names = jmNames();
+  if (name) { names[email] = name; localStorage.setItem("jmart_names", JSON.stringify(names)); }
+  loggedInUserEmail = email;
+  loggedInUserName = names[email] || email.split("@")[0];
+  localStorage.setItem("jmart_user_email", email);
+  localStorage.setItem("jmart_user_name", loggedInUserName);
+  localStorage.setItem("jmart_session_token", token || "");
+  restoreJmartState();
+  checkLoginState();
+  renderSavedAddress();
+  jmAuthClose();
+}
+async function jmLogin() {
+  const email = $("jmEmail").value.trim(), password = $("jmPass").value;
+  if (!/^\S+@\S+\.\S+$/.test(email) || !password) return jmErr("సరైన ఈమెయిల్, పాస్‌వర్డ్ ఇవ్వండి.");
+  jmBusy(true);
+  try {
+    const d = await jmPost("/api/login", { email, password });
+    jmFinish(email, (d.user && d.user.name) || "", d.token);
+  } catch (e) {
+    jmBusy(false);
+    $("jmPass").value = "";           /* wrong entry: clear password and stay on the login screen */
+    jmErr(e.message);
+  }
+}
+async function jmSendOtp(signup) {
+  const email = $("jmEmail").value.trim(), name = signup ? $("jmName").value.trim() : "";
+  if (signup && name.length < 2) return jmErr("మీ పూర్తి పేరు ఇవ్వండి.");
+  if (!/^\S+@\S+\.\S+$/.test(email)) return jmErr("సరైన ఈమెయిల్ ఇవ్వండి.");
+  jmBusy(true);
+  try {
+    await jmPost(signup ? "/api/send-otp" : "/api/forgot-password", { email });
+    jmA.email = email; jmA.name = name;
+    jmAuthGo(signup ? "signup2" : "forgot2");
+  } catch (e) { jmBusy(false); jmErr(e.message); }
+}
+async function jmSetPassword() {
+  const otp = $("jmOtp").value.trim(), p1 = $("jmPass").value, p2 = $("jmPass2").value, signup = jmA.view === "signup2";
+  if (!/^\d{6}$/.test(otp)) return jmErr("6 అంకెల OTP ఇవ్వండి.");
+  if (p1.length < 6) return jmErr("పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి.");
+  if (p1 !== p2) return jmErr("రెండు పాస్‌వర్డ్‌లు ఒకేలా లేవు.");
+  jmBusy(true);
+  try {
+    if (signup) {
+      await jmPost("/api/verify-otp", { email: jmA.email, otp });      /* OTP checked first */
+      await jmPost("/api/signup", { email: jmA.email, password: p1 });   /* then the account is created */
+    } else {
+      await jmPost("/api/reset-password", { email: jmA.email, otp, newPassword: p1 });
+    }
+  } catch (e) { jmBusy(false); $("jmOtp").value = ""; return jmErr(e.message); }
+  try {
+    const d = await jmPost("/api/login", { email: jmA.email, password: p1 });
+    jmFinish(jmA.email, jmA.name, d.token);
+  } catch (e) {
+    jmA.view = "login"; jmAuthDraw(); $("jmEmail").value = jmA.email;
+    jmErr(signup ? "అకౌంట్ సిద్ధం! ఇప్పుడు లాగిన్ అవ్వండి." : "పాస్‌వర్డ్ మార్చబడింది! ఇప్పుడు లాగిన్ అవ్వండి.");
+  }
+}
+</script>
+
+<script>
+/* ---------- Home page cards: tick + minus/plus once an item is in the cart ---------- */
+const jmCardQty = name => cart.filter(i => i.name === name || i.name.indexOf(name + " (") === 0).reduce((s, i) => s + i.quantity, 0);
+function jmSyncCards() {
+  const grid = $("productGrid");
+  if (!grid) return;
+  grid.querySelectorAll(".product").forEach(card => {
+    const h = card.querySelector("h3"); if (!h) return;
+    const q = jmCardQty(h.textContent.trim());
+    const ctl = card.querySelector(".add-button, .jm-cq"); if (!ctl) return;
+    const idx = products.findIndex(x => x.name === h.textContent.trim());
+    if (q > 0) {
+      const html = `<div class="jm-cq"><button type="button" onclick="jmCardQ(this,-1)" aria-label="Decrease">−</button><span>✓ ${q}</span><button type="button" onclick="jmCardQ(this,1)" aria-label="Increase">+</button></div>`;
+      if (ctl.outerHTML !== html) ctl.outerHTML = html;
+    } else if (ctl.classList.contains("jm-cq")) {
+      ctl.outerHTML = `<button class="add-button" onclick="addToCart(${idx})">Add to Cart</button>`;
+    }
+  });
+}
+function jmCardQ(el, d) {
+  const name = el.closest(".product").querySelector("h3").textContent.trim();
+  if (d > 0) return addToCart(products.findIndex(x => x.name === name));
+  let i = cart.findIndex(x => x.name === name);
+  if (i < 0) for (let k = cart.length - 1; k >= 0; k--) if (cart[k].name.indexOf(name + " (") === 0) { i = k; break; }
+  if (i >= 0) changeQuantity(i, -1);
+}
+const jmOldRenderProducts = renderProducts;
+renderProducts = function () { jmOldRenderProducts(); jmSyncCards(); };
+const jmOldUpdateCart = updateCart;
+updateCart = function () { jmOldUpdateCart(); jmSyncCards(); };
+</script>
 </body>
 </html>
