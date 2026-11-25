@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>J-Mart | Fresh Needs, Happy Homes</title>
-
+ 
 <style>
 :root {
   --green: #078b62;
@@ -20,7 +20,7 @@ body {
 }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
-
+ 
 header {
   position: sticky;
   top: 0;
@@ -80,7 +80,7 @@ nav { display: flex; gap: 16px; }
   outline-color: var(--green);
 }
 .search-icon { position: absolute; right: 30px; }
-
+ 
 .hero {
   background: linear-gradient(110deg, #e5f5d8, #d7edbd);
   padding: 34px 20px;
@@ -105,7 +105,7 @@ nav { display: flex; gap: 16px; }
   padding: 13px 21px;
   font-weight: bold;
 }
-
+ 
 .categories {
   margin: 15px;
   border: 1px solid var(--border);
@@ -137,7 +137,7 @@ nav { display: flex; gap: 16px; }
   background: #e2f4ec;
   color: var(--green);
 }
-
+ 
 .products-section {
   padding: 5px 15px 30px;
   scroll-margin-top: 100px;
@@ -211,7 +211,7 @@ footer {
   padding: 24px;
   line-height: 1.8;
 }
-
+ 
 /* Right-side shopping cart */
 .cart-overlay {
   position: fixed;
@@ -221,7 +221,7 @@ footer {
   display: none;
 }
 .cart-overlay.show { display: block; }
-
+ 
 .cart-panel {
   position: fixed;
   top: 0;
@@ -333,7 +333,7 @@ footer {
   color: #777;
   line-height: 1.8;
 }
-
+ 
 /* Full Screen Checkout Modal */
 .full-checkout-overlay {
   position: fixed;
@@ -363,7 +363,7 @@ footer {
 }
 .checkout-header-bar h2 { color: var(--dark); font-size: 22px; }
 .checkout-close-btn { background: none; border: none; font-size: 24px; color: #555; font-weight: bold; }
-
+ 
 .address-box {
   background: #f9f9f9;
   border: 1px solid #d4d4d4;
@@ -388,7 +388,7 @@ footer {
   font-size: 13px;
 }
 .address-details { font-size: 14px; color: #555; line-height: 1.6; }
-
+ 
 .form-group {
   margin-bottom: 15px;
 }
@@ -399,7 +399,7 @@ footer {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
+ 
 /* Login Modal */
 .modal-overlay {
   position: fixed;
@@ -416,7 +416,7 @@ footer {
   padding: 24px;
   border-radius: 12px;
   width: 90%;
-  max-width: 360px;
+  max-width: 380px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   position: relative;
 }
@@ -446,7 +446,7 @@ footer {
   font-size: 20px;
   color: #888;
 }
-
+ 
 @media (max-width: 700px) {
   header { padding: 9px 11px; }
   .brand h2 { font-size: 21px; }
@@ -465,34 +465,9 @@ footer {
 @media (min-width: 1000px) {
   .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
-
-/* J-Mart account and order-history additions */
-.nav-button { padding: 5px 7px; border-radius: 10px; transition: background .2s; }
-.nav-button:hover { background: #eaf7f1; }
-#loginNavText { max-width: 155px; overflow-wrap: anywhere; }
-.modal-card { border: 1px solid #e4eee9; border-radius: 20px; padding: 30px; }
-.modal-card h2 { font-size: 23px; }
-.modal-card input { padding: 13px 14px; border-radius: 10px; }
-.modal-card button { padding: 13px; border-radius: 10px; }
-.orders-overlay { position: fixed; inset: 0; z-index: 150; display: none; overflow-y: auto; padding: 22px; background: #f4f8f6; }
-.orders-overlay.show { display: block; }
-.orders-container { max-width: 900px; margin: 0 auto; padding: 22px; background: #fff; border-radius: 18px; box-shadow: 0 8px 30px #1231; }
-.orders-top { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:18px; }
-.orders-top h2 { color:var(--dark); }
-.order-card { border:1px solid var(--border); border-radius:13px; padding:16px; margin:12px 0; }
-.order-meta { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; color:#68766f; font-size:13px; margin-bottom:10px; }
-.order-items { font-size:14px; line-height:1.7; }
-.order-status { display:inline-block; border-radius:20px; padding:5px 10px; background:#e6f5ed; color:#08734f; font-size:12px; font-weight:bold; }
-@media(max-width:700px) {
-  nav { gap:4px; }
-  .nav-button { font-size:10px; min-width:0; padding:4px; }
-  .nav-button span { font-size:17px; }
-  #loginNavText { max-width:75px; }
-  .orders-container { padding:14px; }
-}
 </style>
 </head>
-
+ 
 <body>
 <header>
   <a class="brand" href="#" aria-label="J-Mart home">
@@ -506,9 +481,6 @@ footer {
     <button class="nav-button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
       <span>🏠</span>Home
     </button>
-    <button class="nav-button" onclick="openOrders()">
-      <span>📦</span>Your Orders
-    </button>
     <button class="nav-button" onclick="openCart()">
       <span>🛍️ <b class="cart-bubble" id="cartCount">0</b></span>Cart
     </button>
@@ -517,12 +489,12 @@ footer {
     </button>
   </nav>
 </header>
-
+ 
 <div class="search-wrap">
   <input id="searchInput" type="search" placeholder="Search for products or categories..." aria-label="Search products" oninput="renderProducts()">
   <span class="search-icon">🔎</span>
 </div>
-
+ 
 <section class="hero">
   <p class="eyebrow">WELCOME TO J-MART</p>
   <h1>Your Daily Essentials Delivered Fresh</h1>
@@ -531,12 +503,12 @@ footer {
     Shop Now →
   </button>
 </section>
-
+ 
 <section class="categories">
   <h3>☷ Categories</h3>
   <div class="category-list" id="categoryList"></div>
 </section>
-
+ 
 <main class="products-section" id="productsSection">
   <div class="section-heading">
     <div>
@@ -552,14 +524,14 @@ footer {
   </div>
   <div class="product-grid" id="productGrid"></div>
 </main>
-
+ 
 <footer>
   <h2>🛒 J-Mart</h2>
   <p>Fresh Needs, Happy Homes</p>
   <p>Quality products for your everyday needs.</p>
   <p>© <span id="year"></span> J-Mart. All rights reserved.</p>
 </footer>
-
+ 
 <!-- Right-side shopping cart -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <aside class="cart-panel" id="cartPanel" role="dialog" aria-label="Shopping cart" aria-modal="true">
@@ -573,7 +545,7 @@ footer {
     <button class="place-order" onclick="handlePlaceOrderClick()">Place Order</button>
   </div>
 </aside>
-
+ 
 <!-- Full Screen Checkout View -->
 <div class="full-checkout-overlay" id="fullCheckoutOverlay">
   <div class="checkout-container" id="checkoutMainContainer">
@@ -581,7 +553,8 @@ footer {
       <h2>J-Mart Checkout</h2>
       <button class="checkout-close-btn" onclick="closeFullCheckout()">×</button>
     </div>
-
+ 
+    <!-- Address Section -->
     <div id="addressSectionView">
       <div class="address-box" id="addressDisplayBox" style="display: none;">
         <div class="address-top">
@@ -590,7 +563,7 @@ footer {
         </div>
         <div class="address-details" id="addrTextDisplay"></div>
       </div>
-
+ 
       <div id="addressFormEdit" style="margin-bottom: 20px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 6px;">
         <h3 id="formHeading" style="margin-bottom: 10px; color: var(--green);">Add Delivery Address</h3>
         <div class="form-group">
@@ -623,13 +596,15 @@ footer {
         </div>
         <button class="place-order" onclick="saveNewAddress()">Save Address</button>
       </div>
-
+ 
+      <!-- Order Items List -->
       <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
         <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--dark);">Order Items List</h3>
         <div id="checkoutItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 6px;"></div>
       </div>
     </div>
-
+ 
+    <!-- Payment Section -->
     <div id="paymentSectionView" style="margin-top: 20px;">
       <h3 style="margin-bottom: 15px; color: var(--dark);">Select Payment Method</h3>
       <div style="border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; background: #fafafa;">
@@ -640,7 +615,8 @@ footer {
       </div>
       <button class="place-order" onclick="proceedToPaymentOrOrder()">Proceed to Buy / Place Order</button>
     </div>
-
+ 
+    <!-- UPI Scanner & Timer Section (Hidden by default) -->
     <div id="upiScannerSection" style="display: none; text-align: center; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa;">
       <h3 style="color: var(--dark); margin-bottom: 10px;">Scan & Pay via UPI</h3>
       <p style="font-size: 14px; color: #666; margin-bottom: 15px;">సమయం ముగిసేలోపు చెల్లింపు పూర్తి చేయండి మరియు పేమెంట్ ప్రూఫ్ (స్క్రీన్ షాట్) అప్‌లోడ్ చేయండి:</p>
@@ -649,15 +625,17 @@ footer {
         <img id="upiQrImg" src="" alt="UPI QR Code" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 5px; background: #fff;">
       </div>
       <p style="font-size: 13px; margin-bottom: 15px;">UPI ID: <b>jmartvontimitta@okaxis</b></p>
-
+      
+      <!-- Payment Proof File Input -->
       <div style="margin-bottom: 15px; text-align: left; background: #fff; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
         <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px;">Upload Payment Proof (Screenshot):</label>
         <input type="file" id="paymentProofInput" accept="image/*" style="font-size: 13px;">
       </div>
-
+ 
       <button class="place-order" style="background: #2874f0;" onclick="finalizeVerifiedOrder()">Payment Completed / Confirm Order</button>
     </div>
-
+ 
+    <!-- Receipt Section (Hidden by default) -->
     <div id="receiptSection" style="display: none; margin-top: 20px; padding: 20px; border: 2px dashed var(--green); border-radius: 8px; background: #f8fff9;">
       <div style="text-align: center; margin-bottom: 15px;">
         <h2 style="color: var(--green);">🎉 Order Successful!</h2>
@@ -668,71 +646,70 @@ footer {
       <div id="receiptItemsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
       <button class="place-order" onclick="closeFullCheckout(); cart=[]; updateCart();">Continue Shopping</button>
     </div>
+ 
   </div>
 </div>
-
-<!-- J-Mart Your Orders -->
-<div class="orders-overlay" id="ordersOverlay">
-  <section class="orders-container">
-    <div class="orders-top">
-      <div><h2>📦 Your Orders</h2><p id="ordersEmail" style="font-size:13px;color:#778">Sign in to view your orders</p></div>
-      <button class="checkout-close-btn" onclick="closeOrders()" aria-label="Close orders">×</button>
-    </div>
-    <div id="ordersContent"><p>Loading your orders...</p></div>
-  </section>
-</div>
-
+ 
 <!-- Login / Sign Up / Forgot Password Modal -->
 <div class="modal-overlay" id="loginModal">
-  <div class="modal-card" style="max-width: 400px;">
-    <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">×</button>
-    <h2 id="authTitle">J-Mart Login</h2>
-    <p id="authSubtitle" style="font-size: 13px; color: #666; margin-bottom: 14px;">మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి</p>
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeLogin()">×</button>
+    <h2 id="modalTitle">Login to J-Mart</h2>
 
-    <div id="authError" style="display:none; background:#fdecea; color:#b3261e; padding:10px; border-radius:8px; font-size:13px; margin-bottom:12px;"></div>
-    <div id="authSuccess" style="display:none; background:#e6f5ed; color:#08734f; padding:10px; border-radius:8px; font-size:13px; margin-bottom:12px;"></div>
-
-    <!-- Login / Sign Up Form -->
-    <div id="authFormBox">
-      <input type="email" id="authEmail" placeholder="Enter Email" required>
+    <!-- Password Login / Sign Up Box -->
+    <div id="passwordAuthBox">
+      <input type="email" id="authEmailInput" placeholder="Enter your email">
       <div style="position:relative;">
-        <input type="password" id="authPassword" placeholder="Enter Password" required style="padding-right:42px;">
-        <button type="button" onclick="togglePasswordVisibility('authPassword', this)" style="position:absolute; right:8px; top:6px; width:auto; padding:6px 8px; background:transparent; color:#555; font-size:14px;">👁️</button>
+        <input type="password" id="authPasswordInput" placeholder="Enter your password" style="padding-right:42px;">
+        <button type="button" onclick="togglePassField('authPasswordInput', this)"
+          style="position:absolute; right:8px; top:4px; width:auto; padding:6px 8px; background:transparent; color:#555; font-size:14px;">👁️</button>
       </div>
-      <button id="authSubmitBtn" onclick="submitAuth()">Login</button>
+      <button id="authSubmitBtn" onclick="handlePasswordAuth()">Login</button>
 
-      <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:13px;">
-        <a href="javascript:void(0)" onclick="toggleAuthMode()" id="toggleAuthLink" style="color:var(--green); font-weight:bold; text-decoration:none;">New here? Sign Up</a>
-        <a href="javascript:void(0)" onclick="openForgotPassword()" style="color:#2874f0; font-weight:bold; text-decoration:none;">Forgot Password?</a>
+      <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:13px;">
+        <a href="javascript:void(0)" id="switchAuthModeBtn" onclick="togglePasswordAuthMode()" style="color:var(--green); font-weight:bold; text-decoration:none;">New user? Sign Up</a>
+        <a href="javascript:void(0)" onclick="showForgotPasswordView()" style="color:#2874f0; font-weight:bold; text-decoration:none;">Forgot Password?</a>
       </div>
     </div>
 
-    <!-- Forgot / Reset Password Box -->
-    <div id="forgotPasswordBox" style="display:none;">
-      <input type="email" id="resetEmail" placeholder="Registered Email">
-      <button onclick="sendResetOtp()" id="sendResetOtpBtn" style="margin-bottom:10px;">Send Reset OTP</button>
+    <!-- Forgot Password / OTP Reset Box -->
+    <div id="forgotPassBox" style="display:none;">
+      <input type="email" id="forgotEmailInput" placeholder="Enter registered email">
+      <button id="forgotOtpBtn" onclick="handleSendForgotOTP()" style="margin-bottom:10px;">Send Reset OTP</button>
 
-      <div id="resetOtpFields" style="display:none;">
-        <input type="text" id="resetOtpInput" placeholder="Enter 6-digit OTP">
+      <div id="forgotResetFields" style="display:none;">
+        <input type="text" id="forgotOtpInput" placeholder="Enter 6-digit OTP" maxlength="6">
         <div style="position:relative;">
-          <input type="password" id="newPasswordInput" placeholder="Enter New Password" style="padding-right:42px;">
-          <button type="button" onclick="togglePasswordVisibility('newPasswordInput', this)" style="position:absolute; right:8px; top:6px; width:auto; padding:6px 8px; background:transparent; color:#555; font-size:14px;">👁️</button>
+          <input type="password" id="newResetPasswordInput" placeholder="Enter new password" style="padding-right:42px;">
+          <button type="button" onclick="togglePassField('newResetPasswordInput', this)"
+            style="position:absolute; right:8px; top:4px; width:auto; padding:6px 8px; background:transparent; color:#555; font-size:14px;">👁️</button>
         </div>
-        <button onclick="confirmResetPassword()" style="background:#2874f0;">Update Password</button>
+        <button id="resetPassConfirmBtn" onclick="handleResetPasswordConfirm()" style="background:#2874f0;">Update Password</button>
       </div>
 
-      <button onclick="backToLogin()" style="background:#eee; color:#333; margin-top:10px;">Back to Login</button>
+      <button type="button" onclick="resetAuthModalView()" style="background:#eee; color:#333; margin-top:10px;">Back to Login</button>
+    </div>
+
+    <!-- Legacy OTP Step Box (kept for compatibility) -->
+    <div id="emailStep" style="display:none; margin-top:10px;">
+      <input type="email" id="emailInput" placeholder="Enter your email">
+      <button id="otpBtn" onclick="handleSendOTP()">Send OTP</button>
+    </div>
+    <div id="otpStep" style="display:none; margin-top:10px;">
+      <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+      <button id="verifyBtn" onclick="handleVerifyOTP()">Verify OTP</button>
     </div>
   </div>
 </div>
-
+ 
 <script>
-const API_BASE_URL = "http://localhost:10000";
+const BACKEND_URL = "https://j-mart-mawl.onrender.com";
 const MERCHANT_UPI = "6281167223-k982@axl";
+ 
 const REPO = "https://raw.githubusercontent.com/jmartvontimitta/j-mart/main/";
 const imageURL = filename =>
   REPO + encodeURIComponent(filename).replace(/%2F/g, "/");
-
+ 
 const products = [
   {name:"Aashirvaad Iodized Salt",file:"aashirvaad_iodized_salt.png",price:28,category:"Sugar & Salt"},
   {name:"Ariel Complete Plus",file:"ariel_complete_plus.png",price:130,category:"Household Care"},
@@ -825,7 +802,7 @@ const products = [
   {name:"Unibic Choco Chip Cookies",file:"unibic_choco_chip_cookies.png",price:35,category:"Biscuits & Snacks"},
   {name:"Unibic Fruit Nut Cookies",file:"unibic_fruit_nut_cookies (1).png",price:35,category:"Biscuits & Snacks"}
 ];
-
+ 
 const categories = [
   ["All Products","☷"],
   ["Biscuits & Snacks","🍟"],
@@ -837,367 +814,157 @@ const categories = [
   ["Personal Care","🧼"],
   ["Fresh Produce","🥬"]
 ];
-
+ 
 let selectedCategory = "All Products";
-let isSignUpMode = false;
-let currentUser = JSON.parse(localStorage.getItem("jmart_user") || "null");
 let cart = [];
 let savedAddress = null;
+let loggedInUserEmail = localStorage.getItem("jmart_user_email") || null;
 let timerInterval = null;
-
-document.getElementById("year").textContent = new Date().getFullYear();
-
+let isPasswordSignUp = false;
+ 
+const $ = id => document.getElementById(id);
+ 
+document.addEventListener("DOMContentLoaded", () => {
+  $("year").textContent = new Date().getFullYear();
+  renderCategories();
+  renderProducts();
+  updateCart();
+  checkLoginState();
+});
+ 
+function checkLoginState() {
+  if (loggedInUserEmail) {
+    $("loginNavText").textContent = loggedInUserEmail.split('@')[0];
+  } else {
+    $("loginNavText").textContent = "Login";
+  }
+}
+ 
 function renderCategories() {
-  const catList = document.getElementById("categoryList");
-  catList.innerHTML = categories.map(([name, icon]) =>
-    `<button class="${selectedCategory === name ? "active" : ""}" data-category="${name}">${icon} ${name}</button>`
+  $("categoryList").innerHTML = categories.map(([name,icon]) =>
+    `<button class="${selectedCategory===name ? "active" : ""}" data-category="${name}">${icon} ${name}</button>`
   ).join("");
-
-  catList.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => selectCategory(btn.dataset.category));
+ 
+  $("categoryList").querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", () =>
+      selectCategory(button.dataset.category)
+    );
   });
 }
-
+ 
 function selectCategory(name) {
   selectedCategory = name;
   renderCategories();
   renderProducts();
-  document.getElementById("productsSection").scrollIntoView({ behavior: "smooth" });
+  $("productsSection").scrollIntoView({behavior:"smooth"});
 }
-
+ 
 function renderProducts() {
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
-  const sort = document.getElementById("sortSelect").value;
-
+  const query = $("searchInput").value.trim().toLowerCase();
+  const sort = $("sortSelect").value;
+ 
   let list = products.filter(p =>
     (selectedCategory === "All Products" || p.category === selectedCategory) &&
     (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query))
   );
-
-  if (sort === "low") list.sort((a, b) => a.price - b.price);
-  if (sort === "high") list.sort((a, b) => b.price - a.price);
-  if (sort === "az") list.sort((a, b) => a.name.localeCompare(b.name));
-
-  document.getElementById("sectionTitle").textContent = selectedCategory;
-  document.getElementById("itemCount").textContent = `(${list.length} items)`;
-
-  const grid = document.getElementById("productGrid");
+ 
+  if (sort === "low") list.sort((a,b) => a.price-b.price);
+  if (sort === "high") list.sort((a,b) => b.price-a.price);
+  if (sort === "az") list.sort((a,b) => a.name.localeCompare(b.name));
+ 
+  $("sectionTitle").textContent = selectedCategory;
+  $("itemCount").textContent = `(${list.length} items)`;
+ 
   if (!list.length) {
-    grid.innerHTML = '<p class="empty">No products found. Try another search.</p>';
+    $("productGrid").innerHTML =
+      '<p class="empty">No products found. Try another search.</p>';
     return;
   }
-
-  grid.innerHTML = list.map(p => {
+ 
+  $("productGrid").innerHTML = list.map(p => {
     const i = products.indexOf(p);
     return `<article class="product">
       <img src="${imageURL(p.file)}" alt="${p.name}" loading="lazy"
         onerror="this.onerror=null;this.src='https://placehold.co/300x220/f2f7f4/078b62?text=J-Mart'">
       <h3>${p.name}</h3>
       <p class="price">₹${p.price}</p>
-      <button class="add-button" onclick="addToCart(${i})">Add to Cart</button>
+      <button class="add-button" onclick="addToCart(${i})">
+        Add to Cart
+      </button>
     </article>`;
   }).join("");
 }
-
+ 
 function addToCart(index) {
   const product = products[index];
   const found = cart.find(item => item.name === product.name);
   if (found) {
     found.quantity++;
   } else {
-    cart.push({ ...product, quantity: 1 });
+    cart.push({...product, quantity:1});
   }
   updateCart();
 }
-
+ 
+function updateCart() {
+  const count = cart.reduce((sum,item) => sum+item.quantity, 0);
+  $("cartCount").textContent = count;
+ 
+  $("cartItems").innerHTML = cart.length
+    ? cart.map((item,index) => `
+      <div class="cart-row">
+        <img src="${imageURL(item.file)}" alt="${item.name}"
+          onerror="this.style.visibility='hidden'">
+        <div>
+          <div class="cart-product-name">${item.name}</div>
+          <div class="cart-product-price">
+            ₹${item.price} × ${item.quantity} = ₹${item.price*item.quantity}
+          </div>
+          <div class="quantity-controls">
+            <button onclick="changeQuantity(${index},-1)" aria-label="Decrease quantity">−</button>
+            <span>${item.quantity}</span>
+            <button onclick="changeQuantity(${index},1)" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+        <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑</button>
+      </div>
+    `).join("")
+    : `<div class="empty-cart">
+        <div style="font-size:36px">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Add products to get started.</p>
+      </div>`;
+ 
+  const total = cart.reduce((sum,item) => sum + item.price*item.quantity, 0);
+  $("cartTotal").textContent = `Items: ${count} · Total: ₹${total}`;
+}
+ 
 function changeQuantity(index, change) {
   cart[index].quantity += change;
   if (cart[index].quantity <= 0) {
-    cart.splice(index, 1);
+    cart.splice(index,1);
   }
   updateCart();
 }
-
+ 
 function removeItem(index) {
-  cart.splice(index, 1);
+  cart.splice(index,1);
   updateCart();
 }
-
-function updateCart() {
-  const countEl = document.getElementById("cartCount");
-  const totalEl = document.getElementById("cartTotal");
-  const itemsEl = document.getElementById("cartItems");
-
-  const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-  if (countEl) countEl.textContent = totalQty;
-  if (totalEl) totalEl.textContent = `Items: ${totalQty} · Total: ₹${totalPrice}`;
-
-  if (itemsEl) {
-    itemsEl.innerHTML = cart.length
-      ? cart.map((item, index) => `
-        <div class="cart-row">
-          <img src="${imageURL(item.file)}" alt="${item.name}" onerror="this.style.visibility='hidden'">
-          <div>
-            <div class="cart-product-name">${item.name}</div>
-            <div class="cart-product-price">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
-            <div class="quantity-controls">
-              <button onclick="changeQuantity(${index}, -1)" aria-label="Decrease quantity">−</button>
-              <span>${item.quantity}</span>
-              <button onclick="changeQuantity(${index}, 1)" aria-label="Increase quantity">+</button>
-            </div>
-          </div>
-          <button class="remove-item" onclick="removeItem(${index})" aria-label="Remove ${item.name}">🗑</button>
-        </div>
-      `).join("")
-      : `<div class="empty-cart">
-          <div style="font-size:36px">🛒</div>
-          <h3>Your cart is empty</h3>
-          <p>Add products to get started.</p>
-        </div>`;
-  }
-}
-
+ 
 function openCart() {
-  document.getElementById("cartOverlay").classList.add("show");
-  document.getElementById("cartPanel").classList.add("open");
+  $("cartPanel").classList.add("open");
+  $("cartOverlay").classList.add("show");
 }
-
+ 
 function closeCart() {
-  document.getElementById("cartOverlay").classList.remove("show");
-  document.getElementById("cartPanel").classList.remove("open");
+  $("cartPanel").classList.remove("open");
+  $("cartOverlay").classList.remove("show");
 }
-
-async function openOrders() {
-  document.getElementById("ordersOverlay").classList.add("show");
-  const emailEl = document.getElementById("ordersEmail");
-  const contentEl = document.getElementById("ordersContent");
-
-  if (!currentUser || !currentUser.email) {
-    emailEl.textContent = "Sign in to view your orders";
-    contentEl.innerHTML = '<p>మీ ఆర్డర్స్ చూడటానికి ముందు దయచేసి Login అవ్వండి.</p>';
-    return;
-  }
-
-  emailEl.textContent = `Signed in as ${currentUser.email}`;
-  contentEl.innerHTML = '<p>Loading your orders...</p>';
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/orders?email=${encodeURIComponent(currentUser.email)}`);
-    const data = await res.json();
-    const orders = Array.isArray(data) ? data : (data.orders || []);
-
-    if (!orders.length) {
-      contentEl.innerHTML = '<p>ఇప్పటివరకు ఎటువంటి ఆర్డర్స్ లేవు.</p>';
-      return;
-    }
-
-    contentEl.innerHTML = orders.map(o => `
-      <div class="order-card">
-        <div class="order-meta">
-          <span><b>Order ID:</b> ${o._id || o.id || "N/A"}</span>
-          <span class="order-status">${o.status || "Confirmed"}</span>
-          <span><b>Total:</b> ₹${o.totalAmount || 0}</span>
-        </div>
-        <div class="order-items">
-          ${(o.items || []).map(i => `${i.name} × ${i.quantity} (₹${i.price * i.quantity})`).join("<br>")}
-        </div>
-      </div>
-    `).join("");
-  } catch (e) {
-    contentEl.innerHTML = '<p>ఆర్డర్స్ లోడ్ చేయడంలో సమస్య వచ్చింది.</p>';
-  }
-}
-
-function closeOrders() {
-  document.getElementById("ordersOverlay").classList.remove("show");
-}
-
-function handlePlaceOrderClick() {
-  if (cart.length === 0) {
-    alert("మీ కార్ట్ ఖాళీగా ఉంది!");
-    return;
-  }
-  closeCart();
-
-  if (!currentUser || !currentUser.email) {
-    window.pendingCheckoutResume = () => {
-      openFullCheckout();
-      initCheckoutView();
-    };
-    openLogin();
-    return;
-  }
-
-  openFullCheckout();
-  initCheckoutView();
-}
-
-function openFullCheckout() {
-  document.getElementById("fullCheckoutOverlay").classList.add("show");
-  renderCheckoutItems();
-}
-
-function closeFullCheckout() {
-  document.getElementById("fullCheckoutOverlay").classList.remove("show");
-  if (timerInterval) clearInterval(timerInterval);
-}
-
-function initCheckoutView() {
-  document.getElementById("addressSectionView").style.display = "block";
-  document.getElementById("paymentSectionView").style.display = "block";
-  document.getElementById("upiScannerSection").style.display = "none";
-  document.getElementById("receiptSection").style.display = "none";
-
-  if (savedAddress) {
-    document.getElementById("addressDisplayBox").style.display = "block";
-    document.getElementById("addressFormEdit").style.display = "none";
-    document.getElementById("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b> (${savedAddress.phone})`;
-    document.getElementById("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ", " : ""}${savedAddress.city} - ${savedAddress.pincode}`;
-  } else {
-    document.getElementById("addressDisplayBox").style.display = "none";
-    document.getElementById("addressFormEdit").style.display = "block";
-  }
-}
-
-function showAddressForm() {
-  document.getElementById("addressDisplayBox").style.display = "none";
-  document.getElementById("addressFormEdit").style.display = "block";
-}
-
-function saveNewAddress() {
-  const name = document.getElementById("inputName").value.trim();
-  const phone = document.getElementById("inputPhone").value.trim();
-  const house = document.getElementById("inputHouse").value.trim();
-  const street = document.getElementById("inputStreet").value.trim();
-  const landmark = document.getElementById("inputLandmark").value.trim();
-  const city = document.getElementById("inputCity").value.trim();
-  const pincode = document.getElementById("inputPincode").value.trim();
-
-  if (!name || !phone || !house || !street || !city || !pincode) {
-    alert("దయచేసి అన్ని ముఖ్యమైన అడ్రస్ వివరాలను నింపండి.");
-    return;
-  }
-
-  savedAddress = { name, phone, house, street, landmark, city, pincode };
-  initCheckoutView();
-}
-
-function renderCheckoutItems() {
-  document.getElementById("checkoutItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f1f1f1; padding-bottom: 6px;">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain;">
-        <span style="font-size: 13px; font-weight: bold;">${item.name} (×${item.quantity})</span>
-      </div>
-      <span style="font-size: 13px; color: var(--green); font-weight: bold;">₹${item.price * item.quantity}</span>
-    </div>
-  `).join("");
-}
-
-function proceedToPaymentOrOrder() {
-  if (!savedAddress) {
-    alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి.");
-    return;
-  }
-
-  const selectedMethod = document.querySelector('input[name="payMethod"]:checked').value;
-  if (selectedMethod === "cod") {
-    submitOrderToBackend(true);
-  } else {
-    document.getElementById("addressSectionView").style.display = "none";
-    document.getElementById("paymentSectionView").style.display = "none";
-    document.getElementById("upiScannerSection").style.display = "block";
-
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
-    document.getElementById("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
-
-    startCheckoutTimer();
-  }
-}
-
-function startCheckoutTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  let timeLeft = 300;
-  const timerDisplay = document.getElementById("timerDisplay");
-
-  timerInterval = setInterval(() => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    timerDisplay.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      alert("సమయం ముగిసింది! దయచేసి మళ్లీ ప్రయత్నించండి.");
-      closeFullCheckout();
-    }
-    timeLeft--;
-  }, 1000);
-}
-
-function finalizeVerifiedOrder() {
-  if (timerInterval) clearInterval(timerInterval);
-  submitOrderToBackend(true);
-}
-
-async function submitOrderToBackend(paymentVerified) {
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const orderPayload = {
-    email: currentUser.email,
-    address: savedAddress,
-    items: cart,
-    totalAmount,
-    paymentVerified
-  };
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/place-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      showReceiptView(totalAmount);
-    } else {
-      alert(data.message || "ఆర్డర్ ప్లేస్ చేయడంలో విఫలమైంది");
-    }
-  } catch (e) {
-    alert("సర్వర్ కనెక్షన్ లోపం వల్ల ఆర్డర్ పూర్తి కాలేదు.");
-  }
-}
-
-function showReceiptView(totalAmount) {
-  document.getElementById("upiScannerSection").style.display = "none";
-  document.getElementById("addressSectionView").style.display = "none";
-  document.getElementById("paymentSectionView").style.display = "none";
-  document.getElementById("receiptSection").style.display = "block";
-
-  const addressStr = `${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ", " : ""}${savedAddress.city} - ${savedAddress.pincode}`;
-
-  document.getElementById("receiptDetails").innerHTML = `
-    <p><b>ఈమెయిల్:</b> ${currentUser.email}</p>
-    <p><b>డెలివరీ అడ్రస్:</b> ${addressStr}</p>
-    <p><b>మొత్తం చెల్లింపు:</b> ₹${totalAmount}</p>
-    <p><b>స్టేటస్:</b> విజయవంతంగా నిర్ధారించబడింది (Verified)</p>
-  `;
-
-  document.getElementById("receiptItemsList").innerHTML = cart.map(item => `
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-      <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 45px; height: 45px; object-fit: contain;">
-      <div>
-        <div style="font-size: 13px; font-weight: bold;">${item.name}</div>
-        <div style="font-size: 12px; color: #666;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
-      </div>
-    </div>
-  `).join("");
-}
-
-function togglePasswordVisibility(inputId, btn) {
-  const input = document.getElementById(inputId);
+ 
+/* Login / Sign Up / Forgot Password Modal Functions */
+function togglePassField(inputId, btn) {
+  const input = $(inputId);
   if (!input) return;
   if (input.type === "password") {
     input.type = "text";
@@ -1208,74 +975,57 @@ function togglePasswordVisibility(inputId, btn) {
   }
 }
 
-function updateAuthUI() {
-  const navText = document.getElementById("loginNavText");
-  if (navText) {
-    navText.textContent = currentUser && currentUser.email ? currentUser.email.split("@")[0] : "Login";
-  }
-}
-
 function openLogin() {
-  if (currentUser && currentUser.email) {
-    const logout = confirm(`Logged in as ${currentUser.email}. Logout చేయాలనుకుంటున్నారా?`);
+  if (loggedInUserEmail) {
+    const logout = confirm(`Logged in as ${loggedInUserEmail}. Logout చేయాలనుకుంటున్నారా?`);
     if (logout) {
-      currentUser = null;
-      localStorage.removeItem("jmart_user");
-      updateAuthUI();
+      loggedInUserEmail = null;
+      localStorage.removeItem("jmart_user_email");
+      checkLoginState();
     }
     return;
   }
-  backToLogin();
-  document.getElementById("loginModal").classList.add("show");
-  clearAuthMessages();
+  resetAuthModalView();
+  $("loginModal").classList.add("show");
 }
 
-function closeLoginModal() {
-  document.getElementById("loginModal").classList.remove("show");
+function closeLogin() {
+  $("loginModal").classList.remove("show");
 }
 
-function clearAuthMessages() {
-  document.getElementById("authError").style.display = "none";
-  document.getElementById("authSuccess").style.display = "none";
+function resetAuthModalView() {
+  isPasswordSignUp = false;
+  $("modalTitle").textContent = "Login to J-Mart";
+  $("passwordAuthBox").style.display = "block";
+  $("forgotPassBox").style.display = "none";
+  $("forgotResetFields").style.display = "none";
+  $("emailStep").style.display = "none";
+  $("otpStep").style.display = "none";
+  $("authSubmitBtn").textContent = "Login";
+  $("switchAuthModeBtn").textContent = "New user? Sign Up";
 }
 
-function showAuthError(msg) {
-  clearAuthMessages();
-  const el = document.getElementById("authError");
-  el.textContent = msg;
-  el.style.display = "block";
+function togglePasswordAuthMode() {
+  isPasswordSignUp = !isPasswordSignUp;
+  $("modalTitle").textContent = isPasswordSignUp ? "Create J-Mart Account" : "Login to J-Mart";
+  $("authSubmitBtn").textContent = isPasswordSignUp ? "Sign Up" : "Login";
+  $("switchAuthModeBtn").textContent = isPasswordSignUp ? "Already have an account? Login" : "New user? Sign Up";
 }
 
-function showAuthSuccess(msg) {
-  clearAuthMessages();
-  const el = document.getElementById("authSuccess");
-  el.textContent = msg;
-  el.style.display = "block";
-}
-
-function toggleAuthMode() {
-  isSignUpMode = !isSignUpMode;
-  clearAuthMessages();
-  document.getElementById("authTitle").textContent = isSignUpMode ? "Create J-Mart Account" : "J-Mart Login";
-  document.getElementById("authSubtitle").textContent = isSignUpMode ? "కొత్త అకౌంట్ కోసం వివరాలు ఇవ్వండి" : "మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి";
-  document.getElementById("authSubmitBtn").textContent = isSignUpMode ? "Sign Up" : "Login";
-  document.getElementById("toggleAuthLink").textContent = isSignUpMode ? "Already have an account? Login" : "New here? Sign Up";
-}
-
-async function submitAuth() {
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value.trim();
-  const submitBtn = document.getElementById("authSubmitBtn");
+async function handlePasswordAuth() {
+  const email = $("authEmailInput").value.trim();
+  const password = $("authPasswordInput").value.trim();
 
   if (!email || !password) {
-    return showAuthError("దయచేసి ఈమెయిల్ మరియు పాస్‌వర్డ్ ఎంటర్ చేయండి.");
+    alert("దయచేసి ఈమెయిల్ మరియు పాస్‌వర్డ్ ఎంటర్ చేయండి.");
+    return;
   }
 
-  const endpoint = isSignUpMode ? "/api/signup" : "/api/login";
-  submitBtn.disabled = true;
+  const endpoint = isPasswordSignUp ? "/api/signup" : "/api/login";
+  $("authSubmitBtn").disabled = true;
 
   try {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -1283,66 +1033,51 @@ async function submitAuth() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return showAuthError(data.message || data.error || "ప్రక్రియ విఫలమైంది.");
+      alert(data.message || data.error || "ప్రక్రియ విఫలమైంది.");
+      return;
     }
 
-    if (isSignUpMode) {
-      showAuthSuccess(data.message || "అకౌంట్ క్రియేట్ అయింది! ఇప్పుడు లాగిన్ అవ్వండి.");
-      isSignUpMode = false;
-      document.getElementById("authTitle").textContent = "J-Mart Login";
-      document.getElementById("authSubtitle").textContent = "మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి";
-      document.getElementById("authSubmitBtn").textContent = "Login";
-      document.getElementById("toggleAuthLink").textContent = "New here? Sign Up";
+    if (isPasswordSignUp) {
+      alert(data.message || "అకౌంట్ క్రియేట్ అయింది! ఇప్పుడు లాగిన్ అవ్వండి.");
+      togglePasswordAuthMode();
     } else {
-      currentUser = data.user || { email };
-      localStorage.setItem("jmart_user", JSON.stringify(currentUser));
-      updateAuthUI();
-      showAuthSuccess(data.message || "లాగిన్ విజయవంతమైంది!");
-      setTimeout(() => {
-        closeLoginModal();
-        if (window.pendingCheckoutResume) {
-          window.pendingCheckoutResume();
-          window.pendingCheckoutResume = null;
-        }
-      }, 600);
+      loggedInUserEmail = data.user?.email || email;
+      localStorage.setItem("jmart_user_email", loggedInUserEmail);
+      checkLoginState();
+      closeLogin();
+      alert(data.message || "లాగిన్ విజయవంతమైంది!");
+      if (window.pendingCheckoutResume) {
+        window.pendingCheckoutResume();
+        window.pendingCheckoutResume = null;
+      }
     }
-  } catch (err) {
-    showAuthError("సర్వర్‌ను కనెక్ట్ చేయలేకపోయాము. `node server.js` రన్ అవుతుందో లేదో చూడండి.");
+  } catch (e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం.");
   } finally {
-    submitBtn.disabled = false;
+    $("authSubmitBtn").disabled = false;
   }
 }
 
-function openForgotPassword() {
-  clearAuthMessages();
-  document.getElementById("authFormBox").style.display = "none";
-  document.getElementById("forgotPasswordBox").style.display = "block";
-  document.getElementById("authTitle").textContent = "Reset Password";
-  document.getElementById("authSubtitle").textContent = "OTP ద్వారా కొత్త పాస్‌వర్డ్ సెట్ చేసుకోండి";
-  const currentEmail = document.getElementById("authEmail").value.trim();
-  if (currentEmail) document.getElementById("resetEmail").value = currentEmail;
+function showForgotPasswordView() {
+  $("modalTitle").textContent = "Forgot Password";
+  $("passwordAuthBox").style.display = "none";
+  $("forgotPassBox").style.display = "block";
+  $("forgotResetFields").style.display = "none";
+  const prefEmail = $("authEmailInput").value.trim();
+  if (prefEmail) $("forgotEmailInput").value = prefEmail;
 }
 
-function backToLogin() {
-  clearAuthMessages();
-  isSignUpMode = false;
-  document.getElementById("forgotPasswordBox").style.display = "none";
-  document.getElementById("resetOtpFields").style.display = "none";
-  document.getElementById("authFormBox").style.display = "block";
-  document.getElementById("authTitle").textContent = "J-Mart Login";
-  document.getElementById("authSubtitle").textContent = "మీ అకౌంట్‌లోకి లాగిన్ అవ్వండి";
-  document.getElementById("authSubmitBtn").textContent = "Login";
-  document.getElementById("toggleAuthLink").textContent = "New here? Sign Up";
-}
+async function handleSendForgotOTP() {
+  const email = $("forgotEmailInput").value.trim();
+  if (!email) {
+    alert("దయచేసి రిజిస్టర్ అయిన ఈమెయిల్ ఎంటర్ చేయండి.");
+    return;
+  }
 
-async function sendResetOtp() {
-  const email = document.getElementById("resetEmail").value.trim();
-  const btn = document.getElementById("sendResetOtpBtn");
-  if (!email) return showAuthError("దయచేసి రిజిస్టర్ అయిన ఈమెయిల్ ఎంటర్ చేయండి.");
-
-  btn.disabled = true;
+  $("forgotOtpBtn").disabled = true;
   try {
-    const res = await fetch(`${API_BASE_URL}/api/forgot-password`, {
+    const res = await fetch(`${BACKEND_URL}/api/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -1350,29 +1085,32 @@ async function sendResetOtp() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return showAuthError(data.message || "OTP పంపడంలో సమస్య వచ్చింది.");
+      alert(data.message || "OTP పంపడంలో సమస్య వచ్చింది.");
+      return;
     }
 
-    showAuthSuccess(data.message || "OTP పంపబడింది!");
-    document.getElementById("resetOtpFields").style.display = "block";
-  } catch (err) {
-    showAuthError("సర్వర్ ఎర్రర్ వచ్చింది.");
+    alert(data.message || "రీసెట్ OTP ఈమెయిల్‌కు పంపబడింది!");
+    $("forgotResetFields").style.display = "block";
+  } catch (e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం.");
   } finally {
-    btn.disabled = false;
+    $("forgotOtpBtn").disabled = false;
   }
 }
 
-async function confirmResetPassword() {
-  const email = document.getElementById("resetEmail").value.trim();
-  const otp = document.getElementById("resetOtpInput").value.trim();
-  const newPassword = document.getElementById("newPasswordInput").value.trim();
+async function handleResetPasswordConfirm() {
+  const email = $("forgotEmailInput").value.trim();
+  const otp = $("forgotOtpInput").value.trim();
+  const newPassword = $("newResetPasswordInput").value.trim();
 
   if (!email || !otp || !newPassword) {
-    return showAuthError("ఈమెయిల్, OTP మరియు కొత్త పాస్‌వర్డ్ అన్నీ ఎంటర్ చేయండి.");
+    alert("ఈమెయిల్, OTP మరియు కొత్త పాస్‌వర్డ్ అన్నీ ఎంటర్ చేయండి.");
+    return;
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/reset-password`, {
+    const res = await fetch(`${BACKEND_URL}/api/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp, newPassword })
@@ -1380,20 +1118,263 @@ async function confirmResetPassword() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return showAuthError(data.message || "పాస్‌వర్డ్ మార్చడం విఫలమైంది.");
+      alert(data.message || "పాస్‌వర్డ్ అప్‌డేట్ విఫలమైంది.");
+      return;
     }
 
-    showAuthSuccess(data.message || "పాస్‌వర్డ్ మారింది! ఇప్పుడు కొత్త పాస్‌వర్డ్‌తో లాగిన్ అవ్వండి.");
-    setTimeout(backToLogin, 1200);
-  } catch (err) {
-    showAuthError("సర్వర్ ఎర్రర్ వచ్చింది.");
+    alert(data.message || "పాస్‌వర్డ్ విజయవంతంగా మార్చబడింది! ఇప్పుడు లాగిన్ అవ్వండి.");
+    resetAuthModalView();
+  } catch (e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం.");
   }
 }
 
-renderCategories();
-renderProducts();
-updateCart();
-updateAuthUI();
+async function handleSendOTP() {
+  const email = $("emailInput").value.trim();
+  if(!email) { alert("దయచేసి ఈమెయిల్ ఎంటర్ చేయండి"); return; }
+  
+  $("otpBtn").textContent = "Sending...";
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(data.success) {
+      alert(data.message);
+      $("emailStep").style.display = "none";
+      $("otpStep").style.display = "block";
+    } else {
+      alert(data.message || "OTP పంపడంలో విఫలమైంది");
+    }
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం");
+  } finally {
+    $("otpBtn").textContent = "Send OTP";
+  }
+}
+ 
+async function handleVerifyOTP() {
+  const email = $("emailInput").value.trim();
+  const otp = $("otpInput").value.trim();
+  if(!otp) { alert("దయచేసి OTP ఎంటర్ చేయండి"); return; }
+ 
+  $("verifyBtn").textContent = "Verifying...";
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, otp })
+    });
+    const data = await res.json();
+    if(data.success) {
+      loggedInUserEmail = email;
+      localStorage.setItem("jmart_user_email", email);
+      checkLoginState();
+      closeLogin();
+      alert("లాగిన్ విజయవంతమైంది!");
+      if(window.pendingCheckoutResume) {
+        window.pendingCheckoutResume();
+        window.pendingCheckoutResume = null;
+      }
+    } else {
+      alert(data.message || "తప్పు OTP");
+    }
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ లోపం");
+  } finally {
+    $("verifyBtn").textContent = "Verify OTP";
+  }
+}
+ 
+/* Checkout Logic */
+function handlePlaceOrderClick() {
+  if(cart.length === 0) {
+    alert("మీ కార్ట్ ఖాళీగా ఉంది!");
+    return;
+  }
+  closeCart();
+  
+  if(!loggedInUserEmail) {
+    window.pendingCheckoutResume = () => {
+      openFullCheckout();
+      initCheckoutView();
+    };
+    openLogin();
+    return;
+  }
+ 
+  openFullCheckout();
+  initCheckoutView();
+}
+ 
+function openFullCheckout() {
+  $("fullCheckoutOverlay").classList.add("show");
+  renderCheckoutItems();
+}
+ 
+function closeFullCheckout() {
+  $("fullCheckoutOverlay").classList.remove("show");
+  if(timerInterval) clearInterval(timerInterval);
+}
+ 
+function initCheckoutView() {
+  $("addressSectionView").style.display = "block";
+  $("paymentSectionView").style.display = "block";
+  $("upiScannerSection").style.display = "none";
+  $("receiptSection").style.display = "none";
+ 
+  if(savedAddress) {
+    $("addressDisplayBox").style.display = "block";
+    $("addressFormEdit").style.display = "none";
+    $("addrNameDisplay").innerHTML = `Deliver to: <b>${savedAddress.name}</b> (${savedAddress.phone})`;
+    $("addrTextDisplay").innerHTML = `${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
+  } else {
+    $("addressDisplayBox").style.display = "none";
+    $("addressFormEdit").style.display = "block";
+  }
+}
+ 
+function showAddressForm() {
+  $("addressDisplayBox").style.display = "none";
+  $("addressFormEdit").style.display = "block";
+}
+ 
+function saveNewAddress() {
+  const name = $("inputName").value.trim();
+  const phone = $("inputPhone").value.trim();
+  const house = $("inputHouse").value.trim();
+  const street = $("inputStreet").value.trim();
+  const landmark = $("inputLandmark").value.trim();
+  const city = $("inputCity").value.trim();
+  const pincode = $("inputPincode").value.trim();
+ 
+  if(!name || !phone || !house || !street || !city || !pincode) {
+    alert("దయచేసి అన్ని ముఖ్యమైన అడ్రస్ వివరాలను నింపండి.");
+    return;
+  }
+ 
+  savedAddress = { name, phone, house, street, landmark, city, pincode };
+  initCheckoutView();
+}
+ 
+function renderCheckoutItems() {
+  $("checkoutItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #f1f1f1; padding-bottom: 6px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain;">
+        <span style="font-size: 13px; font-weight: bold;">${item.name} (×${item.quantity})</span>
+      </div>
+      <span style="font-size: 13px; color: var(--green); font-weight: bold;">₹${item.price * item.quantity}</span>
+    </div>
+  `).join("");
+}
+ 
+function proceedToPaymentOrOrder() {
+  if(!savedAddress) {
+    alert("దయచేసి డెలివరీ అడ్రస్ సేవ్ చేయండి.");
+    return;
+  }
+ 
+  const selectedMethod = document.querySelector('input[name="payMethod"]:checked').value;
+  if(selectedMethod === 'cod') {
+    submitOrderToBackend(true);
+  } else {
+    $("addressSectionView").style.display = "none";
+    $("paymentSectionView").style.display = "none";
+    $("upiScannerSection").style.display = "block";
+ 
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
+    $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+ 
+    startCheckoutTimer();
+  }
+}
+ 
+function startCheckoutTimer() {
+  if(timerInterval) clearInterval(timerInterval);
+  let timeLeft = 300;
+  const timerDisplay = $("timerDisplay");
+  
+  timerInterval = setInterval(() => {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("సమయం ముగిసింది! దయచేసి మళ్లీ ప్రయత్నించండి.");
+      closeFullCheckout();
+    }
+    timeLeft--;
+  }, 1000);
+}
+ 
+function finalizeVerifiedOrder() {
+  if(timerInterval) clearInterval(timerInterval);
+  submitOrderToBackend(true);
+}
+ 
+async function submitOrderToBackend(paymentVerified) {
+  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  const orderPayload = {
+    email: loggedInUserEmail,
+    address: savedAddress,
+    items: cart,
+    totalAmount: totalAmount,
+    paymentVerified: paymentVerified
+  };
+ 
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/place-order`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(orderPayload)
+    });
+    const data = await res.json();
+ 
+    if(data.success) {
+      showReceiptView(totalAmount);
+    } else {
+      alert(data.message || "ఆర్డర్ ప్లేస్ చేయడంలో విఫలమైంది");
+    }
+  } catch(e) {
+    console.error(e);
+    alert("సర్వర్ కనెక్షన్ లోపం వల్ల ఆర్డర్ పూర్తి కాలేదు.");
+  }
+}
+ 
+function showReceiptView(totalAmount) {
+  $("upiScannerSection").style.display = "none";
+  $("addressSectionView").style.display = "none";
+  $("paymentSectionView").style.display = "none";
+  $("receiptSection").style.display = "block";
+ 
+  const addressStr = `${savedAddress.name}, ${savedAddress.phone}, ${savedAddress.house}, ${savedAddress.street}, ${savedAddress.landmark ? savedAddress.landmark + ', ' : ''}${savedAddress.city} - ${savedAddress.pincode}`;
+  
+  $("receiptDetails").innerHTML = `
+    <p><b>ఈమెయిల్:</b> ${loggedInUserEmail}</p>
+    <p><b>డెలివరీ అడ్రస్:</b> ${addressStr}</p>
+    <p><b>మొత్తం చెల్లింపు:</b> ₹${totalAmount}</p>
+    <p><b>స్టేటస్:</b> విజయవంతంగా నిర్ధారించబడింది (Verified)</p>
+  `;
+ 
+  $("receiptItemsList").innerHTML = cart.map(item => `
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+      <img src="${imageURL(item.file)}" alt="${item.name}" style="width: 45px; height: 45px; object-fit: contain;">
+      <div>
+        <div style="font-size: 13px; font-weight: bold;">${item.name}</div>
+        <div style="font-size: 12px; color: #666;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+      </div>
+    </div>
+  `).join("");
+}
 </script>
 </body>
 </html>
