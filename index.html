@@ -494,7 +494,6 @@ footer {
   #loginNavText { max-width:75px; }
   .orders-container { padding:14px; }
 }
-
 </style>
 <style>
 /* ===== J-Mart additions v4 (appended; nothing above is changed) ===== */
@@ -825,7 +824,6 @@ header { top: var(--jm-safe); }
   </div>
 </div>
  
-
 <!-- J-Mart Your Orders -->
 <div class="orders-overlay" id="ordersOverlay">
   <section class="orders-container">
@@ -1201,12 +1199,11 @@ function proceedToPaymentOrOrder() {
     $("paymentSectionView").style.display = "none";
     $("upiScannerSection").style.display = "block";
     
-    // Generate UPI QR Code
     const total = cart.reduce((sum,item) => sum + (item.price * item.quantity), 0);
     const upiLink = `upi://pay?pa=${MERCHANT_UPI}&pn=J-Mart&am=${total}&cu=INR`;
     $("upiQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
     
-    startUpiTimer(300); // 5 minutes timer
+    startUpiTimer(300);
   }
 }
 
@@ -1511,7 +1508,6 @@ async function loadMyOrders() {
   }
 }
 
-/* Replace old checkout progression with three clear steps. */
 proceedToPaymentOrOrder = function() {
   const method = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
   if (!savedAddress) { alert("దయచేసి ముందుగా అడ్రస్ సేవ్ చేయండి."); goCheckoutStep(1); return; }
@@ -1570,7 +1566,6 @@ submitOrderToBackend = async function(_clientClaimedVerified, proofFile, payment
   }
 };
 
-/* OTP flow now collects the customer's display name as well. */
 handleSendOTP = async function() {
   const name = $("customerNameInput").value.trim();
   const email = $("emailInput").value.trim().toLowerCase();
@@ -1641,7 +1636,6 @@ openLogin = function() {
   $("loginModal").classList.add("show");
 };
 
-/* Make address and payment steps explicit; keep previous values on refresh. */
 document.addEventListener("DOMContentLoaded", () => {
   restoreJmartState();
   checkLoginState();
@@ -1662,7 +1656,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loggedInUserEmail) loadMyOrders().catch(()=>{});
 });
 window.addEventListener("beforeunload", persistJmartState);
-
 </script>
 
 <!-- ===== J-Mart additions v4 ===== -->
@@ -1688,7 +1681,6 @@ window.addEventListener("beforeunload", persistJmartState);
   <div class="jm-bar"><div class="jm-bar-in" id="jmPBar"></div></div>
 </div>
 <script>
-/* ---------- Splash: stylish J-Mart intro on open ---------- */
 (function () {
   const s = $("jmSplash");
   const hide = () => { s.classList.add("out"); setTimeout(() => s.remove(), 700); };
@@ -1696,17 +1688,14 @@ window.addEventListener("beforeunload", persistJmartState);
   s.addEventListener("click", hide);
 })();
 
-/* ---------- Header: top gap + green band ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   const vp = document.querySelector('meta[name="viewport"]');
   if (vp && !/viewport-fit/.test(vp.content)) vp.content += ", viewport-fit=cover";
   const hdr = document.querySelector("header");
   document.body.insertAdjacentHTML("afterbegin", '<div class="jm-cover"></div>');
   hdr.insertAdjacentHTML("beforebegin", '<div class="jm-band">FRESH NEEDS, HAPPY HOMES</div>');
-  /* address block that appears after Place Order */
   $("addressDisplayBox").insertAdjacentHTML("afterend", '<div id="jmAddrList"></div>');
   renderSavedAddress();
-  /* tap a product card to open its details page */
   $("productGrid").addEventListener("click", e => {
     if (e.target.closest(".add-button, .jm-cq")) return;
     const card = e.target.closest(".product");
@@ -1716,7 +1705,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ---------- Address: shown after Place Order. Same / Change / Add New, saved permanently on this phone ---------- */
 let jmStep = 1, jmDraft = {}, jmEditIdx = -1;
 const jmFmt = a => `${a.house}, ${a.street}, ${a.landmark ? a.landmark + ", " : ""}${a.city} - ${a.pincode}`;
 const jmKey = () => "jmart_address_book_v1:" + (loggedInUserEmail || "guest");
@@ -1782,14 +1770,12 @@ function jmNext() {
   jmRenderAddr();
 }
 
-/* ---------- Product details page ---------- */
-/* EDIT HERE: sizes, prices, details, extra photos */
 const JM_UNITS = { "Beverages": "ml", "Personal Care": "ml", "Household Care": "ml", "Tea & Coffee": "g", "Rice & Grains": "g", "Sugar & Salt": "g", "Biscuits & Snacks": "g", "Fresh Produce": "g" };
-const JM_STEPS = [[100, 0.5], [200, 1], [300, 1.5]];   /* [size, price multiplier]; 200 keeps the normal listed price */
-const JM_SIZES_OVERRIDE = {};   /* e.g. {"Bounty":[{label:"50 g",price:10},{label:"100 g",price:20}]} */
-const JM_PRICE_OVERRIDES = {};  /* e.g. {"Bounty":{"100 g":12}} */
-const JM_DETAILS = {};          /* e.g. {"Bounty":"your own description"} */
-const JM_EXTRA_IMAGES = {};     /* e.g. {"Bounty":["bounty_back.png"]}  (file names in your GitHub repo) */
+const JM_STEPS = [[100, 0.5], [200, 1], [300, 1.5]];
+const JM_SIZES_OVERRIDE = {};
+const JM_PRICE_OVERRIDES = {};
+const JM_DETAILS = {};
+const JM_EXTRA_IMAGES = {};
 let jmP = null, jmV = 1;
 const jmVariants = p => {
   if (JM_SIZES_OVERRIDE[p.name]) return JM_SIZES_OVERRIDE[p.name];
@@ -1843,7 +1829,6 @@ function jmQ(d) {
 }
 function jmCloseProd() { $("jmProdOverlay").classList.remove("show"); }
 
-/* ---------- Your Orders: tappable list + Flipkart-style details page ---------- */
 let jmOrders = [];
 const jmMoney = n => "₹" + (Number(n) || 0);
 const jmImg = i => {
@@ -1922,12 +1907,10 @@ function jmCloseOrder() { $("jmOrderOverlay").classList.remove("show"); }
   <div class="jm-card" id="jmAuthCard"></div>
 </div></div>
 <script>
-/* ---------- Login / Sign Up / Forgot Password ---------- */
-/* Works with your server routes: /api/send-otp, /api/verify-otp, /api/signup, /api/login, /api/forgot-password, /api/reset-password */
 let jmA = { view: "login", email: "", name: "" };
 const jmOldOpenLogin = openLogin;
 openLogin = function () {
-  if (loggedInUserEmail) return jmOldOpenLogin();   /* already logged in: your existing logout prompt */
+  if (loggedInUserEmail) return jmOldOpenLogin();
   jmA = { view: "login", email: "", name: "" };
   $("jmAuth").classList.add("show");
   jmAuthDraw();
@@ -1954,9 +1937,11 @@ function jmAuthDraw() {
   }
   const f = c.querySelector("input"); if (f) setTimeout(() => f.focus(), 50);
 }
-async function jmPost(path, body) {
+async function jmPost(path, body, token = "") {
   let res, data = {};
-  try { res = await fetch(BACKEND_URL + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = "Bearer " + token;
+  try { res = await fetch(BACKEND_URL + path, { method: "POST", headers, body: JSON.stringify(body) }); }
   catch (e) { throw new Error("సర్వర్‌ను చేరుకోలేకపోయాం. ఇంటర్నెట్ చూడండి."); }
   try { data = await res.json(); } catch (e) {}
   if (res.status === 404) throw new Error("ఈ సదుపాయం సర్వర్‌లో లేదు (" + path + ").");
@@ -1991,7 +1976,7 @@ async function jmLogin() {
     jmFinish(email, (d.user && d.user.name) || "", d.token);
   } catch (e) {
     jmBusy(false);
-    $("jmPass").value = "";           /* wrong entry: clear password and stay on the login screen */
+    $("jmPass").value = "";
     jmErr(e.message);
   }
 }
@@ -2001,7 +1986,7 @@ async function jmSendOtp(signup) {
   if (!/^\S+@\S+\.\S+$/.test(email)) return jmErr("సరైన ఈమెయిల్ ఇవ్వండి.");
   jmBusy(true);
   try {
-    await jmPost(signup ? "/api/send-otp" : "/api/forgot-password", { email });
+    await jmPost("/api/send-otp", signup ? { email, name } : { email });
     jmA.email = email; jmA.name = name;
     jmAuthGo(signup ? "signup2" : "forgot2");
   } catch (e) { jmBusy(false); jmErr(e.message); }
@@ -2013,25 +1998,19 @@ async function jmSetPassword() {
   if (p1 !== p2) return jmErr("రెండు పాస్‌వర్డ్‌లు ఒకేలా లేవు.");
   jmBusy(true);
   try {
-    if (signup) {
-      await jmPost("/api/verify-otp", { email: jmA.email, otp });      /* OTP checked first */
-      await jmPost("/api/signup", { email: jmA.email, password: p1 });   /* then the account is created */
-    } else {
-      await jmPost("/api/reset-password", { email: jmA.email, otp, newPassword: p1 });
-    }
-  } catch (e) { jmBusy(false); $("jmOtp").value = ""; return jmErr(e.message); }
-  try {
-    const d = await jmPost("/api/login", { email: jmA.email, password: p1 });
-    jmFinish(jmA.email, jmA.name, d.token);
+    const verifyData = await jmPost("/api/verify-otp", { email: jmA.email, otp });
+    const tempToken = verifyData.token || "";
+    const setPassData = await jmPost("/api/set-password", { password: p1, name: jmA.name }, tempToken);
+    jmFinish(jmA.email, jmA.name, setPassData.token || tempToken);
   } catch (e) {
-    jmA.view = "login"; jmAuthDraw(); $("jmEmail").value = jmA.email;
-    jmErr(signup ? "అకౌంట్ సిద్ధం! ఇప్పుడు లాగిన్ అవ్వండి." : "పాస్‌వర్డ్ మార్చబడింది! ఇప్పుడు లాగిన్ అవ్వండి.");
+    jmBusy(false);
+    $("jmOtp").value = "";
+    return jmErr(e.message);
   }
 }
 </script>
 
 <script>
-/* ---------- Home page cards: tick + minus/plus once an item is in the cart ---------- */
 const jmCardQty = name => cart.filter(i => i.name === name || i.name.indexOf(name + " (") === 0).reduce((s, i) => s + i.quantity, 0);
 function jmSyncCards() {
   const grid = $("productGrid");
